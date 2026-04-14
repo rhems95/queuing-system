@@ -3,12 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Models\Queue;
+use App\Services\QueueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class DisplayController extends Controller
 {
+    public function __construct(private QueueService $queueService)
+    {
+    }
+
     /**
      * Data used for both the HTML view and the JSON poll.
      */
@@ -20,20 +25,13 @@ class DisplayController extends Controller
 
         $nowServing = [];
         foreach ($windows as $window) {
-            $call = DB::table('queue_calls')
-                ->where('window_id', $window->id)
-                ->whereDate('called_time', $today)
-                ->orderByDesc('called_time')
-                ->first();
-
-            $queueNumber = null;
-            if ($call) {
-                $queueNumber = DB::table('queues')->where('id', $call->queue_id)->value('queue_number');
-            }
+            $call = $this->queueService->latestCallForWindow($window->id, $today);
+            $queueNumber = $this->queueService->queueNumberFromCall($call);
 
             $nowServing[] = [
                 'window_name'  => $window->window_name,
                 'queue_number' => $queueNumber,
+                'call_token'   => $call ? ($call->id.'|'.($call->called_time ?? '')) : null,
             ];
         }
 
@@ -48,7 +46,7 @@ class DisplayController extends Controller
             'waiting'     => $waiting->map(fn ($q) => [
                 'queue_number' => $q->queue_number,
                 'student_name' => $q->student_name,
-                'priority'     => $q->priority ? 'Parent' : 'Regular',
+                'priority'     => $q->priority ? 'Priority' : 'Regular',
             ])->values()->all(),
         ];
     }

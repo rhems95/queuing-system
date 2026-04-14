@@ -10,7 +10,8 @@
     </h1>
 
     @if (session('status'))
-        <div class="mb-4 text-sm text-blue-700 bg-blue-100 border border-blue-300 px-3 py-2 rounded">
+        <div id="statusToast"
+             class="mb-4 text-sm text-blue-700 bg-blue-100 border border-blue-300 px-3 py-2 rounded">
             {{ session('status') }}
         </div>
     @endif
@@ -45,24 +46,14 @@
         </form>
     </div>
 
-    @if (session('called_queue_number') || session('recalled_queue_number'))
-        @php
-            $announceQueue = session('called_queue_number') ?? session('recalled_queue_number');
-        @endphp
-        <div id="announce" data-queue="{{ $announceQueue }}"></div>
-    @endif
-
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            const el = document.getElementById('announce');
-            if (el) {
-                const queue = el.dataset.queue;
-                const text = 'Queue number ' + queue + ' please proceed to the window';
-                if ('speechSynthesis' in window) {
-                    var utterance = new SpeechSynthesisUtterance(text);
-                    utterance.lang = 'en-US';
-                    speechSynthesis.speak(utterance);
-                }
+            // Auto-hide the success message after completing an action (e.g., Complete button)
+            var toast = document.getElementById('statusToast');
+            if (toast) {
+                setTimeout(function () {
+                    toast.style.display = 'none';
+                }, 3500);
             }
 
             // Auto-refresh current & next queue so new tickets show without reload

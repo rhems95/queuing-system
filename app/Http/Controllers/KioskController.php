@@ -21,11 +21,18 @@ class KioskController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'student_name' => ['required', 'string', 'max:100'],
+            'student_name' => ['nullable', 'string', 'max:100'],
             'student_id'   => ['nullable', 'string', 'max:50'],
             'service_id'   => ['required', 'exists:services,id'],
-            'priority'     => ['required', 'in:regular,parent'],
+            'priority'     => ['required', 'in:regular,priority,parent'],
+            'output_mode'  => ['required', 'in:print,eco'],
         ]);
+
+        if ($data['output_mode'] === 'eco' && blank($data['student_name'])) {
+            return back()
+                ->withErrors(['student_name' => 'Student Name is required for Eco Mode.'])
+                ->withInput();
+        }
 
         $service = Service::findOrFail($data['service_id']);
         $today   = Carbon::today()->toDateString();
@@ -52,17 +59,24 @@ class KioskController extends Controller
             $queueNumber = $service->prefix.$numberStr;
 
             return Queue::create([
-                'student_name' => $data['student_name'],
+                'student_name' => $data['student_name'] ?: 'Guest',
                 'student_id'   => $data['student_id'] ?? null,
                 'queue_number' => $queueNumber,
                 'service_id'   => $service->id,
-                'priority'     => $data['priority'] === 'parent' ? 1 : 0,
+                'priority'     => in_array($data['priority'], ['priority', 'parent'], true) ? 1 : 0,
                 'status'       => 'waiting',
                 'queue_date'   => $today,
             ]);
         });
 
-        return view('kiosk.ticket', compact('queue'));
+        $issuedAt = now();
+        $priorityLabel = in_array($data['priority'], ['priority', 'parent'], true) ? 'Priority' : 'Regular';
+
+        if ($data['output_mode'] === 'print') {
+            return view('kiosk.printing', compact('queue', 'service', 'issuedAt', 'priorityLabel'));
+        }
+
+        return view('kiosk.eco', compact('queue', 'service', 'issuedAt', 'priorityLabel'));
     }
 }
 

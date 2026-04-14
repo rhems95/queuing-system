@@ -69,16 +69,35 @@
                 </form>
 
                 <div class="mt-4 text-center">
-                    <a href="#" class="text-sm text-gray-500 hover:text-gray-700">
+                    <a href="#"
+                       id="forgotPasswordLink"
+                       class="text-sm text-gray-500 hover:text-gray-700">
                         Forgot password?
                     </a>
+                    <div id="forgotPasswordMsg"
+                         class="hidden mt-2 text-xs text-amber-700 bg-amber-50 border border-amber-200 px-3 py-2 rounded">
+                        Please contact the administrator to reset your password.
+                    </div>
                 </div>
             </div>
 
             <p class="mt-6 text-center text-xs text-gray-400">
-                © 2024 PECIT Queuing System
+                © 2026 PECIT Queuing System
             </p>
         </div>
     </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var link = document.getElementById('forgotPasswordLink');
+            var msg = document.getElementById('forgotPasswordMsg');
+            if (!link || !msg) return;
+
+            link.addEventListener('click', function (e) {
+                e.preventDefault();
+                msg.classList.remove('hidden');
+            });
+        });
+    </script>
 @endsection
 

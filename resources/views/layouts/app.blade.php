@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <title>@yield('title', 'Queue System')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css">
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="bg-gray-100">
     @unless(request()->routeIs('login') || request()->routeIs('kiosk') || request()->routeIs('kiosk.*'))

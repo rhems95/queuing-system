@@ -10,9 +10,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Services\QueueService;
 
 class WindowController extends Controller
 {
+    public function __construct(private QueueService $queueService)
+    {
+    }
+
     /**
      * Current and next queue for the staff's window (for polling).
      */
@@ -20,14 +25,11 @@ class WindowController extends Controller
     {
         $today = Carbon::today()->toDateString();
 
-        $currentCall = QueueCall::where('window_id', $windowId)
-            ->whereDate('called_time', $today)
-            ->orderByDesc('called_time')
-            ->first();
+        $currentCall = $this->queueService->latestCallForWindow($windowId, $today);
 
         $currentQueueNumber = null;
         if ($currentCall) {
-            $currentQueueNumber = Queue::where('id', $currentCall->queue_id)->value('queue_number');
+            $currentQueueNumber = $this->queueService->queueNumberFromCall($currentCall);
         }
 
         $window = Window::find($windowId);
@@ -109,6 +111,28 @@ class WindowController extends Controller
         $windowServiceId = DB::table('windows')->where('id', $windowId)->value('service_id');
 
         $queue = DB::transaction(function () use ($windowId, $windowServiceId, $today) {
+            // Finish the currently called queue for this window (same as "Complete"),
+            // so history + admin completed counts reflect immediately.
+            $currentCall = QueueCall::where('window_id', $windowId)
+                ->whereDate('called_time', $today)
+                ->orderByDesc('called_time')
+                ->lockForUpdate()
+                ->first();
+
+            if ($currentCall && $currentCall->finished_time === null) {
+                $currentCall->finished_time = now();
+                $currentCall->save();
+
+                $currentQueue = Queue::where('id', $currentCall->queue_id)
+                    ->lockForUpdate()
+                    ->first();
+
+                if ($currentQueue) {
+                    $currentQueue->status = 'done';
+                    $currentQueue->save();
+                }
+            }
+
             $queue = Queue::where('service_id', $windowServiceId)
                 ->whereDate('queue_date', $today)
                 ->where('status', 'waiting')
@@ -156,6 +180,10 @@ class WindowController extends Controller
         if (! $currentCall) {
             return back()->with('status', 'No current queue to recall.');
         }
+
+        // Update called_time so display polling always sees recall as a fresh event.
+        $currentCall->called_time = now();
+        $currentCall->save();
 
         $queue = Queue::find($currentCall->queue_id);
 
