@@ -45,6 +45,8 @@ Route::middleware('auth')->group(function () {
     // Staff-only routes (own counter / served tickets only)
     Route::middleware('staff')->prefix('window')->name('window.')->group(function () {
         Route::get('/', [WindowController::class, 'index'])->name('dashboard');
+        Route::get('/float', [WindowController::class, 'floatPanel'])->name('float');
+        Route::post('/launch-float', [WindowController::class, 'launchFloat'])->name('launchFloat');
         Route::get('/state', [WindowController::class, 'state'])->name('state');
         Route::post('/call-next', [WindowController::class, 'callNext'])->name('callNext');
         Route::post('/recall', [WindowController::class, 'recall'])->name('recall');

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PECIT Queue System — Flowcharts</title>
+    <style>
+        body { font-family: system-ui, sans-serif; max-width: 1200px; margin: 0 auto; padding: 1.5rem; background: #f8fafc; color: #0f172a; }
+        h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
+        .hint { color: #475569; font-size: 0.9rem; margin-bottom: 2rem; }
+        section { background: #fff; border: 1px solid #e2e8f0; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 2rem; box-shadow: 0 1px 2px rgba(0,0,0,.04); }
+        section h2 { font-size: 1.1rem; margin: 0 0 1rem; color: #1e3a8a; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
+        .mermaid { display: flex; justify-content: center; overflow-x: auto; }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+</head>
+<body>
+    <h1>Queue system — flowcharts</h1>
+    <p class="hint">Open this page via your app URL, e.g. <strong>http://127.0.0.1:8000/flowchart-viewer.html</strong> (while <code>php artisan serve</code> is running). Source: <code>docs/system-flowchart.md</code></p>
+
+    <section id="s0">
+        <h2>0. Master system overview (compact — print on bond paper)</h2>
+        <p class="hint" style="margin-top:-0.5rem;">Anonymous, print-only. Export SVG/PNG from <a href="https://mermaid.live" target="_blank" rel="noopener">mermaid.live</a>; print <strong>Landscape</strong> or <strong>Fit to page</strong> for Letter/A4.</p>
+        <div class="mermaid">
+%%{init: {'flowchart': {'nodeSpacing': 28, 'rankSpacing': 36, 'padding': 6, 'useMaxWidth': true}, 'themeVariables': { 'fontSize': '11px'}}}%%
+flowchart TD
+    St([Start]) --> K["Kiosk: service → Regular/Priority → confirm"]
+    K --> DB[("DB: new queue + daily counter")]
+    DB --> PA["Customer: ticket #, print, countdown, then wait"]
+    DB --> PB["TV: now serving + waiting list + voice"]
+    PA --> SW["Staff: next / recall / complete"]
+    PB --> SW
+    SW --> DB
+    SW --> Q{Done?}
+    Q -->|Recall / same ticket| SW
+    Q -->|Complete| H["Save queue_calls + done"]
+    H --> En([End])
+        </div>
+    </section>
+
+    <section id="s1">
+        <h2>1. End-to-end context</h2>
+        <div class="mermaid">
+flowchart TB
+    subgraph Public["Public — no login"]
+        K["/kiosk — KioskController"]
+        D["/display — DisplayController"]
+    end
+    subgraph AuthLogin["Login /logout"]
+        LG["/login — LoginController"]
+        LO["POST /logout"]
+    end
+    subgraph Staff["Staff — auth + staff middleware"]
+        SW["/window — WindowController"]
+    end
+    subgraph Admin["Admin — auth + admin middleware"]
+        AD["/admin — AdminDashboardController"]
+        UM["/admin/users — UserManagementController"]
+        HI["/admin/history* — HistoryController"]
+    end
+    DB[(MySQL)]
+    K --> DB
+    D --> DB
+    SW --> DB
+    AD --> DB
+    UM --> DB
+    HI --> DB
+    LG --> DB
+        </div>
+    </section>
+
+    <section id="s2">
+        <h2>2. Kiosk — ticket issuance</h2>
+        <div class="mermaid">
+flowchart TD
+    Start([Visitor: /kiosk]) --> S1["Step 1: Select service<br/>services excluding Promissory in KioskController@index"]
+    S1 --> S2["Step 2: Regular or Priority<br/>hidden input priority"]
+    S2 --> S3["Step 3: Confirm & Print"]
+    S3 --> POST["POST /kiosk — KioskController@store"]
+    POST --> V{"Validate service_id, priority<br/>in: regular, priority?"}
+    V -->|Fail| E["Show validation errors"]
+    V -->|OK| Txn["DB transaction"]
+    subgraph Trn["Transaction"]
+        T1["Lock/update daily_queue_counters<br/>per service + today"]
+        T2["Insert queues row<br/>priority 0|1, status waiting"]
+    end
+    Txn --> Print["View kiosk.printing<br/>issuedAt, priorityLabel"]
+    Print --> AP["window.print + countdown"]
+    AP --> Home([Back to /kiosk])
+        </div>
+    </section>
+
+    <section id="s3">
+        <h2>3. Public display monitor (detailed)</h2>
+        <div class="mermaid">
+flowchart TD
+    subgraph InitialLoad["First paint — GET /display"]
+        A1["DisplayController@index"]
+        A2["getDisplayData — same logic as JSON"]
+        A3["view display.index<br/>nowServingGroups, waiting"]
+    end
+    A1 --> A2 --> A3
+
+    subgraph DataBuild["getDisplayData — server"]
+        B1["Load all windows orderBy id"]
+        B2["groupBy trim group_name<br/>natural sort keys"]
+        B3["Per group: sort windows by name<br/>natural order"]
+        B4["Per window: QueueService<br/>latestCallForWindow today"]
+        B5["queueNumberFromCall or<br/>placeholder ----"]
+        B6["call_token = id + called_time<br/>for TTS refresh / recall"]
+        B7["Global waiting: queues.status=waiting<br/>today, order priority desc, queue_number"]
+        B8["Map priority bool to Priority/Regular label"]
+    end
+    A2 --> B1 --> B2 --> B3 --> B4 --> B5
+    B4 --> B6
+    B7 --> B8
+
+    subgraph PollLoop["Browser — display/index.blade.php"]
+        C1["setInterval ~3s"]
+        C2["GET /display/data — JSON"]
+        C3["renderNowServing groups<br/>horizontal columns + cashier row"]
+        C4["renderWaiting table rows"]
+        C5["maybeAnnounce: compare call_token<br/>per window_key"]
+        C6["speechSynthesis queue<br/>unlock on click/touch/keydown"]
+    end
+    A3 --> C1
+    C1 --> C2 --> C3 --> C4 --> C5 --> C6
+    C2 -->|"same getDisplayData()"| A2
+        </div>
+    </section>
+
+    <section id="s3b">
+        <h2>3b. Display — UI blocks</h2>
+        <div class="mermaid">
+flowchart LR
+    subgraph Header["Header bar"]
+        H1["Logo + school name"]
+        H2["dateTimeDisplay clock"]
+    end
+    subgraph NowServing["NOW SERVING"]
+        G1["Group pill e.g. Window 1"]
+        G2["Per window: label + big number"]
+        G3["Window 1: 3 cashiers horizontal"]
+    end
+    subgraph Waiting["Waiting list"]
+        W1["Table Queue # / Priority"]
+        W2["scroll max-height"]
+    end
+    Header --> NowServing --> Waiting
+        </div>
+    </section>
+
+    <section id="s4">
+        <h2>4. Staff window — counter (detailed)</h2>
+        <div class="mermaid">
+flowchart TD
+    subgraph Gate["Access"]
+        U1["User must be staff"]
+        U2["user.window_id required"]
+        U3["403 if no window"]
+    end
+
+    subgraph Page["GET /window — WindowController@index"]
+        P1["Load Window + service"]
+        P2["Latest QueueCall today for window<br/>→ current ticket"]
+        P3["Next waiting: same service_id<br/>today, priority desc, id"]
+        P4["waitingTickets: up to 10<br/>priority desc, queue_number"]
+        P5["staff.window view<br/>buttons above table"]
+    end
+    Gate --> Page
+
+    subgraph Poll["GET /window/state — JSON"]
+        S1["getWindowState window_id"]
+        S2["current from latest open call"]
+        S3["next preview + waiting_list 10 rows"]
+    end
+    Page --> Poll
+
+    subgraph Actions["POST actions"]
+        CN["POST /window/call-next"]
+        RC["POST /window/recall"]
+        CP["POST /window/complete"]
+    end
+
+    CN --> CNstep["Transaction"]
+    subgraph CallNextTx["callNext transaction"]
+        X1["If open call: set finished_time<br/>queue status done"]
+        X2["Pick next waiting same service<br/>today priority desc, id"]
+        X3["Set queue serving + QueueCall<br/>called_time now"]
+    end
+
+    RC --> RC1["Latest call today<br/>bump called_time now<br/>display + TTS see new token"]
+
+    CP --> CP1["Set finished_time<br/>queue done"]
+
+    subgraph Shortcut["Keyboard"]
+        K1["Ctrl+Alt+Space → #call-next-btn"]
+    end
+    Shortcut --> CN
+
+    subgraph StaffHistory["GET /window/history"]
+        H1["queue_calls join queues, services<br/>filter optional date"]
+        H2["Paginate staff window only"]
+    end
+        </div>
+    </section>
+
+    <section id="s4b">
+        <h2>4b. Staff — Call Next (sequence)</h2>
+        <div class="mermaid">
+sequenceDiagram
+    participant Staff
+    participant Browser
+    participant Laravel
+    participant DB
+
+    Staff->>Browser: Click Call Next
+    Browser->>Laravel: POST /window/call-next
+    Laravel->>DB: Begin transaction
+    Laravel->>DB: Close open call + mark queue done if any
+    Laravel->>DB: Select next waiting queue FOR UPDATE
+    Laravel->>DB: Update queue serving, insert queue_calls
+    Laravel->>DB: Commit
+    Laravel-->>Browser: Redirect back + flash
+    Browser->>Laravel: Poll GET /window/state
+    Laravel-->>Browser: current, next, waiting_list
+        </div>
+    </section>
+
+    <section id="s5">
+        <h2>5. Admin panel (detailed)</h2>
+        <div class="mermaid">
+flowchart TD
+    subgraph AdminDash["GET /admin — AdminDashboardController@index"]
+        D1["Counts today: total, waiting, completed"]
+        D2["admin.dashboard view"]
+    end
+
+    subgraph WaitingJson["GET /admin/queues/waiting"]
+        W1["JSON all waiting queues today<br/>with service"]
+        W2["Dashboard live table AJAX"]
+    end
+
+    subgraph Users["Resource /admin/users — UserManagementController"]
+        U1["staff → window_id required"]
+        U2["unique window: one staff per window"]
+        U3["admin → window_id null"]
+        U4["password hashed"]
+    end
+
+    subgraph History["HistoryController — admin only"]
+        H1["GET /admin/history — served queue_calls<br/>staff name via users.window_id"]
+        H2["GET /admin/history/tickets — all queues rows"]
+        H3["GET /admin/history/reports — analytics date range"]
+        H4["GET/PUT/DELETE history edit — single queue_call"]
+    end
+
+    subgraph AdminFlow["Typical flow"]
+        A1["Login /login as admin"]
+        A2["Dashboard overview"]
+        A3["Manage users & windows"]
+        A4["Audit history / tickets / reports"]
+    end
+    A1 --> A2 --> A3 --> A4
+        </div>
+    </section>
+
+    <section id="s5b">
+        <h2>5b. Admin — history & reports (data sources)</h2>
+        <div class="mermaid">
+flowchart LR
+    subgraph Tables["Primary tables"]
+        QC[queue_calls]
+        Q[queues]
+        SV[services]
+        WIN[windows]
+        US[users]
+    end
+    HI["admin/history"] --> QC
+    HI --> Q
+    HI --> SV
+    HI --> WIN
+    HI --> US
+    TK["admin/history/tickets"] --> Q
+    TK --> SV
+    RP["admin/history/reports"] --> QC
+    RP --> Q
+    RP --> SV
+        </div>
+    </section>
+
+    <section id="s6">
+        <h2>6. Queue lifecycle</h2>
+        <div class="mermaid">
+stateDiagram-v2
+    [*] --> waiting: Kiosk creates ticket
+    waiting --> serving: Staff Call Next
+    serving --> done: Staff Complete<br/>or Call Next auto-completes previous
+    done --> [*]
+    note right of serving: Recall updates called_time<br/>same queue_number, new token
+        </div>
+    </section>
+
+    <section id="s6b">
+        <h2>6b. Shared data (reads / writes)</h2>
+        <div class="mermaid">
+flowchart LR
+    subgraph Writes["Writes"]
+        K["kiosk.store"] --> Q[(queues)]
+        K --> D[(daily_queue_counters)]
+        CN["call-next"] --> Q
+        CN --> QC[(queue_calls)]
+        CP["complete"] --> Q
+        CP --> QC
+    end
+    subgraph Reads["Reads"]
+        DISP["display.data"] --> Q
+        DISP --> WIN[(windows)]
+        DISP --> QC
+        ST["window.state"] --> Q
+        ST --> QC
+    end
+        </div>
+    </section>
+
+    <section id="s7">
+        <h2>7. Auth & middleware</h2>
+        <div class="mermaid">
+flowchart TD
+    L["POST /login"] --> Auth["Session auth"]
+    Auth --> R1{"role?"}
+    R1 -->|admin| ADM["prefix /admin/*"]
+    R1 -->|staff| STF["prefix /window/*"]
+    R1 -->|wrong| DENY["Redirect /login"]
+    LO["POST /logout"] --> OUT["Session cleared"]
+        </div>
+    </section>
+
+    <section id="dfd1">
+        <h2>DFD — Level 1 (processes, stores, external entities)</h2>
+        <p class="hint">Source: <code>docs/dfd-level1.md</code> · Copy <code>docs/dfd-level1.mmd</code> for mermaid.live</p>
+        <div class="mermaid">
+%%{init: {'flowchart': {'nodeSpacing': 22, 'rankSpacing': 28, 'padding': 5}, 'themeVariables': { 'fontSize': '10px'}}}%%
+flowchart TB
+    subgraph EXT["External entities"]
+        direction LR
+        EC[Customer]
+        ES[Staff]
+        EA[Administrator]
+        ED[Display client]
+    end
+
+    subgraph SYS["Queue management system — Level 1 processes"]
+        direction TB
+        P1["1.0 Issue ticket"]
+        P2["2.0 Produce display data"]
+        P3["3.0 Serve at window"]
+        P4["4.0 Administer system"]
+    end
+
+    subgraph DS["Data stores"]
+        direction LR
+        D1[("D1 Queues")]
+        D2[("D2 Daily counters")]
+        D3[("D3 Queue calls")]
+        D4[("D4 Master data")]
+    end
+
+    EC -->|Service choice, priority| P1
+    P1 -->|Queue number, service| EC
+
+    ED -->|Poll /display, /display/data| P2
+    P2 -->|Now serving, waiting list| ED
+
+    ES -->|Call next, recall, complete| P3
+    P3 -->|Flash / status| ES
+
+    EA -->|Users, filters, reports| P4
+    P4 -->|Screens, exports| EA
+
+    D4 -->|Valid services| P1
+    P1 -->|New ticket row| D1
+    P1 -->|Increment serial| D2
+
+    D1 -->|Waiting, by date| P2
+    D3 -->|Latest call per window| P2
+    D4 -->|Windows, groups| P2
+
+    D4 -->|Window, service| P3
+    D1 -->|Next waiting, status| P3
+    D3 -->|Open call| P3
+    P3 -->|Update ticket status| D1
+    P3 -->|Insert or update call| D3
+
+    D4 -->|Users, windows| P4
+    D1 -->|Tickets, filters| P4
+    D3 -->|Served history| P4
+    P4 -->|Update users| D4
+        </div>
+    </section>
+
+    <script>
+        mermaid.initialize({
+            startOnLoad: true,
+            theme: 'neutral',
+            securityLevel: 'loose',
+            flowchart: { useMaxWidth: true, htmlLabels: true }
+        });
+    </script>
+</body>
+</html>

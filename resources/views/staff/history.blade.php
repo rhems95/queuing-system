@@ -1,51 +1,51 @@
-@extends('layouts.app')
+@extends('layouts.panel')
 
 @section('title', 'My Service History')
 
 @section('content')
-    <h1 class="text-2xl font-bold mb-4">My Service History</h1>
-    <p class="text-sm text-gray-600 mb-4">Tickets you have served at your counter. You cannot edit or delete records.</p>
+    <div class="pecit-page-header">
+        <div>
+            <h1 class="pecit-page-title">My Service History</h1>
+            <p class="pecit-page-sub">Tickets you have served at your counter. You cannot edit or delete records.</p>
+        </div>
+    </div>
 
-    <form method="GET" class="mb-4 flex items-center gap-2">
-        <label class="text-sm text-gray-600">Filter by date:</label>
-        <input type="date" name="date" value="{{ request('date') }}" class="border border-gray-300 rounded px-2 py-1">
-        <button class="bg-gray-700 text-white px-3 py-1 rounded text-sm">Apply</button>
+    <form method="GET" class="pecit-filter-bar">
+        <label class="pecit-label" style="margin:0;">Filter by date</label>
+        <input type="date" name="date" value="{{ request('date') }}" class="pecit-input">
+        <button type="submit" class="pecit-btn pecit-btn-secondary">Apply</button>
     </form>
 
-    <div class="bg-white rounded shadow overflow-x-auto">
-        <table class="min-w-full text-left text-sm">
-            <thead class="bg-gray-100">
-                <tr>
-                    <th class="px-3 py-2">Queue #</th>
-                    <th class="px-3 py-2">Student Name</th>
-                    <th class="px-3 py-2">Service</th>
-                    <th class="px-3 py-2">Called Time</th>
-                    <th class="px-3 py-2">Finished Time</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($records as $row)
-                    <tr class="border-b border-gray-200">
-                        <td class="px-3 py-2">{{ $row->queue_number }}</td>
-                        <td class="px-3 py-2">{{ $row->student_name }}</td>
-                        <td class="px-3 py-2">{{ $row->service_name }}</td>
-                        <td class="px-3 py-2">{{ $row->called_time }}</td>
-                        <td class="px-3 py-2">{{ $row->finished_time ?? '—' }}</td>
-                    </tr>
-                @empty
+    <div class="pecit-card">
+        <div class="pecit-table-wrap">
+            <table class="pecit-table">
+                <thead>
                     <tr>
-                        <td colspan="5" class="px-3 py-4 text-center text-gray-500">No records found.</td>
+                        <th>Queue #</th>
+                        <th>Service</th>
+                        <th>Called Time</th>
+                        <th>Finished Time</th>
                     </tr>
-                @endforelse
-            </tbody>
-        </table>
+                </thead>
+                <tbody>
+                    @forelse($records as $row)
+                        <tr>
+                            <td style="font-weight:700;">{{ $row->queue_number }}</td>
+                            <td>{{ $row->service_name }}</td>
+                            <td>{{ $row->called_time }}</td>
+                            <td>{{ $row->finished_time ?? '—' }}</td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="empty">No records found.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
     </div>
 
-    <div class="mt-3">
+    <div style="margin-top:1rem;">
         {{ $records->withQueryString()->links() }}
-    </div>
-
-    <div class="mt-4">
-        <a href="{{ route('window.dashboard') }}" class="text-blue-600 hover:underline">← Back to Window</a>
     </div>
 @endsection

@@ -30,7 +30,7 @@
         </nav>
     @endunless
 
-    <main class="container mx-auto px-4 py-6 relative">
+    <main class="{{ request()->routeIs('kiosk') ? 'kiosk-main mx-auto px-3 py-2 relative' : 'container mx-auto px-4 py-6 relative' }}">
         @yield('content')
     </main>
 
@@ -49,4 +49,3 @@
     @endunless
 </body>
 </html>
-

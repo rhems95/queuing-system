@@ -1,0 +1,908 @@
+/* PECIT institutional theme — scoped to .pecit-shell only (kiosk unaffected) */
+
+.pecit-shell {
+    --pecit-navy: #000080;
+    --pecit-navy-deep: #00005c;
+    --pecit-navy-mid: #1a1a99;
+    --pecit-navy-soft: #e8eaf6;
+    --pecit-gold: #c9a227;
+    --pecit-gold-soft: #f7f1de;
+    --pecit-surface: #f4f6fb;
+    --pecit-card: #ffffff;
+    --pecit-border: #d5d9e8;
+    --pecit-text: #1e2433;
+    --pecit-muted: #5b6478;
+    --pecit-success: #0f7a4b;
+    --pecit-success-bg: #e7f7ef;
+    --pecit-warning: #b45309;
+    --pecit-warning-bg: #fff7ed;
+    --pecit-danger: #b91c1c;
+    --pecit-danger-bg: #fef2f2;
+    --pecit-info: #1d4ed8;
+    --pecit-info-bg: #eff6ff;
+    --pecit-sidebar-w: 16.5rem;
+    --pecit-header-h: 4rem;
+    --font-pecit: "Candara", "Segoe UI", "Trebuchet MS", "Lucida Grande", sans-serif;
+    --font-pecit-display: "Candara", "Segoe UI Semibold", "Trebuchet MS", sans-serif;
+
+    min-height: 100vh;
+    background:
+        radial-gradient(ellipse 80% 50% at 100% -10%, rgba(0, 0, 128, 0.08), transparent 55%),
+        radial-gradient(ellipse 60% 40% at 0% 100%, rgba(201, 162, 39, 0.07), transparent 50%),
+        var(--pecit-surface);
+    color: var(--pecit-text);
+    font-family: var(--font-pecit);
+}
+
+.pecit-shell a {
+    color: inherit;
+    text-decoration: none;
+}
+
+.pecit-shell a.pecit-btn-primary,
+.pecit-shell a.pecit-btn-success,
+.pecit-shell a.pecit-btn-warning,
+.pecit-shell a.pecit-btn-danger {
+    color: #fff;
+}
+
+.pecit-shell a.pecit-btn-secondary {
+    color: var(--pecit-navy-deep);
+}
+
+.pecit-shell a.pecit-btn-outline {
+    color: var(--pecit-navy);
+}
+
+.pecit-shell a.pecit-link {
+    color: var(--pecit-navy-mid);
+}
+
+.pecit-shell a.pecit-link-danger {
+    color: var(--pecit-danger);
+}
+
+/* Header */
+.pecit-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    height: var(--pecit-header-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0 1.25rem;
+    background: linear-gradient(105deg, var(--pecit-navy-deep) 0%, var(--pecit-navy) 55%, var(--pecit-navy-mid) 100%);
+    color: #fff;
+    box-shadow: 0 2px 12px rgba(0, 0, 80, 0.28);
+    border-bottom: 3px solid var(--pecit-gold);
+}
+
+.pecit-header-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+}
+
+.pecit-header-brand img {
+    height: 2.5rem;
+    width: 2.5rem;
+    object-fit: contain;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 0.15rem;
+    flex-shrink: 0;
+}
+
+.pecit-header-titles {
+    line-height: 1.15;
+    min-width: 0;
+}
+
+.pecit-header-titles .pecit-org {
+    font-family: var(--font-pecit-display);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pecit-header-titles .pecit-app {
+    font-size: 0.7rem;
+    opacity: 0.85;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+}
+
+.pecit-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+}
+
+.pecit-user-chip {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 9999px;
+    padding: 0.35rem 0.85rem;
+}
+
+@media (min-width: 768px) {
+    .pecit-user-chip {
+        display: inline-flex;
+    }
+}
+
+.pecit-role-pill {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    background: var(--pecit-gold);
+    color: #1a1400;
+    border-radius: 9999px;
+    padding: 0.15rem 0.45rem;
+}
+
+.pecit-btn-ghost {
+    appearance: none;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    background: transparent;
+    color: #fff;
+    font-size: 0.8rem;
+    font-weight: 600;
+    border-radius: 0.45rem;
+    padding: 0.4rem 0.85rem;
+    cursor: pointer;
+    transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pecit-btn-ghost:hover {
+    background: rgba(255, 255, 255, 0.12);
+    border-color: rgba(255, 255, 255, 0.55);
+}
+
+.pecit-menu-toggle {
+    display: inline-flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0.4rem;
+    border-radius: 0.4rem;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    background: rgba(255, 255, 255, 0.08);
+    cursor: pointer;
+}
+
+.pecit-menu-toggle span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: #fff;
+    border-radius: 2px;
+}
+
+@media (min-width: 1024px) {
+    .pecit-menu-toggle {
+        display: none;
+    }
+}
+
+/* Shell body */
+.pecit-body {
+    display: flex;
+    min-height: calc(100vh - var(--pecit-header-h));
+}
+
+/* Sidebar */
+.pecit-sidebar {
+    position: fixed;
+    top: var(--pecit-header-h);
+    left: 0;
+    z-index: 40;
+    width: var(--pecit-sidebar-w);
+    height: calc(100vh - var(--pecit-header-h));
+    background: var(--pecit-card);
+    border-right: 1px solid var(--pecit-border);
+    box-shadow: 4px 0 24px rgba(15, 23, 42, 0.06);
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+    overflow-y: auto;
+}
+
+.pecit-sidebar.is-open {
+    transform: translateX(0);
+}
+
+@media (min-width: 1024px) {
+    .pecit-sidebar {
+        transform: translateX(0);
+    }
+}
+
+.pecit-sidebar-head {
+    padding: 1.1rem 1.15rem 0.75rem;
+    border-bottom: 1px solid var(--pecit-border);
+}
+
+.pecit-sidebar-head h2 {
+    margin: 0;
+    font-family: var(--font-pecit-display);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--pecit-navy);
+}
+
+.pecit-sidebar-head p {
+    margin: 0.25rem 0 0;
+    font-size: 0.75rem;
+    color: var(--pecit-muted);
+}
+
+.pecit-nav {
+    padding: 0.75rem 0.65rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.pecit-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    padding: 0.65rem 0.75rem;
+    border-radius: 0.55rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--pecit-text);
+    transition: background 0.15s ease, color 0.15s ease;
+}
+
+.pecit-nav-link:hover {
+    background: var(--pecit-navy-soft);
+    color: var(--pecit-navy);
+}
+
+.pecit-nav-link.is-active {
+    background: var(--pecit-navy);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 80, 0.22);
+}
+
+.pecit-nav-icon {
+    width: 1.65rem;
+    height: 1.65rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    background: var(--pecit-navy-soft);
+    color: var(--pecit-navy);
+    flex-shrink: 0;
+}
+
+.pecit-nav-link.is-active .pecit-nav-icon {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+}
+
+.pecit-nav-section {
+    margin: 0.85rem 0.75rem 0.35rem;
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--pecit-muted);
+}
+
+/* Main */
+.pecit-main {
+    flex: 1;
+    width: 100%;
+    padding: 1.25rem 1rem 2.5rem;
+}
+
+@media (min-width: 1024px) {
+    .pecit-main.has-sidebar {
+        margin-left: var(--pecit-sidebar-w);
+        padding: 1.5rem 1.75rem 2.5rem;
+    }
+}
+
+.pecit-page-title {
+    margin: 0 0 0.35rem;
+    font-family: var(--font-pecit-display);
+    font-size: 1.55rem;
+    font-weight: 700;
+    color: var(--pecit-navy-deep);
+    letter-spacing: -0.01em;
+}
+
+.pecit-page-sub {
+    margin: 0 0 1.25rem;
+    font-size: 0.9rem;
+    color: var(--pecit-muted);
+}
+
+.pecit-page-header {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.pecit-page-header .pecit-page-sub {
+    margin-bottom: 0;
+}
+
+/* Cards */
+.pecit-card {
+    background: var(--pecit-card);
+    border: 1px solid var(--pecit-border);
+    border-radius: 0.85rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04), 0 8px 24px rgba(0, 0, 80, 0.04);
+    overflow: hidden;
+}
+
+.pecit-card-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.9rem 1.1rem;
+    border-bottom: 1px solid var(--pecit-border);
+    background: linear-gradient(180deg, #fafbff 0%, #fff 100%);
+}
+
+.pecit-card-head h2 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--pecit-navy);
+}
+
+.pecit-card-head p {
+    margin: 0.2rem 0 0;
+    font-size: 0.75rem;
+    color: var(--pecit-muted);
+}
+
+.pecit-card-body {
+    padding: 1.1rem;
+}
+
+.pecit-stat-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+@media (min-width: 768px) {
+    .pecit-stat-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+.pecit-stat {
+    position: relative;
+    background: var(--pecit-card);
+    border: 1px solid var(--pecit-border);
+    border-radius: 0.85rem;
+    padding: 1.1rem 1.15rem 1.15rem;
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    overflow: hidden;
+}
+
+.pecit-stat::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--pecit-navy);
+}
+
+.pecit-stat[data-tone="warning"]::before {
+    background: var(--pecit-warning);
+}
+
+.pecit-stat[data-tone="success"]::before {
+    background: var(--pecit-success);
+}
+
+.pecit-stat[data-tone="gold"]::before {
+    background: var(--pecit-gold);
+}
+
+.pecit-stat-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--pecit-muted);
+}
+
+.pecit-stat-value {
+    margin-top: 0.35rem;
+    font-family: var(--font-pecit-display);
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.1;
+    color: var(--pecit-navy-deep);
+    font-variant-numeric: tabular-nums;
+}
+
+.pecit-stat[data-tone="warning"] .pecit-stat-value {
+    color: var(--pecit-warning);
+}
+
+.pecit-stat[data-tone="success"] .pecit-stat-value {
+    color: var(--pecit-success);
+}
+
+/* Tables */
+.pecit-table-wrap {
+    overflow-x: auto;
+}
+
+.pecit-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+    text-align: left;
+}
+
+.pecit-table thead th {
+    background: var(--pecit-navy-soft);
+    color: var(--pecit-navy-deep);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    padding: 0.7rem 0.9rem;
+    border-bottom: 1px solid var(--pecit-border);
+    white-space: nowrap;
+}
+
+.pecit-table tbody td {
+    padding: 0.75rem 0.9rem;
+    border-bottom: 1px solid #eef0f6;
+    vertical-align: middle;
+}
+
+.pecit-table tbody tr:hover {
+    background: #f8f9fd;
+}
+
+.pecit-table .empty {
+    text-align: center;
+    color: var(--pecit-muted);
+    padding: 1.25rem 0.9rem;
+}
+
+/* Forms */
+.pecit-label {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--pecit-text);
+    margin-bottom: 0.35rem;
+}
+
+.pecit-input,
+.pecit-select {
+    width: 100%;
+    border: 1px solid var(--pecit-border);
+    border-radius: 0.5rem;
+    background: #fff;
+    padding: 0.55rem 0.75rem;
+    font-size: 0.875rem;
+    color: var(--pecit-text);
+    outline: none;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.pecit-input:focus,
+.pecit-select:focus {
+    border-color: var(--pecit-navy-mid);
+    box-shadow: 0 0 0 3px rgba(0, 0, 128, 0.12);
+}
+
+.pecit-filter-bar {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 1rem;
+}
+
+.pecit-filter-bar .pecit-input,
+.pecit-filter-bar .pecit-select {
+    width: auto;
+    min-width: 10rem;
+}
+
+/* Buttons */
+.pecit-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    appearance: none;
+    border: none;
+    border-radius: 0.5rem;
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 700;
+    padding: 0.55rem 1rem;
+    cursor: pointer;
+    transition: transform 0.1s ease, box-shadow 0.15s ease, background 0.15s ease;
+    text-decoration: none;
+}
+
+.pecit-btn:active {
+    transform: translateY(1px);
+}
+
+.pecit-btn-primary {
+    background: var(--pecit-navy);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(0, 0, 80, 0.2);
+}
+
+.pecit-btn-primary:hover {
+    background: var(--pecit-navy-deep);
+    color: #fff;
+}
+
+.pecit-btn-secondary {
+    background: #e8ebf5;
+    color: var(--pecit-navy-deep);
+}
+
+.pecit-btn-secondary:hover {
+    background: #d8dced;
+}
+
+.pecit-btn-success {
+    background: var(--pecit-success);
+    color: #fff;
+    box-shadow: 0 4px 12px rgba(15, 122, 75, 0.22);
+}
+
+.pecit-btn-success:hover {
+    background: #0c643e;
+    color: #fff;
+}
+
+.pecit-btn-warning {
+    background: #d97706;
+    color: #fff;
+}
+
+.pecit-btn-warning:hover {
+    background: #b45309;
+    color: #fff;
+}
+
+.pecit-btn-danger {
+    background: var(--pecit-danger);
+    color: #fff;
+}
+
+.pecit-btn-danger:hover {
+    background: #991b1b;
+    color: #fff;
+}
+
+.pecit-btn-outline {
+    background: transparent;
+    color: var(--pecit-navy);
+    border: 1px solid var(--pecit-border);
+}
+
+.pecit-btn-outline:hover {
+    background: var(--pecit-navy-soft);
+}
+
+.pecit-btn-lg {
+    padding: 0.75rem 1.35rem;
+    font-size: 0.95rem;
+}
+
+.pecit-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    margin-bottom: 1.15rem;
+}
+
+.pecit-link {
+    color: var(--pecit-navy-mid);
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+}
+
+.pecit-link:hover {
+    color: var(--pecit-navy);
+}
+
+.pecit-link-danger {
+    color: var(--pecit-danger);
+    font-weight: 600;
+}
+
+/* Badges */
+.pecit-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 9999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    padding: 0.2rem 0.55rem;
+}
+
+.pecit-badge-waiting {
+    background: var(--pecit-warning-bg);
+    color: var(--pecit-warning);
+}
+
+.pecit-badge-serving {
+    background: var(--pecit-info-bg);
+    color: var(--pecit-info);
+}
+
+.pecit-badge-done {
+    background: var(--pecit-success-bg);
+    color: var(--pecit-success);
+}
+
+.pecit-badge-cancelled {
+    background: var(--pecit-danger-bg);
+    color: var(--pecit-danger);
+}
+
+.pecit-badge-priority {
+    background: var(--pecit-gold-soft);
+    color: #7a5b00;
+}
+
+.pecit-badge-regular {
+    background: #eef0f5;
+    color: var(--pecit-muted);
+}
+
+.pecit-badge-admin {
+    background: var(--pecit-navy-soft);
+    color: var(--pecit-navy);
+}
+
+.pecit-badge-staff {
+    background: #ecfdf5;
+    color: #047857;
+}
+
+/* Alerts */
+.pecit-alert {
+    border-radius: 0.65rem;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+}
+
+.pecit-alert-info {
+    background: var(--pecit-info-bg);
+    border-color: #bfdbfe;
+    color: #1e40af;
+}
+
+.pecit-alert-success {
+    background: var(--pecit-success-bg);
+    border-color: #bbf7d0;
+    color: var(--pecit-success);
+}
+
+.pecit-alert-warning {
+    background: var(--pecit-warning-bg);
+    border-color: #fed7aa;
+    color: var(--pecit-warning);
+}
+
+.pecit-alert-danger {
+    background: var(--pecit-danger-bg);
+    border-color: #fecaca;
+    color: var(--pecit-danger);
+}
+
+/* Serving boards (staff) */
+.pecit-serving-grid {
+    display: grid;
+    gap: 1rem;
+    margin-bottom: 1.15rem;
+}
+
+@media (min-width: 768px) {
+    .pecit-serving-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+.pecit-serving-card {
+    background: var(--pecit-card);
+    border: 1px solid var(--pecit-border);
+    border-radius: 0.9rem;
+    padding: 1.25rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 80, 0.05);
+}
+
+.pecit-serving-card h2 {
+    margin: 0 0 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--pecit-muted);
+}
+
+.pecit-serving-number {
+    font-family: var(--font-pecit-display);
+    font-size: 2.75rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: var(--pecit-navy);
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+}
+
+.pecit-serving-card.is-next .pecit-serving-number {
+    font-size: 2.1rem;
+    color: var(--pecit-navy-mid);
+}
+
+/* Login */
+.pecit-login {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1rem;
+    background:
+        linear-gradient(145deg, rgba(0, 0, 92, 0.92) 0%, rgba(0, 0, 128, 0.88) 45%, rgba(26, 26, 153, 0.85) 100%),
+        radial-gradient(circle at 20% 20%, rgba(201, 162, 39, 0.25), transparent 40%),
+        radial-gradient(circle at 85% 75%, rgba(255, 255, 255, 0.12), transparent 35%);
+}
+
+.pecit-login-card {
+    width: 100%;
+    max-width: 26rem;
+    background: #fff;
+    border-radius: 1rem;
+    box-shadow: 0 24px 48px rgba(0, 0, 40, 0.35);
+    overflow: hidden;
+    border-top: 4px solid var(--pecit-gold);
+}
+
+.pecit-login-brand {
+    text-align: center;
+    padding: 1.75rem 1.5rem 0.5rem;
+}
+
+.pecit-login-brand img {
+    height: 5.5rem;
+    width: 5.5rem;
+    object-fit: contain;
+    margin: 0 auto 0.85rem;
+    display: block;
+}
+
+.pecit-login-brand h1 {
+    margin: 0;
+    font-family: var(--font-pecit-display);
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: var(--pecit-navy-deep);
+}
+
+.pecit-login-brand p {
+    margin: 0.35rem 0 0;
+    font-size: 0.8rem;
+    color: var(--pecit-muted);
+}
+
+.pecit-login-body {
+    padding: 1.25rem 1.75rem 1.75rem;
+}
+
+.pecit-login-field {
+    margin-bottom: 1rem;
+}
+
+.pecit-login-field .field-shell {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border: 1px solid var(--pecit-border);
+    border-radius: 0.55rem;
+    background: #f8f9fc;
+    padding: 0.55rem 0.75rem;
+}
+
+.pecit-login-field .field-shell:focus-within {
+    border-color: var(--pecit-navy-mid);
+    box-shadow: 0 0 0 3px rgba(0, 0, 128, 0.12);
+    background: #fff;
+}
+
+.pecit-login-field input {
+    width: 100%;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-size: 0.9rem;
+    color: var(--pecit-text);
+}
+
+.pecit-login-footer {
+    text-align: center;
+    margin-top: 1.25rem;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.75);
+}
+
+.pecit-backdrop {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 30;
+    background: rgba(15, 23, 42, 0.35);
+}
+
+.pecit-backdrop.is-open {
+    display: block;
+}
+
+@media (min-width: 1024px) {
+    .pecit-backdrop {
+        display: none !important;
+    }
+}
+
+.pecit-grid-2 {
+    display: grid;
+    gap: 1.25rem;
+}
+
+@media (min-width: 768px) {
+    .pecit-grid-2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Pagination tweak inside panel */
+.pecit-shell nav[role="navigation"] span,
+.pecit-shell nav[role="navigation"] a {
+    border-radius: 0.4rem;
+}

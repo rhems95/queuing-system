@@ -1,0 +1,14 @@
+%% Print-friendly: paste into mermaid.live → Actions → SVG/PNG. In browser print: Landscape + Scale ~90%% fits Letter/A4 bond paper. %%
+%%{init: {'flowchart': {'nodeSpacing': 28, 'rankSpacing': 36, 'padding': 6, 'useMaxWidth': true}, 'themeVariables': { 'fontSize': '11px'}}}%%
+flowchart TD
+    St([Start]) --> K["Kiosk: service → Regular/Priority → confirm"]
+    K --> DB[("DB: new queue + daily counter")]
+    DB --> PA["Customer: ticket #, print, countdown, then wait"]
+    DB --> PB["TV: now serving + waiting list + voice"]
+    PA --> SW["Staff: next / recall / complete"]
+    PB --> SW
+    SW --> DB
+    SW --> Q{Done?}
+    Q -->|Recall / same ticket| SW
+    Q -->|Complete| H["Save queue_calls + done"]
+    H --> En([End])
