@@ -22,7 +22,7 @@ Customers get anonymous tickets from a public **kiosk**. Staff call numbers at s
 - Priority is **Regular** or **Priority** only.
 - Kiosk UI is **finalized** — do not redesign it casually.
 - Login / staff / admin use the **PECIT** navy/gold theme.
-- Thermal tickets target a **58mm** printer (e.g. Xprinter XP-58).
+- Thermal tickets target **XP-58(XP-Q90EC)** (80mm thermal).
 
 ---
 
@@ -178,12 +178,21 @@ Domain migrations (if aligning an existing DB instead of full import) live under
 
 ## Day-to-day operation
 
-### Kiosk + silent print (58mm)
+### Start with Windows
 
-1. Set the **58mm** printer as Windows **default**.
-2. Close all Chrome windows.
-3. Run `start-kiosk-chrome.bat` (fullscreen kiosk + silent print).
-4. Customers use the 3-step flow; tickets print without a dialog when launched this way.
+1. Run `bats/install-pecit-startup.bat` once (creates a Startup shortcut).
+2. On each login, `bats/start-pecit-on-windows.bat` starts XAMPP Apache/MySQL, waits for the site, then launches the kiosk.
+3. To also open the display automatically, edit `bats/start-pecit-on-windows.bat` and set `START_DISPLAY=1`.
+4. To remove autostart, delete the shortcut in the Windows Startup folder.
+
+See `bats/GUIDE.txt` for every launcher’s purpose.
+
+### Kiosk + silent print (XP-58(XP-Q90EC) / 80mm)
+
+1. Run `bats/start-kiosk-chrome.bat` (or `bats/start-kiosk-edge.bat`) — it sets **XP-58(XP-Q90EC)** as the Windows default printer, then opens fullscreen kiosk + silent print.
+2. If the printer name differs, edit `PRINTER_EXACT` / `PRINTER_MATCH` in the `.bat`.
+3. Customers use the 3-step flow; tickets print without a dialog when launched this way.
+4. Close all Chrome/Edge windows first if silent print still shows a dialog.
 
 Edit the URL inside the `.bat` if your local path is different.
 
@@ -195,7 +204,7 @@ Open `/display` on the lobby TV/PC (Chrome/Edge recommended for voice).
 
 1. Log in with a staff account → `/window`.
 2. Use **Call Next**, **Recall**, **Complete** (or **Ctrl + Alt + Space** for Call Next).
-3. Optional always-on-top panel: click **Open System Float**, or run `start-staff-float.bat` (~260×220).
+3. Optional always-on-top panel: click **Open System Float**, or run `bats/start-staff-float.bat` (~260×220).
 
 ### Admin
 

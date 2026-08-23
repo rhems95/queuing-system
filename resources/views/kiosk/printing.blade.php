@@ -1,8 +1,9 @@
-@extends('layouts.app')
-
-@section('title', 'Your Ticket')
-
-@section('content')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Ticket</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
     @php
         $serviceNameLower = strtolower((string) $service->service_name);
         $printServiceName = match (true) {
@@ -11,40 +12,26 @@
             default => strtoupper((string) $service->service_name),
         };
     @endphp
-
-    <div class="max-w-3xl mx-auto print-wrap">
-        <div class="screen-only">
-            <div class="screen-card">
-                <div class="screen-head">YOUR QUEUE NUMBER</div>
-                <div class="screen-body">
-                    <div class="ticket-display-card">
-                        <div class="ticket-number">{{ $queue->queue_number }}</div>
-                        <div class="ticket-divider"></div>
-                        <div class="ticket-row"><span>Service:</span> <strong>{{ strtoupper($service->service_name) }}</strong></div>
-                        <div class="ticket-divider"></div>
-                        <div class="ticket-message">Please wait for your number to be called.</div>
-                        <div class="ticket-divider"></div>
-                        <div class="ticket-cooldown">Returning in: <span id="countdown">25</span> seconds</div>
-                        <div class="ticket-divider"></div>
-                        <a href="{{ route('kiosk') }}" class="ticket-home-btn">Home</a>
-                    </div>
-                    <p class="screen-note">If ticket did not print, please ask staff assistance.</p>
-                </div>
-            </div>
-        </div>
-
-        <div id="thermalTicket" class="thermal-ticket" aria-hidden="true">
-            <div class="thermal-title">QUEUE TICKET</div>
-            <div class="thermal-number">{{ $queue->queue_number }}</div>
-            <div class="thermal-line">SERVICE: {{ $printServiceName }}</div>
-            <div class="thermal-line">PRIORITY: {{ strtoupper($priorityLabel) }}</div>
-            <div class="thermal-line">ISSUED: <span id="issuedAtPrint">{{ $issuedAt->format('Y-m-d H:i') }}</span></div>
-            <div class="thermal-footer">PLEASE WAIT FOR YOUR NUMBER</div>
-        </div>
-    </div>
-
     <style>
-        .print-wrap { position: relative; }
+        /* X: more negative = move left. Y: more negative = move up (less top blank). */
+        :root {
+            /*--thermal-nudge-x: -12mm;
+            --thermal-nudge-y: 0mm;*/
+        }
+
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #f3f4f6;
+            font-family: Arial, sans-serif;
+        }
+
+        .screen-only {
+            max-width: 720px;
+            margin: 12px auto;
+            padding: 0 10px;
+        }
         .screen-card {
             background: #fff;
             border-radius: 8px;
@@ -59,7 +46,6 @@
             text-align: center;
             padding: 12px 10px;
             font-size: 24px;
-            letter-spacing: 0.02em;
         }
         .screen-body {
             background: #f4f6fa;
@@ -85,23 +71,10 @@
             border-top: 1px solid #d9dee7;
             margin: 10px 0;
         }
-        .ticket-row {
-            font-size: 38px;
-            color: #334155;
-        }
-        .ticket-row strong {
-            color: #0f5fb8;
-            font-weight: 700;
-        }
-        .ticket-message {
-            font-size: 26px;
-            color: #475569;
-        }
-        .ticket-cooldown {
-            font-size: 36px;
-            color: #0f5fb8;
-            font-weight: 800;
-        }
+        .ticket-row { font-size: 38px; color: #334155; }
+        .ticket-row strong { color: #0f5fb8; font-weight: 700; }
+        .ticket-message { font-size: 26px; color: #475569; }
+        .ticket-cooldown { font-size: 36px; color: #0f5fb8; font-weight: 800; }
         .ticket-home-btn {
             display: inline-block;
             min-width: 230px;
@@ -112,6 +85,7 @@
             font-weight: 800;
             text-transform: uppercase;
             padding: 10px 12px;
+            text-decoration: none;
         }
         .screen-note {
             margin-top: 16px;
@@ -119,96 +93,63 @@
             color: #64748b;
             font-style: italic;
         }
-        .thermal-ticket {
+
+        #thermalTicket {
             display: none;
-            width: 58mm;
-            max-width: 58mm;
-            box-sizing: border-box;
-            font-family: "Courier New", monospace;
-            color: #000;
-            background: #fff;
-            padding: 2px 3px;
-            line-height: 1.1;
-            text-align: center;
         }
-        .thermal-title {
-            display: block;
-            width: 100%;
-            text-align: center;
-            font-size: 11px;
-            font-weight: 700;
-            margin: 0 0 2px;
-        }
-        .thermal-number {
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-            text-align: center;
-            font-size: 28px;
-            font-weight: 700;
-            margin: 2px 0;
-            line-height: 1;
-        }
-        .thermal-line {
-            display: block;
-            width: 100%;
-            text-align: center;
-            font-size: 11px;
-            margin: 0;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-        .thermal-footer {
-            display: block;
-            width: 100%;
-            text-align: center;
-            font-size: 10px;
-            margin-top: 3px;
-            border-top: 1px dashed #000;
-            padding-top: 2px;
-        }
+
         @media (max-width: 1024px) {
             .ticket-number { font-size: 72px; }
             .ticket-row { font-size: 30px; }
             .ticket-cooldown { font-size: 30px; }
             .ticket-home-btn { font-size: 26px; }
         }
+
         @media print {
-            /* Remove on-screen UI from print flow (stops huge blank paper). */
-            .screen-only {
-                display: none !important;
+            @page {
+                size: 80mm auto;
+                margin: 0 !important;
             }
+
             html, body {
-                width: 58mm !important;
+                width: 80mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #fff !important;
+                color: #000 !important;
             }
-            main.container,
-            main {
-                margin: 0 !important;
-                padding: 0 !important;
-                max-width: none !important;
-                width: 58mm !important;
+
+            .screen-only {
+                display: none !important;
             }
-            .print-wrap {
-                margin: 0 !important;
-                padding: 0 !important;
-                max-width: none !important;
-                width: 58mm !important;
-            }
+
             #thermalTicket {
                 display: block !important;
-                position: static !important;
-                width: 58mm !important;
-                max-width: 58mm !important;
+                width: 80mm !important;
                 margin: 0 !important;
-                padding: 2px 3px !important;
-                box-sizing: border-box !important;
-                text-align: center !important;
-                line-height: 1.1 !important;
+                padding: 1mm 0 0 0 !important;
+                transform: translate(var(--thermal-nudge-x), var(--thermal-nudge-y)) !important;
+                color: #000 !important;
             }
+
+            #thermalTicket .thermal-sheet {
+                width: 80mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border-collapse: collapse !important;
+                border-spacing: 0 !important;
+            }
+
+            #thermalTicket .thermal-cell {
+                width: 80mm !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                text-align: center !important;
+                vertical-align: top !important;
+                font-family: "Courier New", Courier, monospace !important;
+                color: #000 !important;
+            }
+
             #thermalTicket .thermal-title,
             #thermalTicket .thermal-number,
             #thermalTicket .thermal-line,
@@ -216,34 +157,76 @@
                 display: block !important;
                 width: 100% !important;
                 text-align: center !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                float: none !important;
+                color: #000 !important;
+                visibility: visible !important;
+                opacity: 1 !important;
             }
+
             #thermalTicket .thermal-title {
                 font-size: 11px !important;
-                margin: 0 0 2px !important;
+                font-weight: 700 !important;
+                line-height: 1.2 !important;
             }
             #thermalTicket .thermal-number {
                 font-size: 28px !important;
-                margin: 2px 0 !important;
-                line-height: 1 !important;
+                font-weight: 700 !important;
+                line-height: 1.25 !important;
+                min-height: 28px !important;
+                overflow: visible !important;
             }
             #thermalTicket .thermal-line {
                 font-size: 11px !important;
-                margin: 0 !important;
+                line-height: 1.2 !important;
                 white-space: nowrap !important;
-                overflow: hidden !important;
-                text-overflow: ellipsis !important;
             }
             #thermalTicket .thermal-footer {
                 font-size: 10px !important;
-                margin-top: 3px !important;
-                padding-top: 2px !important;
-            }
-            @page {
-                margin: 0;
-                size: 58mm auto;
+                line-height: 1.2 !important;
+                border-top: 1px dashed #000 !important;
+                padding-top: 1px !important;
+                margin-top: 1px !important;
             }
         }
     </style>
+</head>
+<body>
+    <div id="thermalTicket">
+        <table class="thermal-sheet">
+            <tr>
+                <td class="thermal-cell" align="center">
+                    <div class="thermal-title">QUEUE TICKET</div>
+                    <div class="thermal-number">{{ $queue->queue_number }}</div>
+                    <div class="thermal-line">SERVICE: {{ $printServiceName }}</div>
+                    <div class="thermal-line">PRIORITY: {{ strtoupper($priorityLabel) }}</div>
+                    <div class="thermal-line">ISSUED: <span id="issuedAtPrint">{{ $issuedAt->format('Y-m-d H:i') }}</span></div>
+                    <div class="thermal-footer">PLEASE WAIT FOR YOUR NUMBER</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="screen-only">
+        <div class="screen-card">
+            <div class="screen-head">YOUR QUEUE NUMBER</div>
+            <div class="screen-body">
+                <div class="ticket-display-card">
+                    <div class="ticket-number">{{ $queue->queue_number }}</div>
+                    <div class="ticket-divider"></div>
+                    <div class="ticket-row"><span>Service:</span> <strong>{{ strtoupper($service->service_name) }}</strong></div>
+                    <div class="ticket-divider"></div>
+                    <div class="ticket-message">Please wait for your number to be called.</div>
+                    <div class="ticket-divider"></div>
+                    <div class="ticket-cooldown">Returning in: <span id="countdown">25</span> seconds</div>
+                    <div class="ticket-divider"></div>
+                    <a href="{{ route('kiosk') }}" class="ticket-home-btn">Home</a>
+                </div>
+                <p class="screen-note">If ticket did not print, please ask staff assistance.</p>
+            </div>
+        </div>
+    </div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
@@ -270,10 +253,9 @@
             }, 1000);
 
             setTimeout(function () {
-                try {
-                    window.print();
-                } catch (e) {}
-            }, 300);
+                try { window.print(); } catch (e) {}
+            }, 400);
         });
     </script>
-@endsection
+</body>
+</html>

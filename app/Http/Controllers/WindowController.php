@@ -151,7 +151,7 @@ class WindowController extends Controller
      */
     public function launchFloat(Request $request)
     {
-        $bat = base_path('start-staff-float.bat');
+        $bat = base_path('bats/start-staff-float.bat');
 
         if (! is_file($bat)) {
             if ($request->expectsJson()) {

@@ -11,7 +11,7 @@ Read **[README.md](README.md)** for operator-oriented setup. This file is the **
 ## System purpose (mental model)
 
 ```text
-Customer → Kiosk (anonymous ticket + 58mm print)
+Customer → Kiosk (anonymous ticket + 80mm print)
                 ↓
          queues / daily_queue_counters
                 ↓
@@ -36,8 +36,8 @@ Admin: users, history, reports
 - Promissory Notes **hidden** from kiosk service list (filter in `KioskController@index`); may still exist for staff/display.
 - **Do not redesign/restyle/restructure** kiosk Blade/CSS/JS unless the user explicitly asks (print sizing is an allowed exception when requested).
 - Shell: `layouts/app.blade.php`. Views: `resources/views/kiosk/*`.
-- Thermal layout: **58mm**, centered number — `kiosk/printing.blade.php`.
-- Silent print: not possible from a normal tab; use `start-kiosk-chrome.bat` (`--kiosk --kiosk-printing`). Close all Chrome first.
+- Thermal layout: **80mm** (XP-58(XP-Q90EC)), centered number — `kiosk/printing.blade.php`.
+- Silent print: not possible from a normal tab; use `bats/start-kiosk-chrome.bat` (`--kiosk --kiosk-printing`). Launcher sets **XP-58(XP-Q90EC)** as default printer; close all Chrome first.
 
 ### Display (public)
 
@@ -52,7 +52,7 @@ Admin: users, history, reports
 - History: `GET /window/history` (own served tickets; no edit/delete).
 - **System float (Windows always-on-top):**
   - UI: `GET /window/float` → `staff/float.blade.php`
-  - Launch: `POST /window/launch-float` (from **Open System Float**) or `start-staff-float.bat` → `tools/staff-float/Start-StaffFloat.ps1`
+  - Launch: `POST /window/launch-float` (from **Open System Float**) or `bats/start-staff-float.bat` → `tools/staff-float/Start-StaffFloat.ps1`
   - Chrome `--app` window sized ~**260×220**, TopMost, launcher exits after pin
   - **No in-browser float mode** (removed on purpose)
   - `launchFloat` uses Windows `cmd start` on the `.bat`; works best when Apache runs as the interactive desktop user
@@ -90,11 +90,12 @@ After CSS/JS changes: `npm run build` (output in `public/build/`).
 |------|--------|
 | Routes | `routes/web.php` only (no `api.php`) |
 | Kiosk (protected UI) | `KioskController`, `views/kiosk/*`, `layouts/app.blade.php` |
-| Print 58mm | `views/kiosk/printing.blade.php` |
+| Print 80mm (XP-58(XP-Q90EC)) | `views/kiosk/printing.blade.php` |
 | Display | `DisplayController`, `views/display/index.blade.php` |
 | Staff | `WindowController`, `views/staff/window.blade.php`, `history.blade.php`, `float.blade.php` |
-| Float tools | `start-staff-float.bat`, `tools/staff-float/Start-StaffFloat.ps1` |
-| Kiosk silent print | `start-kiosk-chrome.bat` |
+| Float tools | `bats/start-staff-float.bat`, `tools/staff-float/Start-StaffFloat.ps1` |
+| Kiosk silent print | `bats/start-kiosk-chrome.bat` |
+| Launcher guide | `bats/GUIDE.txt` |
 | Admin | `AdminDashboardController`, `HistoryController`, `UserManagementController`, `views/admin/*` |
 | Panel theme | `layouts/panel.blade.php`, `css/panel.css`, `partials/admin-sidebar.blade.php`, `partials/staff-sidebar.blade.php` |
 | Queue logic | `app/Services/QueueService.php` |
@@ -208,13 +209,16 @@ php artisan view:clear
 php artisan config:clear
 ```
 
-Windows helpers:
+Windows helpers (see `bats/GUIDE.txt`):
 
 ```bat
-start-kiosk-chrome.bat
-start-staff-float.bat
+bats\install-pecit-startup.bat
+bats\start-pecit-on-windows.bat
+bats\start-kiosk-chrome.bat
+bats\start-staff-float.bat
 ```
 
+Kiosk launchers wait **10 seconds** before opening the browser (gives Apache/printer time after boot).
 ---
 
 ## Conventions for agents
@@ -232,7 +236,7 @@ start-staff-float.bat
 
 - [ ] Kiosk 3-step + print (UI unchanged unless print task)
 - [ ] Kiosk POST validation (`service_id`, `priority`)
-- [ ] 58mm thermal; optional silent print via `start-kiosk-chrome.bat`
+- [ ] 80mm thermal (XP-58(XP-Q90EC)); optional silent print via `bats/start-kiosk-chrome.bat`
 - [ ] Display + `/display/data`; voice if enabled
 - [ ] Staff call-next / recall / complete; waiting list; Ctrl+Alt+Space
 - [ ] Open System Float / bat → always-on-top ~260×220; launcher exits

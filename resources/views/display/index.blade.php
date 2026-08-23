@@ -8,13 +8,19 @@
 </head>
 <body class="bg-[#d9d9d9] text-slate-900">
     <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+        }
         .display-shell {
             width: 100%;
             min-height: 100vh;
-            padding: 0 0 1rem 0;
+            height: 100vh;
+            padding: 0;
             display: flex;
             flex-direction: column;
             box-sizing: border-box;
+            overflow: hidden;
         }
         .display-top,
         .now-serving-row {
@@ -27,7 +33,7 @@
             align-items: flex-start;
             justify-content: space-between;
             gap: 32px;
-            margin-bottom: 1rem;
+            margin-bottom: 0;
         }
         .now-serving-col {
             flex: 1 1 0;
@@ -52,14 +58,19 @@
         .waiting-section {
             width: 100%;
             margin-top: auto;
+            padding-top: 2.5rem;
             flex: 1 1 auto;
             display: flex;
             flex-direction: column;
             min-height: 0;
         }
+        .waiting-section h2 {
+            flex: 0 0 auto;
+        }
         .waiting-panel {
             flex: 1 1 auto;
-            min-height: 42vh;
+            min-height: 52vh;
+            height: 100%;
             overflow-y: auto;
             background: #fff;
             border: 1px solid #e2e8f0;
@@ -283,7 +294,7 @@
             }
 
             function pickVoice(voices) {
-                const PREFERRED_VOICE_NAME = '';
+                const PREFERRED_VOICE_NAME = 'Microsoft Richard - English (Canada)';
                 if (!voices || !voices.length) return null;
                 if (PREFERRED_VOICE_NAME) {
                     const match = voices.find(v => v.name === PREFERRED_VOICE_NAME);
@@ -297,7 +308,7 @@
                 if (!('speechSynthesis' in window) || typeof SpeechSynthesisUtterance === 'undefined') return;
                 if (!queueNumber || queueNumber === '---') return;
 
-                const text = 'Queue number ' + queueNumber + ', please proceed to ' + windowName;
+                const text = 'Queue number, ' + queueNumber + ', please proceed to ' + windowName;
                 enqueueAnnouncement(text);
             }
 

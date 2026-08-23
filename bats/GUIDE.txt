@@ -1,0 +1,100 @@
+PECIT Queuing System — Windows Launchers Guide
+================================================
+
+Folder: bats\
+Project root: one level above this folder (queue-system\)
+
+These .bat files start browsers, printers, or XAMPP helpers used by the
+PECIT lobby queuing system. Double-click a file to run it.
+
+
+QUICK START
+-----------
+1. Make sure XAMPP Apache + MySQL are running (or use start-pecit-on-windows.bat).
+2. Kiosk PC (ticket + printer):  start-kiosk-chrome.bat
+3. Display TV/PC:                 start-display-edge.bat
+4. Staff float window:           start-staff-float.bat
+5. Auto-start at Windows login:  run install-pecit-startup.bat once
+
+
+FILE LIST AND PURPOSE
+---------------------
+
+install-pecit-startup.bat
+  Purpose: Creates a Windows Startup shortcut for this user.
+  What it does: Adds "PECIT Queuing System.lnk" that runs
+                start-pecit-on-windows.bat when you sign in.
+  When to use: Once on the kiosk (or server) PC that should boot the system.
+  To remove: Delete the shortcut from the Windows Startup folder.
+
+start-pecit-on-windows.bat
+  Purpose: Full boot helper for Windows login / Startup.
+  What it does:
+    1) Starts XAMPP MySQL and Apache if they are not running
+    2) Waits until the kiosk URL responds
+    3) Launches start-kiosk-chrome.bat
+    4) Optionally launches the display (set START_DISPLAY=1 inside the file)
+  When to use: At PC startup, or manually to bring the whole stack up.
+
+start-kiosk-chrome.bat
+  Purpose: Customer kiosk with silent thermal printing (Google Chrome).
+  What it does:
+    - Waits 10 seconds (gives Apache/printer time after boot)
+    - Sets XP-58(XP-Q90EC) as the Windows default printer
+    - Clears Chrome sticky printer settings
+    - Opens fullscreen kiosk + --kiosk-printing
+  URL: http://localhost/queue-system/public/kiosk
+  Notes: Close all Chrome windows first. Use only this launcher for silent print.
+
+start-kiosk-edge.bat
+  Purpose: Same as Chrome kiosk, but uses Microsoft Edge.
+  What it does: 10s delay, sets XP-58(XP-Q90EC) default, opens Edge kiosk + silent print.
+  When to use: If Chrome is not preferred on the kiosk PC.
+
+start-display-edge.bat
+  Purpose: Public "Now Serving" display for lobby TV/monitor.
+  What it does: Opens Edge fullscreen kiosk on the display page (with TTS if enabled).
+  URL: http://localhost/queue-system/public/display
+  When to use: On the display PC/TV computer.
+
+start-staff-float.bat
+  Purpose: Small always-on-top staff control window (Chrome app mode).
+  What it does: Runs tools\staff-float\Start-StaffFloat.ps1 with Chrome (~260x220, TopMost).
+  When to use: Staff desk; also launched from staff panel "Open System Float".
+
+start-staff-float-edge.bat
+  Purpose: Same staff float window, but uses Microsoft Edge.
+  When to use: Prefer Edge instead of Chrome for the float panel.
+
+
+RELATED HELPERS (not in this folder)
+------------------------------------
+tools\kiosk\Set-DefaultPrinter.ps1
+  Sets Windows default printer (XP-58(XP-Q90EC)).
+
+tools\kiosk\Clear-ChromePrintSticky.ps1
+  Clears Chrome profile sticky printer.
+
+tools\staff-float\Start-StaffFloat.ps1
+  Creates the always-on-top staff float browser window.
+
+
+COMMON SETTINGS TO EDIT
+-----------------------
+Inside the .bat files you may change:
+  KIOSK_URL / DISPLAY_URL   if your XAMPP path or virtual host differs
+  PRINTER_EXACT / PRINTER_MATCH   default Exact=XP-58(XP-Q90EC), Match=XP-Q90EC
+  XAMPP_DIR                 default C:\xampp
+  START_DISPLAY=1           in start-pecit-on-windows.bat to also open display
+
+
+TROUBLESHOOTING
+---------------
+- Silent print still asks for a printer: close ALL Chrome/Edge windows, run the kiosk .bat only.
+- Printer error in Chrome: run start-kiosk-chrome.bat (it clears sticky printer settings).
+- Site not loading: start Apache/MySQL in XAMPP, or run start-pecit-on-windows.bat.
+- Float button in staff UI fails: confirm bats\start-staff-float.bat exists; Apache must run
+  as the logged-in Windows desktop user.
+
+
+Last updated: for PECIT Queuing System (Laravel) Windows deployment.

@@ -152,7 +152,7 @@
                             if (launchMsg) {
                                 launchMsg.style.display = 'block';
                                 launchMsg.className = 'pecit-alert pecit-alert-danger';
-                                launchMsg.textContent = 'Could not launch system float. Try start-staff-float.bat manually.';
+                                launchMsg.textContent = 'Could not launch system float. Try bats\\start-staff-float.bat manually.';
                             }
                         })
                         .finally(function () {
