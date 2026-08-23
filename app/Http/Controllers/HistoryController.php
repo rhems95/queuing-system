@@ -84,32 +84,63 @@ class HistoryController extends Controller
             ->orderByDesc('total')
             ->get();
 
-        $byStaff = DB::table('queue_calls')
-            ->leftJoin('users', 'users.window_id', '=', 'queue_calls.window_id')
-            ->join('windows', 'queue_calls.window_id', '=', 'windows.id')
-            ->whereBetween(DB::raw('DATE(queue_calls.called_time)'), [$dateFrom, $dateTo])
-            ->select(
-                'queue_calls.window_id',
-                DB::raw('COALESCE(MAX(users.name), MAX(windows.window_name)) as staff_or_window'),
-                DB::raw('COUNT(*) as total')
-            )
-            ->groupBy('queue_calls.window_id')
-            ->orderByDesc('total')
-            ->get();
-
         $avgServiceTime = DB::table('queue_calls')
             ->whereBetween(DB::raw('DATE(called_time)'), [$dateFrom, $dateTo])
             ->whereNotNull('finished_time')
+            ->whereRaw('TIMESTAMPDIFF(SECOND, called_time, finished_time) BETWEEN 0 AND 28800')
             ->selectRaw('AVG(TIMESTAMPDIFF(SECOND, called_time, finished_time)) as avg_seconds')
             ->value('avg_seconds');
+
+        $avgWaitingTime = DB::table('queue_calls')
+            ->join('queues', 'queue_calls.queue_id', '=', 'queues.id')
+            ->whereBetween(DB::raw('DATE(queue_calls.called_time)'), [$dateFrom, $dateTo])
+            ->whereNotNull('queues.created_at')
+            ->whereRaw('TIMESTAMPDIFF(SECOND, queues.created_at, queue_calls.called_time) BETWEEN 0 AND 28800')
+            ->selectRaw('AVG(TIMESTAMPDIFF(SECOND, queues.created_at, queue_calls.called_time)) as avg_seconds')
+            ->value('avg_seconds');
+
+        $byWindow = DB::table('queue_calls')
+            ->join('queues', 'queue_calls.queue_id', '=', 'queues.id')
+            ->join('windows', 'queue_calls.window_id', '=', 'windows.id')
+            ->join('services', 'queues.service_id', '=', 'services.id')
+            ->leftJoin('users', function ($join) {
+                $join->on('users.window_id', '=', 'queue_calls.window_id')
+                    ->where('users.role', '=', 'staff');
+            })
+            ->whereBetween(DB::raw('DATE(queue_calls.called_time)'), [$dateFrom, $dateTo])
+            ->select(
+                'queue_calls.window_id',
+                'windows.window_name',
+                'services.service_name',
+                DB::raw('COALESCE(MAX(users.name), windows.window_name) as staff_name'),
+                DB::raw('COUNT(*) as total'),
+                DB::raw('AVG(CASE
+                    WHEN queue_calls.finished_time IS NOT NULL
+                     AND TIMESTAMPDIFF(SECOND, queue_calls.called_time, queue_calls.finished_time) BETWEEN 0 AND 28800
+                    THEN TIMESTAMPDIFF(SECOND, queue_calls.called_time, queue_calls.finished_time)
+                END) as avg_service_seconds'),
+                DB::raw('AVG(CASE
+                    WHEN queues.created_at IS NOT NULL
+                     AND TIMESTAMPDIFF(SECOND, queues.created_at, queue_calls.called_time) BETWEEN 0 AND 28800
+                    THEN TIMESTAMPDIFF(SECOND, queues.created_at, queue_calls.called_time)
+                END) as avg_wait_seconds')
+            )
+            ->groupBy(
+                'queue_calls.window_id',
+                'windows.window_name',
+                'services.service_name'
+            )
+            ->orderBy('windows.window_name')
+            ->get();
 
         return view('admin.history-reports', [
             'dateFrom' => $dateFrom,
             'dateTo' => $dateTo,
             'servedCount' => $servedCount,
             'byService' => $byService,
-            'byStaff' => $byStaff,
-            'avgServiceTimeSeconds' => $avgServiceTime ? (int) round($avgServiceTime) : null,
+            'byWindow' => $byWindow,
+            'avgServiceTimeSeconds' => $avgServiceTime !== null ? (int) round($avgServiceTime) : null,
+            'avgWaitingTimeSeconds' => $avgWaitingTime !== null ? (int) round($avgWaitingTime) : null,
         ]);
     }
 

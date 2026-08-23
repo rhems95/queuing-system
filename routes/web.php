@@ -8,10 +8,17 @@ use App\Http\Controllers\WindowController;
 use App\Http\Controllers\DisplayController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\AboutController;
 
 Route::get('/', function () {
     return redirect()->route('kiosk');
 })->name('home');
+
+// Secret capstone About page (open with Ctrl+Alt+Shift+A — not linked in menus)
+Route::get('/about', [AboutController::class, 'index'])->name('about');
+Route::get('/about/photo/{file}', [AboutController::class, 'photo'])
+    ->where('file', '[A-Za-z0-9._-]+')
+    ->name('about.photo');
 
 // Authentication
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -20,6 +27,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // Kiosk (public)
 Route::get('/kiosk', [KioskController::class, 'index'])->name('kiosk');
+Route::get('/kiosk/estimate', [KioskController::class, 'estimate'])->name('kiosk.estimate');
 Route::post('/kiosk', [KioskController::class, 'store'])->name('kiosk.store');
 
 // Public display

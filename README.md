@@ -1,6 +1,6 @@
 # PECIT Queuing System
 
-Queue management system for **Philippine Electronics and Communication Institute of Technology Inc. (PECIT)**.
+Queue management system for **Philippine Electronics and Communication Institute of Technology Inc. (PECIT)** — capstone research project.
 
 Customers get anonymous tickets from a public **kiosk**. Staff call numbers at service windows. A public **display** shows who is being served. **Admins** manage users, history, and reports.
 
@@ -12,17 +12,21 @@ Customers get anonymous tickets from a public **kiosk**. Staff call numbers at s
 
 | Module | Access | Purpose |
 |--------|--------|---------|
-| **Kiosk** | Public | 3-step ticket: service → priority → confirm → print |
-| **Display** | Public | Now serving (by window group) + waiting list + optional voice |
-| **Staff window** | Staff login | Call Next, Recall, Complete; live waiting list |
+| **Kiosk** | Public | 3-step ticket: service → priority → confirm (live wait estimate) → 80mm print |
+| **Display** | Public | Now serving (by window group) + waiting list in call order + optional voice |
+| **Staff window** | Staff login | Call Next (fair 2P→1R), Recall, Complete; per-counter service timer |
 | **Staff float** | Staff | Small always-on-top Windows panel for the same actions |
-| **Admin** | Admin login | Dashboard, users, history, tickets, reports |
+| **Admin** | Admin login | Live dashboard, users, history, tickets, wait/service reports |
 
 - Tickets are **anonymous** (no student name/ID).
 - Priority is **Regular** or **Priority** only.
-- Kiosk UI is **finalized** — do not redesign it casually.
-- Login / staff / admin use the **PECIT** navy/gold theme.
-- Thermal tickets target **XP-58(XP-Q90EC)** (80mm thermal).
+- Calling uses shared **2 Priority → 1 Regular** per service (Cashier 1 / 2 / 3 share one Cashier queue).
+- Each counter has its own **service timer**; Complete on one window never affects another.
+- Estimated wait uses active counters + history; the thermal ticket may add one line: `Estimated Time: N minutes`.
+- Kiosk UI is **finalized** — do not redesign it casually (print sizing / ETA line are allowed exceptions).
+- Login / staff / admin use the **PECIT** navy/gold theme (local fonts + SVG icons, no CDN).
+- Thermal tickets target **XP-58(XP-Q90EC)** (80mm).
+- Secret **About / capstone credits** page: press **Ctrl + Alt + Shift + A** (not in menus).
 
 ---
 
@@ -105,6 +109,7 @@ With Apache running, use (adjust if your path differs):
 | Login | http://localhost/queue-system/public/login |
 | Staff | http://localhost/queue-system/public/window |
 | Admin | http://localhost/queue-system/public/admin |
+| About (secret) | http://localhost/queue-system/public/about — or **Ctrl+Alt+Shift+A** |
 
 Optional (PHP built-in server from project root):
 
@@ -144,7 +149,7 @@ Create or edit users under **Admin → Users**. Staff accounts require a window;
 | `users` | `role` = `admin` \| `staff`; staff have `window_id` (unique when migration applied) |
 | `daily_queue_counters` | Per-service daily serial for ticket numbers |
 | `queues` | Tickets: number, service, priority (0/1), status, date (no student columns) |
-| `queue_calls` | Call history: queue ↔ window, called/finished times |
+| `queue_calls` | Call history: queue ↔ window, called/finished times (service duration) |
 
 ### Seeded services & windows (dump)
 
@@ -189,26 +194,41 @@ See `bats/GUIDE.txt` for every launcher’s purpose.
 
 ### Kiosk + silent print (XP-58(XP-Q90EC) / 80mm)
 
-1. Run `bats/start-kiosk-chrome.bat` (or `bats/start-kiosk-edge.bat`) — it sets **XP-58(XP-Q90EC)** as the Windows default printer, then opens fullscreen kiosk + silent print.
-2. If the printer name differs, edit `PRINTER_EXACT` / `PRINTER_MATCH` in the `.bat`.
-3. Customers use the 3-step flow; tickets print without a dialog when launched this way.
-4. Close all Chrome/Edge windows first if silent print still shows a dialog.
+1. Run `bats/start-kiosk-chrome.bat` (or `bats/start-kiosk-edge.bat`) — waits **10 seconds**, sets the printer matching **XP-Q90EC** as Windows default, clears Chrome sticky printer settings, then opens fullscreen kiosk + silent print.
+2. If the printer name differs, edit `PRINTER_MATCH` in the `.bat` (do not put parentheses in echoed CMD values).
+3. Customers use the 3-step flow; confirm shows currently serving, waiting counts, and estimated wait when history exists.
+4. Printed ticket stays compact; when ETA is available it adds one line: `Estimated Time: N minutes`.
+5. Close all Chrome/Edge windows first if silent print still shows a dialog.
 
 Edit the URL inside the `.bat` if your local path is different.
 
 ### Public display
 
-Open `/display` on the lobby TV/PC (Chrome/Edge recommended for voice).
+Open `/display` on the lobby TV/PC (Chrome/Edge recommended for voice).  
+Waiting list columns follow the same **call order** as Call Next (2 Priority → 1 Regular), up to 10 rows, sized to fit without scrolling.
 
 ### Staff
 
 1. Log in with a staff account → `/window`.
 2. Use **Call Next**, **Recall**, **Complete** (or **Ctrl + Alt + Space** for Call Next).
-3. Optional always-on-top panel: click **Open System Float**, or run `bats/start-staff-float.bat` (~260×220).
+3. Watch the **Service Time** timer for the ticket on *this* counter only.
+4. Optional always-on-top panel: click **Open System Float**, or run `bats/start-staff-float.bat` (~260×220).
 
 ### Admin
 
-Log in as admin → `/admin` for dashboard, users, history, and reports.
+Log in as admin → `/admin`:
+
+- **Dashboard** — live totals (today / waiting / serving / completed), quick links, live waiting table
+- **Users** — staff/admin accounts and window assignment
+- **Served History / All Tickets** — records
+- **Reports & Analytics** — overall and **per-window** average waiting time and average service time
+
+### Capstone About page (secret)
+
+- Press **Ctrl + Alt + Shift + A** from kiosk, display, staff, or admin screens.
+- Not linked in any sidebar.
+- Team roster: edit `config/about.php` (5 members).
+- Photos: put files in the **hidden** folder `storage/app/private/about/team/` (not under `public/`).
 
 ---
 
@@ -222,6 +242,8 @@ npm run build
 
 - Kiosk views: `resources/views/kiosk/*` + `layouts/app.blade.php` (**locked UI**)
 - Staff/admin/login theme: `layouts/panel.blade.php`, `resources/css/panel.css`
-- After CSS/JS changes: `npm run build`
+- Icons: `resources/views/partials/icon.blade.php` (inline SVG, offline)
+- Fonts: Source Sans 3 bundled into `public/build/` via Vite
+- After CSS/JS/font changes: `npm run build`
 
 For AI agents and deeper technical context, see **[AGENTS.md](AGENTS.md)**.
