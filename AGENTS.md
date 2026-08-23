@@ -129,6 +129,7 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | Panel theme | `layouts/panel.blade.php`, `css/panel.css`, `partials/admin-sidebar.blade.php`, `partials/staff-sidebar.blade.php`, `partials/icon.blade.php` |
 | Queue logic | `FairQueueScheduler`, `WaitTimeEstimator`, `QueueService` |
 | Capstone About | `AboutController`, `config/about.php`, `views/about/*`, `storage/app/private/about/team/` |
+| Diagrams | `README.md` (Mermaid ERD + flowchart), `docs/erd.md`, `docs/system-flowchart.md` |
 | Security headers | `SetSecurityHeaders` middleware |
 | Logo | `public/logo/logo.png` |
 

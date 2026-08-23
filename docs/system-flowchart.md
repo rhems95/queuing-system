@@ -32,13 +32,14 @@ Single end-to-end picture aligned with **this** codebase: **no name/ID**, **prin
 ```mermaid
 %%{init: {'flowchart': {'nodeSpacing': 28, 'rankSpacing': 36, 'padding': 6, 'useMaxWidth': true}, 'themeVariables': { 'fontSize': '11px'}}}%%
 flowchart TD
-    St([Start]) --> K["Kiosk: service → Regular/Priority → confirm"]
+    St([Start]) --> K["Kiosk: service → Regular/Priority → confirm + ETA"]
     K --> DB[("DB: new queue + daily counter")]
     DB --> PA["Customer: ticket #, print, countdown, then wait"]
-    DB --> PB["TV: now serving + waiting list + voice"]
-    PA --> SW["Staff: next / recall / complete"]
+    DB --> PB["TV: now serving + waiting 2P→1R + voice"]
+    PA --> SW["Staff: next / recall / complete + timer"]
     PB --> SW
-    SW --> DB
+    SW --> Fair["FairQueueScheduler shared per service"]
+    Fair --> DB
     SW --> Q{Done?}
     Q -->|Recall / same ticket| SW
     Q -->|Complete| H["Save queue_calls + done"]

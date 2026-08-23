@@ -232,6 +232,99 @@ Log in as admin → `/admin`:
 
 ---
 
+## Diagrams (Mermaid)
+
+GitHub renders these on the README. You can also paste them into [mermaid.live](https://mermaid.live), or open the local viewer at `/flowchart-viewer.html` (offline Mermaid in `public/vendor/mermaid/`). More detail: [docs/system-flowchart.md](docs/system-flowchart.md).
+
+### Entity-relationship diagram (ERD)
+
+```mermaid
+erDiagram
+    SERVICES ||--o{ WINDOWS : "has counters"
+    SERVICES ||--o{ QUEUES : "ticket type"
+    SERVICES ||--o{ DAILY_QUEUE_COUNTERS : "daily serial"
+    WINDOWS ||--o| USERS : "one staff"
+    WINDOWS ||--o{ QUEUE_CALLS : "calls at"
+    QUEUES ||--o{ QUEUE_CALLS : "served as"
+
+    SERVICES {
+        bigint id PK
+        varchar service_name
+        varchar prefix
+        text description
+    }
+
+    WINDOWS {
+        bigint id PK
+        varchar window_name
+        varchar group_name
+        bigint service_id FK
+        enum status
+    }
+
+    USERS {
+        bigint id PK
+        varchar name
+        varchar email
+        varchar password
+        enum role
+        bigint window_id FK
+    }
+
+    DAILY_QUEUE_COUNTERS {
+        bigint id PK
+        bigint service_id FK
+        date queue_date
+        int last_number
+    }
+
+    QUEUES {
+        bigint id PK
+        varchar queue_number
+        bigint service_id FK
+        tinyint priority
+        enum status
+        date queue_date
+        timestamp created_at
+    }
+
+    QUEUE_CALLS {
+        bigint id PK
+        bigint queue_id FK
+        bigint window_id FK
+        datetime called_time
+        datetime finished_time
+    }
+```
+
+### System flowchart
+
+```mermaid
+flowchart TD
+    Start([Customer arrives]) --> Kiosk["Kiosk: service → priority → confirm"]
+    Kiosk --> Est["Show waiting counts + ETA"]
+    Est --> Issue["POST /kiosk: lock counter, insert queue"]
+    Issue --> Print["Print 80mm ticket + optional Estimated Time"]
+    Print --> Wait([Customer waits])
+
+    Issue --> Display["Display: now serving + waiting in 2P→1R order"]
+    Wait --> Display
+
+    Display --> Staff{"Staff Call Next / Recall / Complete"}
+    Staff -->|Call Next| Fair["FairQueueScheduler: 2 Priority → 1 Regular"]
+    Fair --> Lock["Lock service row; claim one waiting ticket"]
+    Lock --> Serving["queue status=serving; queue_calls open; timer starts"]
+    Serving --> Display
+    Serving --> Staff
+    Staff -->|Recall| Reannounce["Refresh called_time for TTS/display"]
+    Reannounce --> Display
+    Staff -->|Complete| Done["finished_time set; status=done"]
+    Done --> Reports["Admin reports: avg wait & service by window"]
+    Done --> End([Ticket complete])
+```
+
+---
+
 ## Developer notes
 
 ```bash
