@@ -9,8 +9,6 @@ class Queue extends Model
     protected $table = 'queues';
 
     protected $fillable = [
-        'student_name',
-        'student_id',
         'queue_number',
         'service_id',
         'priority',

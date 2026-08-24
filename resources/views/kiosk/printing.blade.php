@@ -1,180 +1,261 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Your Ticket</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    @php
+        $serviceNameLower = strtolower((string) $service->service_name);
+        $printServiceName = match (true) {
+            str_contains($serviceNameLower, 'data management') || str_contains($serviceNameLower, 'dmo') => 'DMO',
+            str_contains($serviceNameLower, 'promissory') => 'PROMISSORY',
+            default => strtoupper((string) $service->service_name),
+        };
+    @endphp
+    <style>
+        /* X: more negative = move left. Y: more negative = move up (less top blank). */
+        :root {
+            /*--thermal-nudge-x: -12mm;
+            --thermal-nudge-y: 0mm;*/
+        }
 
-@section('title', 'Printing Ticket')
+        * { box-sizing: border-box; }
+        html, body {
+            margin: 0;
+            padding: 0;
+            background: #f3f4f6;
+            font-family: Arial, sans-serif;
+        }
 
-@section('content')
-    <div class="max-w-md mx-auto print-wrap">
-        <div class="step-pill step4a-pill">STEP 4A</div>
-        <div class="print-card">
-            <div class="print-head">PRINTING TICKET</div>
+        .screen-only {
+            max-width: 720px;
+            margin: 12px auto;
+            padding: 0 10px;
+        }
+        .screen-card {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #d7dce5;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.10);
+            overflow: hidden;
+        }
+        .screen-head {
+            background: linear-gradient(90deg, #2563eb, #1d4ed8);
+            color: #fff;
+            font-weight: 800;
+            text-align: center;
+            padding: 12px 10px;
+            font-size: 24px;
+        }
+        .screen-body {
+            background: #f4f6fa;
+            padding: 22px 18px;
+            text-align: center;
+        }
+        .ticket-display-card {
+            background: #fff;
+            border-radius: 8px;
+            border: 1px solid #e5e7eb;
+            padding: 20px 16px;
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        .ticket-number {
+            font-size: 94px;
+            font-weight: 900;
+            color: #0b65c6;
+            line-height: 1;
+            margin-bottom: 12px;
+        }
+        .ticket-divider {
+            border-top: 1px solid #d9dee7;
+            margin: 10px 0;
+        }
+        .ticket-row { font-size: 38px; color: #334155; }
+        .ticket-row strong { color: #0f5fb8; font-weight: 700; }
+        .ticket-message { font-size: 26px; color: #475569; }
+        .ticket-cooldown { font-size: 36px; color: #0f5fb8; font-weight: 800; }
+        .ticket-home-btn {
+            display: inline-block;
+            min-width: 230px;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #1f6dd6, #1d4ed8);
+            color: #fff;
+            font-size: 34px;
+            font-weight: 800;
+            text-transform: uppercase;
+            padding: 10px 12px;
+            text-decoration: none;
+        }
+        .screen-note {
+            margin-top: 16px;
+            font-size: 20px;
+            color: #64748b;
+            font-style: italic;
+        }
 
-            <div class="print-body">
-                <div id="ticketCard">
-                    <div class="print-icon-circle">🖨️</div>
-                    <div class="print-message">
-                        Please wait while your ticket<br>is being printed...
-                    </div>
-                    <div class="print-dots">
-                        <span></span><span></span><span class="active"></span>
-                    </div>
+        #thermalTicket {
+            display: none;
+        }
+
+        @media (max-width: 1024px) {
+            .ticket-number { font-size: 72px; }
+            .ticket-row { font-size: 30px; }
+            .ticket-cooldown { font-size: 30px; }
+            .ticket-home-btn { font-size: 26px; }
+        }
+
+        @media print {
+            @page {
+                size: 80mm auto;
+                margin: 0 !important;
+            }
+
+            html, body {
+                width: 80mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff !important;
+                color: #000 !important;
+            }
+
+            .screen-only {
+                display: none !important;
+            }
+
+            #thermalTicket {
+                display: block !important;
+                width: 80mm !important;
+                margin: 0 !important;
+                padding: 1mm 0 0 0 !important;
+                transform: translate(var(--thermal-nudge-x), var(--thermal-nudge-y)) !important;
+                color: #000 !important;
+            }
+
+            #thermalTicket .thermal-sheet {
+                width: 80mm !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border-collapse: collapse !important;
+                border-spacing: 0 !important;
+            }
+
+            #thermalTicket .thermal-cell {
+                width: 80mm !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                text-align: center !important;
+                vertical-align: top !important;
+                font-family: "Courier New", Courier, monospace !important;
+                color: #000 !important;
+            }
+
+            #thermalTicket .thermal-title,
+            #thermalTicket .thermal-number,
+            #thermalTicket .thermal-line,
+            #thermalTicket .thermal-footer {
+                display: block !important;
+                width: 100% !important;
+                text-align: center !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                float: none !important;
+                color: #000 !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+            }
+
+            #thermalTicket .thermal-title {
+                font-size: 11px !important;
+                font-weight: 700 !important;
+                line-height: 1.2 !important;
+            }
+            #thermalTicket .thermal-number {
+                font-size: 28px !important;
+                font-weight: 700 !important;
+                line-height: 1.25 !important;
+                min-height: 28px !important;
+                overflow: visible !important;
+            }
+            #thermalTicket .thermal-line {
+                font-size: 11px !important;
+                line-height: 1.2 !important;
+                white-space: nowrap !important;
+            }
+            #thermalTicket .thermal-footer {
+                font-size: 10px !important;
+                line-height: 1.2 !important;
+                border-top: 1px dashed #000 !important;
+                padding-top: 1px !important;
+                margin-top: 1px !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="thermalTicket">
+        <table class="thermal-sheet">
+            <tr>
+                <td class="thermal-cell" align="center">
+                    <div class="thermal-title">QUEUE TICKET</div>
+                    <div class="thermal-number">{{ $queue->queue_number }}</div>
+                    <div class="thermal-line">SERVICE: {{ $printServiceName }}</div>
+                    <div class="thermal-line">PRIORITY: {{ strtoupper($priorityLabel) }}</div>
+                    <div class="thermal-line">ISSUED: <span id="issuedAtPrint">{{ $issuedAt->format('Y-m-d H:i') }}</span></div>
+                    <div class="thermal-footer">PLEASE WAIT FOR YOUR NUMBER</div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="screen-only">
+        <div class="screen-card">
+            <div class="screen-head">YOUR QUEUE NUMBER</div>
+            <div class="screen-body">
+                <div class="ticket-display-card">
+                    <div class="ticket-number">{{ $queue->queue_number }}</div>
+                    <div class="ticket-divider"></div>
+                    <div class="ticket-row"><span>Service:</span> <strong>{{ strtoupper($service->service_name) }}</strong></div>
+                    <div class="ticket-divider"></div>
+                    <div class="ticket-message">Please wait for your number to be called.</div>
+                    <div class="ticket-divider"></div>
+                    <div class="ticket-cooldown">Returning in: <span id="countdown">25</span> seconds</div>
+                    <div class="ticket-divider"></div>
+                    <a href="{{ route('kiosk') }}" class="ticket-home-btn">Home</a>
                 </div>
-
-                <div class="print-note">
-                    <span class="print-note-i">i</span>
-                    <span>Do not leave the kiosk<br>until your ticket is released.</span>
-                </div>
+                <p class="screen-note">If ticket did not print, please ask staff assistance.</p>
             </div>
         </div>
     </div>
 
-    <style>
-        .print-wrap {
-            position: relative;
-        }
-        .step-pill {
-            position: absolute;
-            top: -18px;
-            left: 50%;
-            transform: translateX(-50%);
-            color: #fff;
-            font-weight: 800;
-            border-radius: 999px;
-            padding: 7px 28px;
-            border: 2px solid rgba(255, 255, 255, 0.6);
-            letter-spacing: 0.03em;
-            z-index: 3;
-        }
-        .step4a-pill {
-            background: linear-gradient(135deg, #f97316, #d9480f);
-        }
-        .print-card {
-            background: #fff;
-            border-radius: 20px;
-            border: 1px solid #f2c9a9;
-            box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
-            overflow: hidden;
-        }
-        .print-head {
-            background: linear-gradient(90deg, #f97316, #ea580c);
-            color: #fff;
-            font-weight: 800;
-            text-align: center;
-            padding: 20px 12px 16px;
-            font-size: 34px;
-        }
-        .print-body {
-            background: #fff8f1;
-            padding: 24px 22px;
-            text-align: center;
-        }
-        .print-icon-circle {
-            width: 140px;
-            height: 140px;
-            margin: 0 auto 16px;
-            border-radius: 999px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 70px;
-            background: #ffe0bb;
-            color: #1d4ed8;
-        }
-        .print-message {
-            color: #334155;
-            font-size: 33px;
-            font-weight: 700;
-            line-height: 1.25;
-        }
-        .print-dots {
-            margin-top: 12px;
-        }
-        .print-dots span {
-            display: inline-block;
-            width: 14px;
-            height: 14px;
-            border-radius: 999px;
-            background: #f8c78e;
-            margin: 0 5px;
-        }
-        .print-dots span.active {
-            background: #4f83e2;
-        }
-        .print-note {
-            margin-top: 18px;
-            background: #fff1e0;
-            border: 1px solid #f4d5b2;
-            border-radius: 12px;
-            padding: 12px 14px;
-            font-size: 29px;
-            font-weight: 700;
-            color: #1f2937;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            text-align: left;
-        }
-        .print-note-i {
-            width: 24px;
-            height: 24px;
-            border-radius: 999px;
-            background: #2563eb;
-            color: #fff;
-            font-size: 15px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 800;
-            flex-shrink: 0;
-        }
-        @media (max-width: 768px) {
-            .print-head { font-size: 26px; }
-            .print-message { font-size: 24px; }
-            .print-note { font-size: 19px; }
-        }
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            #ticketCard, #ticketCard * {
-                visibility: visible;
-            }
-            #ticketCard {
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                border: 0;
-                margin: 0;
-            }
-        }
-    </style>
-
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            var issuedEl = document.getElementById('issuedAtText');
+            var issuedEl = document.getElementById('issuedAtPrint');
             var issuedAt = new Date('{{ $issuedAt->toIso8601String() }}');
             if (issuedEl && !isNaN(issuedAt.getTime())) {
                 issuedEl.textContent = issuedAt.toLocaleString(undefined, {
-                    year: 'numeric',
-                    month: 'short',
-                    day: '2-digit',
+                    year: 'numeric', month: '2-digit', day: '2-digit',
                     hour: '2-digit',
                     minute: '2-digit',
-                    hour12: true
+                    hour12: false
                 });
             }
 
-            setTimeout(function () {
-                try {
-                    window.print();
-                } catch (e) {}
-            }, 500);
+            var remaining = 25;
+            var countdownEl = document.getElementById('countdown');
+            var timer = setInterval(function () {
+                remaining -= 1;
+                if (countdownEl) countdownEl.textContent = String(remaining);
+                if (remaining <= 0) {
+                    clearInterval(timer);
+                    window.location.href = '{{ route('kiosk') }}';
+                }
+            }, 1000);
 
             setTimeout(function () {
-                window.location.href = '{{ route('kiosk') }}';
-            }, 4000);
+                try { window.print(); } catch (e) {}
+            }, 400);
         });
     </script>
-@endsection
-
+</body>
+</html>

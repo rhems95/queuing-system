@@ -27,7 +27,7 @@ class AdminDashboardController extends Controller
             ->whereDate('queue_date', $today)
             ->where('status', 'waiting')
             ->orderBy('id')
-            ->get(['id', 'queue_number', 'student_name', 'service_id', 'status']);
+            ->get(['id', 'queue_number', 'service_id', 'status']);
 
         return response()->json($queues);
     }

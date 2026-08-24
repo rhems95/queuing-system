@@ -8,7 +8,7 @@ class Window extends Model
 {
     protected $table = 'windows';
 
-    protected $fillable = ['window_name', 'service_id', 'status'];
+    protected $fillable = ['window_name', 'group_name', 'service_id', 'status'];
 
     public $timestamps = false;
 

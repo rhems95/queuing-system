@@ -44,9 +44,23 @@ class WindowController extends Controller
                 ->first()
             : null;
 
+        $waitingList = $windowServiceId
+            ? Queue::where('service_id', $windowServiceId)
+                ->whereDate('queue_date', $today)
+                ->where('status', 'waiting')
+                ->orderByDesc('priority')
+                ->orderBy('queue_number')
+                ->limit(10)
+                ->get(['id', 'queue_number', 'priority'])
+            : collect();
+
         return [
-            'current' => $currentQueueNumber,
-            'next'    => $nextQueue ? $nextQueue->queue_number : null,
+            'current'       => $currentQueueNumber,
+            'next'          => $nextQueue ? $nextQueue->queue_number : null,
+            'waiting_list'  => $waitingList->map(fn ($q) => [
+                'queue_number' => $q->queue_number,
+                'priority'     => $q->priority ? 'Priority' : 'Regular',
+            ])->values()->all(),
         ];
     }
 
@@ -79,11 +93,91 @@ class WindowController extends Controller
             ->orderBy('id')
             ->first();
 
+        $waitingTickets = Queue::where('service_id', $windowServiceId)
+            ->whereDate('queue_date', $today)
+            ->where('status', 'waiting')
+            ->orderByDesc('priority')
+            ->orderBy('queue_number')
+            ->limit(10)
+            ->get();
+
         return view('staff.window', [
+            'currentQueue'   => $currentQueue,
+            'nextQueue'      => $nextQueue,
+            'window'         => $window,
+            'waitingTickets' => $waitingTickets,
+        ]);
+    }
+
+    /**
+     * Compact always-on-top staff controls (system float window).
+     */
+    public function floatPanel()
+    {
+        $user = Auth::user();
+        $windowId = $user->window_id;
+
+        if (! $windowId) {
+            abort(403, 'No window assigned to this user.');
+        }
+
+        $today = Carbon::today()->toDateString();
+        $window = Window::with('service')->findOrFail($windowId);
+
+        $currentCall = QueueCall::where('window_id', $windowId)
+            ->whereDate('called_time', $today)
+            ->orderByDesc('called_time')
+            ->first();
+
+        $currentQueue = $currentCall ? Queue::find($currentCall->queue_id) : null;
+
+        $nextQueue = Queue::where('service_id', $window->service_id)
+            ->whereDate('queue_date', $today)
+            ->where('status', 'waiting')
+            ->orderByDesc('priority')
+            ->orderBy('id')
+            ->first();
+
+        return view('staff.float', [
             'currentQueue' => $currentQueue,
             'nextQueue'    => $nextQueue,
             'window'       => $window,
         ]);
+    }
+
+    /**
+     * Launch the Windows always-on-top float helper (.bat) on this PC.
+     * Intended for local XAMPP kiosk/staff machines only.
+     */
+    public function launchFloat(Request $request)
+    {
+        $bat = base_path('bats/start-staff-float.bat');
+
+        if (! is_file($bat)) {
+            if ($request->expectsJson()) {
+                return response()->json(['ok' => false, 'message' => 'Float launcher file was not found.'], 404);
+            }
+
+            return back()->with('status', 'Float launcher file was not found.');
+        }
+
+        // Non-blocking launch on Windows so Apache does not wait for the script.
+        $cmd = 'cmd /c start "" '.escapeshellarg($bat);
+        if (strncasecmp(PHP_OS, 'WIN', 3) === 0) {
+            pclose(popen($cmd, 'r'));
+        } else {
+            if ($request->expectsJson()) {
+                return response()->json(['ok' => false, 'message' => 'System float is only available on Windows.'], 400);
+            }
+
+            return back()->with('status', 'System float is only available on Windows.');
+        }
+
+        if ($request->expectsJson()) {
+            return response()->json(['ok' => true, 'message' => 'System float launched. Log in there if asked.']);
+        }
+
+        return back()->with('status', 'System float launched. Log in there if asked.');
     }
 
     /**
@@ -95,7 +189,7 @@ class WindowController extends Controller
         $windowId = $user->window_id;
 
         if (! $windowId) {
-            return response()->json(['current' => null, 'next' => null], 403);
+            return response()->json(['current' => null, 'next' => null, 'waiting_list' => []], 403);
         }
 
         return response()->json($this->getWindowState($windowId));
@@ -237,7 +331,6 @@ class WindowController extends Controller
             ->where('queue_calls.window_id', $windowId)
             ->select(
                 'queues.queue_number',
-                'queues.student_name',
                 'services.service_name',
                 'queue_calls.called_time',
                 'queue_calls.finished_time'
@@ -253,4 +346,3 @@ class WindowController extends Controller
         return view('staff.history', compact('records'));
     }
 }
-

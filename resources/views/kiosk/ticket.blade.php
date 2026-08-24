@@ -7,10 +7,6 @@
         <h1 class="text-2xl font-bold mb-4">Your Queue Ticket</h1>
 
         <div id="ticketCard" class="border-2 border-dashed border-gray-300 rounded-lg p-5 mb-5">
-            <div class="text-gray-600 mb-2">
-                {{ $queue->student_name }} ({{ $queue->student_id ?? 'No ID' }})
-            </div>
-
             <div class="text-6xl font-extrabold mb-3">
                 {{ $queue->queue_number }}
             </div>
@@ -25,23 +21,12 @@
             </p>
         </div>
 
-        <p class="text-sm text-gray-500 mb-4">
-            You may print this ticket, or simply save paper and take a photo of your ticket.
-        </p>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
-            <button
-                type="button"
-                onclick="window.print()"
-                class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
-                Print
-            </button>
-
-            <a href="{{ route('kiosk') }}"
-               class="w-full inline-flex items-center justify-center bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
-                Save Mother Earth
-            </a>
-        </div>
+        <button
+            type="button"
+            onclick="window.print()"
+            class="w-full bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 mb-3">
+            Print
+        </button>
 
         <a href="{{ route('kiosk') }}" class="inline-block text-sm text-gray-600 hover:underline">
             Back to Kiosk
@@ -72,7 +57,6 @@
             var el = document.getElementById('issuedAtText');
             if (!el) return;
 
-            // Render issued time using kiosk/browser local timezone to avoid server TZ mismatch.
             var issuedAt = new Date('{{ $issuedAt->toIso8601String() }}');
             if (isNaN(issuedAt.getTime())) return;
 
@@ -87,4 +71,3 @@
         });
     </script>
 @endsection
-

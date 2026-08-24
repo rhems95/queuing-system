@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\User;
 use App\Models\Window;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Hash;
 
 class UserManagementController extends Controller
@@ -37,6 +38,25 @@ class UserManagementController extends Controller
             'window_id' => ['nullable', 'integer', 'exists:windows,id'],
         ]);
 
+        if ($data['role'] === 'staff' && empty($data['window_id'])) {
+            return back()
+                ->withErrors(['window_id' => 'Window is required for staff accounts.'])
+                ->withInput();
+        }
+
+        if ($data['role'] !== 'staff') {
+            $data['window_id'] = null;
+        }
+
+        if (! empty($data['window_id'])) {
+            $existingStaff = User::where('window_id', $data['window_id'])->exists();
+            if ($existingStaff) {
+                return back()
+                    ->withErrors(['window_id' => 'This window already has a staff account assigned.'])
+                    ->withInput();
+            }
+        }
+
         $data['password'] = Hash::make($data['password']);
 
         User::create($data);
@@ -59,11 +79,32 @@ class UserManagementController extends Controller
     {
         $data = $request->validate([
             'name'      => ['required', 'string', 'max:100'],
-            'email'     => ['required', 'email', 'max:100', 'unique:users,email,' . $user->id],
+            'email'     => ['required', 'email', 'max:100', Rule::unique('users', 'email')->ignore($user->id)],
             'password'  => ['nullable', 'string', 'min:4'],
             'role'      => ['required', 'in:admin,staff'],
             'window_id' => ['nullable', 'integer', 'exists:windows,id'],
         ]);
+
+        if ($data['role'] === 'staff' && empty($data['window_id'])) {
+            return back()
+                ->withErrors(['window_id' => 'Window is required for staff accounts.'])
+                ->withInput();
+        }
+
+        if ($data['role'] !== 'staff') {
+            $data['window_id'] = null;
+        }
+
+        if (! empty($data['window_id'])) {
+            $existingStaff = User::where('window_id', $data['window_id'])
+                ->where('id', '!=', $user->id)
+                ->exists();
+            if ($existingStaff) {
+                return back()
+                    ->withErrors(['window_id' => 'This window already has a staff account assigned.'])
+                    ->withInput();
+            }
+        }
 
         if (!empty($data['password'])) {
             $data['password'] = Hash::make($data['password']);

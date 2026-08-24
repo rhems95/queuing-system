@@ -23,8 +23,6 @@ class HistoryController extends Controller
                 'queue_calls.id as queue_call_id',
                 'queues.id as queue_id',
                 'queues.queue_number',
-                'queues.student_name',
-                'queues.student_id',
                 'services.service_name',
                 'windows.window_name',
                 'users.name as staff_name',
@@ -128,7 +126,6 @@ class HistoryController extends Controller
                 'queue_calls.called_time',
                 'queue_calls.finished_time',
                 'queues.queue_number',
-                'queues.student_name',
                 'services.service_name',
                 'users.name as staff_name'
             )

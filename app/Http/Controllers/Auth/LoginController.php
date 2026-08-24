@@ -10,8 +10,12 @@ use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
-    public function showLoginForm()
+    public function showLoginForm(Request $request)
     {
+        if ($this->isFloatLogin($request)) {
+            return view('auth.login-float');
+        }
+
         return view('auth.login');
     }
 
@@ -42,6 +46,10 @@ class LoginController extends Controller
                 if ($user->role === 'admin') {
                     return redirect()->intended('/admin');
                 } elseif ($user->role === 'staff') {
+                    if ($request->boolean('float_login')) {
+                        return redirect()->intended(route('window.float'));
+                    }
+
                     return redirect()->intended('/window');
                 }
 
@@ -51,7 +59,7 @@ class LoginController extends Controller
 
         return back()
             ->withErrors(['email' => 'The provided credentials do not match our records.'])
-            ->onlyInput('email');
+            ->withInput($request->only('email', 'float_login'));
     }
 
     public function logout(Request $request)
@@ -61,6 +69,17 @@ class LoginController extends Controller
         $request->session()->regenerateToken();
 
         return redirect()->route('login');
+    }
+
+    private function isFloatLogin(Request $request): bool
+    {
+        if ($request->boolean('float') || $request->boolean('float_login') || old('float_login')) {
+            return true;
+        }
+
+        $intended = (string) $request->session()->get('url.intended', '');
+
+        return str_contains($intended, '/window/float');
     }
 }
 

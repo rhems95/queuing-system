@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Apr 14, 2026 at 10:23 AM
+-- Generation Time: Apr 19, 2026 (regenerated to match Laravel domain migrations + anonymous queues)
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -75,8 +75,6 @@ CREATE TABLE `migrations` (
 
 CREATE TABLE `queues` (
   `id` bigint(20) UNSIGNED NOT NULL,
-  `student_name` varchar(100) NOT NULL,
-  `student_id` varchar(50) DEFAULT NULL,
   `queue_number` varchar(20) NOT NULL,
   `service_id` bigint(20) UNSIGNED NOT NULL,
   `priority` tinyint(1) DEFAULT 0,
@@ -90,105 +88,105 @@ CREATE TABLE `queues` (
 -- Dumping data for table `queues`
 --
 
-INSERT INTO `queues` (`id`, `student_name`, `student_id`, `queue_number`, `service_id`, `priority`, `status`, `queue_date`, `created_at`, `updated_at`) VALUES
-(1, 'rhem sumodlayon', '20231-00276', 'C001', 1, 0, 'done', '2026-03-14', NULL, NULL),
-(2, 'mike bedrona', '20231-00277', 'C002', 1, 0, 'done', '2026-03-14', NULL, NULL),
-(3, 'omar bayabao', '20231-00278', 'C003', 1, 0, 'done', '2026-03-14', NULL, NULL),
-(4, 'nino malicay', '20231-00279', 'C004', 1, 0, 'serving', '2026-03-14', NULL, NULL),
-(5, 'robert encio', '20231-00280', 'C005', 1, 1, 'done', '2026-03-14', NULL, NULL),
-(6, 'rhem sumodlayon', '20231-00276', 'C006', 1, 0, 'waiting', '2026-03-14', NULL, NULL),
-(7, 'rhem sumodlayon', '20231-00276', 'C001', 1, 0, 'done', '2026-03-15', NULL, NULL),
-(8, 'mike bedrona', '20231-00277', 'R001', 2, 0, 'serving', '2026-03-15', NULL, NULL),
-(9, 'nino malicay', '20231-00280', 'C002', 1, 0, 'serving', '2026-03-15', NULL, NULL),
-(10, 'robert encio', '20231-00281', 'R002', 2, 0, 'waiting', '2026-03-15', NULL, NULL),
-(11, 'omar bayabao', '20231-00280', 'C003', 1, 0, 'done', '2026-03-15', NULL, NULL),
-(12, 'rhem sumodlayon', '20231-00276', 'C004', 1, 0, 'serving', '2026-03-15', NULL, NULL),
-(13, 'omar bayabao', '20231-00277', 'C005', 1, 0, 'serving', '2026-03-15', NULL, NULL),
-(14, 'nino malicay', '20231-00281', 'C006', 1, 0, 'serving', '2026-03-15', NULL, NULL),
-(15, 'omar bayabao', '20231-00280', 'C007', 1, 0, 'serving', '2026-03-15', NULL, NULL),
-(16, 'rhem sumodlayon', '20231-00276', 'C008', 1, 0, 'waiting', '2026-03-15', NULL, NULL),
-(17, 'nino malicay', '20231-00281', 'C009', 1, 1, 'waiting', '2026-03-15', NULL, NULL),
-(18, 'rhem sumodlayon', '20231-00276', 'C001', 1, 0, 'serving', '2026-03-17', NULL, NULL),
-(19, 'mike bedrona', '20231-00281', 'C002', 1, 0, 'serving', '2026-03-17', NULL, NULL),
-(20, 'cholo', '123', 'C003', 1, 1, 'serving', '2026-03-17', NULL, NULL),
-(21, 'robert encio', '20231-00277', 'C004', 1, 0, 'serving', '2026-03-17', NULL, NULL),
-(22, 'nino malicay', '20231-00280', 'C005', 1, 0, 'done', '2026-03-17', NULL, NULL),
-(23, 'mike bedrona', '20231-00281', 'C006', 1, 0, 'serving', '2026-03-17', NULL, NULL),
-(24, 'rhem sumodlayon', '20231-00276', 'C007', 1, 0, 'serving', '2026-03-17', NULL, NULL),
-(25, 'omar bayabao', '20231-00280', 'C008', 1, 0, 'serving', '2026-03-17', NULL, NULL),
-(26, 'nino malicay', '20231-00281', 'C009', 1, 0, 'serving', '2026-03-17', NULL, NULL),
-(27, 'omar bayabao', '20231-00280', 'C010', 1, 0, 'done', '2026-03-17', NULL, NULL),
-(28, 'robert encio', '20231-00281', 'C011', 1, 0, 'serving', '2026-03-17', NULL, NULL),
-(29, 'omar bayabao', '20231-00280', 'C012', 1, 1, 'serving', '2026-03-17', NULL, NULL),
-(30, 'mike bedrona', '20231-00280', 'C013', 1, 0, 'serving', '2026-03-17', NULL, NULL),
-(31, 'rhem sumodlayon', '20231-00276', 'C014', 1, 0, 'done', '2026-03-17', NULL, NULL),
-(32, 'omar bayabao', '20231-00281', 'C015', 1, 0, 'done', '2026-03-17', NULL, NULL),
-(33, 'nino malicay', '20231-00280', 'C016', 1, 0, 'done', '2026-03-17', NULL, NULL),
-(34, 'robert encio', '20231-00279', 'C017', 1, 0, 'done', '2026-03-17', NULL, NULL),
-(35, 'omar bayabao', '20231-00281', 'C018', 1, 0, 'done', '2026-03-17', NULL, NULL),
-(36, 'robert encio', '20231-00278', 'R001', 2, 0, 'done', '2026-03-17', NULL, NULL),
-(37, 'nino malicay', '20231-00281', 'C019', 1, 0, 'done', '2026-03-17', NULL, NULL),
-(38, 'robert encio', '20231-00280', 'C020', 1, 0, 'done', '2026-03-17', NULL, NULL),
-(39, 'nino malicay', '20231-00281', 'R002', 2, 0, 'done', '2026-03-17', NULL, NULL),
-(40, 'rhem sumodlayon', '20231-00276', 'C001', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(41, 'omar bayabao', '20231-00277', 'C002', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(42, 'rhem sumodlayon', '20231-00276', 'C003', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(43, 'omar bayabao', '20231-00277', 'C004', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(44, 'rhem sumodlayon', '20231-00276', 'C005', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(45, 'omar bayabao', '20231-00277', 'C006', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(46, 'rhem sumodlayon', '20231-00276', 'C007', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(47, 'rhem sumodlayon', '20231-00276', 'C008', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(48, 'omar bayabao', '20231-00277', 'C009', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(49, 'omar bayabao', '20231-00277', 'C010', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(50, 'rhem sumodlayon', '20231-00276', 'C011', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(51, 'omar bayabao', '20231-00277', 'C012', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(52, 'rhem sumodlayon', '20231-00276', 'C013', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(53, 'omar bayabao', '20231-00277', 'C014', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(54, 'mike bedrona', '20231-00278', 'C015', 1, 1, 'done', '2026-03-21', NULL, NULL),
-(55, 'mike bedrona', '20231-00278', 'C016', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(56, 'rhem sumodlayon', '20231-00276', 'C017', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(57, 'rhem sumodlayon', '20231-00276', 'C018', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(58, 'rhem sumodlayon', '20231-00276', 'C019', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(59, 'omar bayabao', '20231-00277', 'C020', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(60, 'mike bedrona', '20231-00278', 'C021', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(61, 'omar bayabao', '20231-00277', 'C022', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(62, 'rhem sumodlayon', '20231-00276', 'C023', 1, 0, 'done', '2026-03-21', NULL, NULL),
-(63, 'omar bayabao', NULL, 'C024', 1, 0, 'serving', '2026-03-21', NULL, NULL),
-(64, 'Mike Bedrona', '20231-00216', 'C001', 1, 0, 'serving', '2026-03-25', NULL, NULL),
-(65, 'Renz Bedrona', '20231-00217', 'C002', 1, 1, 'waiting', '2026-03-25', NULL, NULL),
-(66, 'Michael Bedrona', '20231-00218', 'C003', 1, 0, 'waiting', '2026-03-25', NULL, NULL),
-(67, 'Michaela Bedrona', '20231-00219', 'C004', 1, 1, 'waiting', '2026-03-25', NULL, NULL),
-(68, 'Michaela Bedrona', '20231-00219', 'C005', 1, 1, 'waiting', '2026-03-25', NULL, NULL),
-(69, 'Rey Jane Calixtro', '20231-00220', 'C006', 1, 0, 'waiting', '2026-03-25', NULL, NULL),
-(70, 'rhem sumodlayon', '20231-00276', 'C001', 1, 0, 'done', '2026-03-26', NULL, NULL),
-(71, 'rhem sumodlayon', '20231-00276', 'C002', 1, 0, 'done', '2026-03-26', NULL, NULL),
-(72, 'rhem sumodlayon', '20231-00276', 'C003', 1, 0, 'serving', '2026-03-26', NULL, NULL),
-(73, 'omar bayabao', '20231-00281', 'R001', 2, 0, 'done', '2026-03-26', NULL, NULL),
-(74, 'nino malicay', '20231-00280', 'R002', 2, 1, 'done', '2026-03-26', NULL, NULL),
-(75, 'Guest', NULL, 'R001', 2, 1, 'waiting', '2026-04-07', NULL, NULL),
-(76, 'Guest', NULL, 'R002', 2, 1, 'waiting', '2026-04-07', NULL, NULL),
-(77, 'Guest', NULL, 'C001', 1, 1, 'waiting', '2026-04-07', NULL, NULL),
-(78, 'Guest', NULL, 'R003', 2, 1, 'waiting', '2026-04-07', NULL, NULL),
-(79, 'Guest', NULL, 'C002', 1, 0, 'waiting', '2026-04-07', NULL, NULL),
-(80, 'Guest', NULL, 'C003', 1, 0, 'waiting', '2026-04-07', NULL, NULL),
-(81, 'Guest', NULL, 'C004', 1, 0, 'waiting', '2026-04-07', NULL, NULL),
-(82, 'Guest', NULL, 'R004', 2, 0, 'waiting', '2026-04-07', NULL, NULL),
-(83, 'Guest', NULL, 'R005', 2, 1, 'waiting', '2026-04-07', NULL, NULL),
-(84, 'Guest', NULL, 'C001', 1, 0, 'done', '2026-04-14', NULL, NULL),
-(85, 'Guest', NULL, 'C002', 1, 0, 'done', '2026-04-14', NULL, NULL),
-(86, 'Guest', NULL, 'R001', 2, 0, 'done', '2026-04-14', NULL, NULL),
-(87, 'Guest', NULL, 'C003', 1, 0, 'done', '2026-04-14', NULL, NULL),
-(88, 'Guest', NULL, 'C004', 1, 1, 'done', '2026-04-14', NULL, NULL),
-(89, 'Guest', NULL, 'C005', 1, 0, 'serving', '2026-04-14', NULL, NULL),
-(90, 'Guest', NULL, 'R002', 2, 0, 'done', '2026-04-14', NULL, NULL),
-(91, 'Guest', NULL, 'R003', 2, 0, 'done', '2026-04-14', NULL, NULL),
-(92, 'Guest', NULL, 'R004', 2, 1, 'done', '2026-04-14', NULL, NULL),
-(93, 'Guest', NULL, 'R005', 2, 0, 'waiting', '2026-04-14', NULL, NULL),
-(94, 'Guest', NULL, 'R006', 2, 1, 'serving', '2026-04-14', NULL, NULL),
-(95, 'rhem sumodlayon', NULL, 'C006', 1, 0, 'waiting', '2026-04-14', NULL, NULL),
-(96, 'rhem sumodlayon', NULL, 'C007', 1, 0, 'waiting', '2026-04-14', NULL, NULL),
-(97, 'rhem sumodlayon', NULL, 'C008', 1, 0, 'waiting', '2026-04-14', NULL, NULL),
-(98, 'rhem sumodlayon', NULL, 'C009', 1, 0, 'waiting', '2026-04-14', NULL, NULL);
+INSERT INTO `queues` (`id`, `queue_number`, `service_id`, `priority`, `status`, `queue_date`, `created_at`, `updated_at`) VALUES
+(1, 'C001', 1, 0, 'done', '2026-03-14', NULL, NULL),
+(2, 'C002', 1, 0, 'done', '2026-03-14', NULL, NULL),
+(3, 'C003', 1, 0, 'done', '2026-03-14', NULL, NULL),
+(4, 'C004', 1, 0, 'serving', '2026-03-14', NULL, NULL),
+(5, 'C005', 1, 1, 'done', '2026-03-14', NULL, NULL),
+(6, 'C006', 1, 0, 'waiting', '2026-03-14', NULL, NULL),
+(7, 'C001', 1, 0, 'done', '2026-03-15', NULL, NULL),
+(8, 'R001', 2, 0, 'serving', '2026-03-15', NULL, NULL),
+(9, 'C002', 1, 0, 'serving', '2026-03-15', NULL, NULL),
+(10, 'R002', 2, 0, 'waiting', '2026-03-15', NULL, NULL),
+(11, 'C003', 1, 0, 'done', '2026-03-15', NULL, NULL),
+(12, 'C004', 1, 0, 'serving', '2026-03-15', NULL, NULL),
+(13, 'C005', 1, 0, 'serving', '2026-03-15', NULL, NULL),
+(14, 'C006', 1, 0, 'serving', '2026-03-15', NULL, NULL),
+(15, 'C007', 1, 0, 'serving', '2026-03-15', NULL, NULL),
+(16, 'C008', 1, 0, 'waiting', '2026-03-15', NULL, NULL),
+(17, 'C009', 1, 1, 'waiting', '2026-03-15', NULL, NULL),
+(18, 'C001', 1, 0, 'serving', '2026-03-17', NULL, NULL),
+(19, 'C002', 1, 0, 'serving', '2026-03-17', NULL, NULL),
+(20, 'C003', 1, 1, 'serving', '2026-03-17', NULL, NULL),
+(21, 'C004', 1, 0, 'serving', '2026-03-17', NULL, NULL),
+(22, 'C005', 1, 0, 'done', '2026-03-17', NULL, NULL),
+(23, 'C006', 1, 0, 'serving', '2026-03-17', NULL, NULL),
+(24, 'C007', 1, 0, 'serving', '2026-03-17', NULL, NULL),
+(25, 'C008', 1, 0, 'serving', '2026-03-17', NULL, NULL),
+(26, 'C009', 1, 0, 'serving', '2026-03-17', NULL, NULL),
+(27, 'C010', 1, 0, 'done', '2026-03-17', NULL, NULL),
+(28, 'C011', 1, 0, 'serving', '2026-03-17', NULL, NULL),
+(29, 'C012', 1, 1, 'serving', '2026-03-17', NULL, NULL),
+(30, 'C013', 1, 0, 'serving', '2026-03-17', NULL, NULL),
+(31, 'C014', 1, 0, 'done', '2026-03-17', NULL, NULL),
+(32, 'C015', 1, 0, 'done', '2026-03-17', NULL, NULL),
+(33, 'C016', 1, 0, 'done', '2026-03-17', NULL, NULL),
+(34, 'C017', 1, 0, 'done', '2026-03-17', NULL, NULL),
+(35, 'C018', 1, 0, 'done', '2026-03-17', NULL, NULL),
+(36, 'R001', 2, 0, 'done', '2026-03-17', NULL, NULL),
+(37, 'C019', 1, 0, 'done', '2026-03-17', NULL, NULL),
+(38, 'C020', 1, 0, 'done', '2026-03-17', NULL, NULL),
+(39, 'R002', 2, 0, 'done', '2026-03-17', NULL, NULL),
+(40, 'C001', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(41, 'C002', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(42, 'C003', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(43, 'C004', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(44, 'C005', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(45, 'C006', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(46, 'C007', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(47, 'C008', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(48, 'C009', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(49, 'C010', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(50, 'C011', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(51, 'C012', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(52, 'C013', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(53, 'C014', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(54, 'C015', 1, 1, 'done', '2026-03-21', NULL, NULL),
+(55, 'C016', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(56, 'C017', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(57, 'C018', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(58, 'C019', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(59, 'C020', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(60, 'C021', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(61, 'C022', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(62, 'C023', 1, 0, 'done', '2026-03-21', NULL, NULL),
+(63, 'C024', 1, 0, 'serving', '2026-03-21', NULL, NULL),
+(64, 'C001', 1, 0, 'serving', '2026-03-25', NULL, NULL),
+(65, 'C002', 1, 1, 'waiting', '2026-03-25', NULL, NULL),
+(66, 'C003', 1, 0, 'waiting', '2026-03-25', NULL, NULL),
+(67, 'C004', 1, 1, 'waiting', '2026-03-25', NULL, NULL),
+(68, 'C005', 1, 1, 'waiting', '2026-03-25', NULL, NULL),
+(69, 'C006', 1, 0, 'waiting', '2026-03-25', NULL, NULL),
+(70, 'C001', 1, 0, 'done', '2026-03-26', NULL, NULL),
+(71, 'C002', 1, 0, 'done', '2026-03-26', NULL, NULL),
+(72, 'C003', 1, 0, 'serving', '2026-03-26', NULL, NULL),
+(73, 'R001', 2, 0, 'done', '2026-03-26', NULL, NULL),
+(74, 'R002', 2, 1, 'done', '2026-03-26', NULL, NULL),
+(75, 'R001', 2, 1, 'waiting', '2026-04-07', NULL, NULL),
+(76, 'R002', 2, 1, 'waiting', '2026-04-07', NULL, NULL),
+(77, 'C001', 1, 1, 'waiting', '2026-04-07', NULL, NULL),
+(78, 'R003', 2, 1, 'waiting', '2026-04-07', NULL, NULL),
+(79, 'C002', 1, 0, 'waiting', '2026-04-07', NULL, NULL),
+(80, 'C003', 1, 0, 'waiting', '2026-04-07', NULL, NULL),
+(81, 'C004', 1, 0, 'waiting', '2026-04-07', NULL, NULL),
+(82, 'R004', 2, 0, 'waiting', '2026-04-07', NULL, NULL),
+(83, 'R005', 2, 1, 'waiting', '2026-04-07', NULL, NULL),
+(84, 'C001', 1, 0, 'done', '2026-04-14', NULL, NULL),
+(85, 'C002', 1, 0, 'done', '2026-04-14', NULL, NULL),
+(86, 'R001', 2, 0, 'done', '2026-04-14', NULL, NULL),
+(87, 'C003', 1, 0, 'done', '2026-04-14', NULL, NULL),
+(88, 'C004', 1, 1, 'done', '2026-04-14', NULL, NULL),
+(89, 'C005', 1, 0, 'serving', '2026-04-14', NULL, NULL),
+(90, 'R002', 2, 0, 'done', '2026-04-14', NULL, NULL),
+(91, 'R003', 2, 0, 'done', '2026-04-14', NULL, NULL),
+(92, 'R004', 2, 1, 'done', '2026-04-14', NULL, NULL),
+(93, 'R005', 2, 0, 'waiting', '2026-04-14', NULL, NULL),
+(94, 'R006', 2, 1, 'serving', '2026-04-14', NULL, NULL),
+(95, 'C006', 1, 0, 'waiting', '2026-04-14', NULL, NULL),
+(96, 'C007', 1, 0, 'waiting', '2026-04-14', NULL, NULL),
+(97, 'C008', 1, 0, 'waiting', '2026-04-14', NULL, NULL),
+(98, 'C009', 1, 0, 'waiting', '2026-04-14', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -307,8 +305,10 @@ CREATE TABLE `services` (
 --
 
 INSERT INTO `services` (`id`, `service_name`, `prefix`, `description`, `created_at`, `updated_at`) VALUES
-(1, 'Cashier', 'C', 'Handles payments and financial transactions', NULL, NULL),
-(2, 'Registrar', 'R', 'Handles student records and documents', NULL, NULL);
+(1, 'Cashier', 'C', 'Handles payments and cashier transactions', NULL, NULL),
+(2, 'Promissory Notes', 'P', 'Handles promissory note processing', NULL, NULL),
+(3, 'Data Management Office', 'D', 'Handles data management transactions', NULL, NULL),
+(4, 'Registrar', 'R', 'Handles registrar transactions', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -345,6 +345,7 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `window_id`, `cr
 CREATE TABLE `windows` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `window_name` varchar(50) NOT NULL,
+  `group_name` varchar(50) DEFAULT NULL,
   `service_id` bigint(20) UNSIGNED NOT NULL,
   `status` enum('active','inactive') DEFAULT 'active',
   `created_at` timestamp NULL DEFAULT NULL,
@@ -355,9 +356,13 @@ CREATE TABLE `windows` (
 -- Dumping data for table `windows`
 --
 
-INSERT INTO `windows` (`id`, `window_name`, `service_id`, `status`, `created_at`, `updated_at`) VALUES
-(1, 'Window 1', 1, 'active', NULL, NULL),
-(2, 'Window 2', 2, 'active', NULL, NULL);
+INSERT INTO `windows` (`id`, `window_name`, `group_name`, `service_id`, `status`, `created_at`, `updated_at`) VALUES
+(1, 'Cashier 1', 'Window 1', 1, 'active', NULL, NULL),
+(2, 'Cashier 2', 'Window 1', 1, 'active', NULL, NULL),
+(3, 'Cashier 3', 'Window 1', 1, 'active', NULL, NULL),
+(4, 'Promissory Notes', 'Window 2', 2, 'active', NULL, NULL),
+(5, 'DMO', 'Window 3', 3, 'active', NULL, NULL),
+(6, 'Registrar', 'Window 4', 4, 'active', NULL, NULL);
 
 --
 -- Indexes for dumped tables
@@ -404,7 +409,7 @@ ALTER TABLE `services`
 ALTER TABLE `users`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `email` (`email`),
-  ADD KEY `window_id` (`window_id`);
+  ADD UNIQUE KEY `users_window_id_unique` (`window_id`);
 
 --
 -- Indexes for table `windows`
@@ -445,7 +450,7 @@ ALTER TABLE `queue_calls`
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -457,7 +462,7 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `windows`
 --
 ALTER TABLE `windows`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
