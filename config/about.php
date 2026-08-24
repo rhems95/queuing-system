@@ -20,13 +20,13 @@ return [
             'name' => 'Rhem Sumodlayon',
             'role' => 'Lead Developer / System Architect',
             'focus' => 'Backend, queue logic, staff tools, deployment',
-            'photo' => 'rhem.jpg',
+            'photo' => 'rhem.png',
         ],
         [
-            'name' => 'Group Member 2',
+            'name' => 'Mike Bedrona',
             'role' => 'Frontend / UI Designer',
             'focus' => 'Kiosk, display, and panel interface design',
-            'photo' => 'member2.jpg',
+            'photo' => 'mike.png',
         ],
         [
             'name' => 'Omar Bayabao',
@@ -35,13 +35,13 @@ return [
             'photo' => 'member3.jpg',
         ],
         [
-            'name' => 'Group Member 4',
+            'name' => 'Niño Angelo Malicay',
             'role' => 'Research / Documentation Lead',
             'focus' => 'Capstone manuscript, diagrams, presentation',
             'photo' => 'member4.jpg',
         ],
         [
-            'name' => 'Group Member 5',
+            'name' => 'Ron Matheo Arquisola',
             'role' => 'Hardware / Deployment Specialist',
             'focus' => 'Kiosk PC setup, printers, display launchers',
             'photo' => 'member5.jpg',
