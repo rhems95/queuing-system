@@ -47,5 +47,6 @@
             });
         </script>
     @endunless
+    @include('partials.secret-about-hotkey')
 </body>
 </html>

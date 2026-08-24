@@ -11,7 +11,7 @@
             padding: 0;
             background: #00005c;
             color: #fff;
-            font-family: Candara, "Segoe UI", "Trebuchet MS", sans-serif;
+            font-family: "Source Sans 3 Variable", "Segoe UI", Tahoma, Arial, sans-serif;
             overflow: hidden;
             user-select: none;
         }
@@ -79,6 +79,19 @@
             letter-spacing: 0.03em;
             font-variant-numeric: tabular-nums;
         }
+        .sf-timer {
+            text-align: center;
+            font-size: 10px;
+            letter-spacing: 0.04em;
+            opacity: 0.9;
+            font-variant-numeric: tabular-nums;
+            min-height: 14px;
+        }
+        .sf-timer em {
+            font-style: normal;
+            font-weight: 800;
+            color: #f5e6a3;
+        }
         .sf-actions {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -138,6 +151,9 @@
                 <strong id="nextQueue">{{ $nextQueue->queue_number ?? '—' }}</strong>
             </div>
         </div>
+        <div class="sf-timer" id="serviceTimer" @if(empty($servingStartedAt)) style="visibility:hidden;" @endif>
+            Time <em id="serviceTimerValue">00:00</em>
+        </div>
 
         <div class="sf-actions">
             <form method="POST" action="{{ route('window.callNext') }}">
@@ -171,6 +187,32 @@
             }
 
             var stateUrl = @json(route('window.state'));
+            var servingStartedAt = @json($servingStartedAt ?? null);
+
+            function formatElapsed(ms) {
+                var totalSec = Math.max(0, Math.floor(ms / 1000));
+                var m = Math.floor(totalSec / 60);
+                var s = totalSec % 60;
+                return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            }
+
+            function paintTimer() {
+                var wrap = document.getElementById('serviceTimer');
+                var valueEl = document.getElementById('serviceTimerValue');
+                if (!wrap || !valueEl) return;
+                if (!servingStartedAt) {
+                    wrap.style.visibility = 'hidden';
+                    valueEl.textContent = '00:00';
+                    return;
+                }
+                var started = new Date(servingStartedAt);
+                if (isNaN(started.getTime())) {
+                    wrap.style.visibility = 'hidden';
+                    return;
+                }
+                wrap.style.visibility = 'visible';
+                valueEl.textContent = formatElapsed(Date.now() - started.getTime());
+            }
 
             function fetchState() {
                 fetch(stateUrl, {
@@ -183,12 +225,17 @@
                         var nextEl = document.getElementById('nextQueue');
                         if (currentEl) currentEl.textContent = data.current || '---';
                         if (nextEl) nextEl.textContent = data.next || '—';
+                        servingStartedAt = data.serving_started_at || null;
+                        paintTimer();
                     })
                     .catch(function () {});
             }
 
+            paintTimer();
+            setInterval(paintTimer, 1000);
             setInterval(fetchState, 3000);
         });
     </script>
+    @include('partials.secret-about-hotkey')
 </body>
 </html>

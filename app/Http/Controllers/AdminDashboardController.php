@@ -13,10 +13,11 @@ class AdminDashboardController extends Controller
         $today = Carbon::today()->toDateString();
 
         $totalToday = Queue::whereDate('queue_date', $today)->count();
-        $waiting    = Queue::whereDate('queue_date', $today)->where('status', 'waiting')->count();
-        $completed  = Queue::whereDate('queue_date', $today)->where('status', 'done')->count();
+        $waiting = Queue::whereDate('queue_date', $today)->where('status', 'waiting')->count();
+        $serving = Queue::whereDate('queue_date', $today)->where('status', 'serving')->count();
+        $completed = Queue::whereDate('queue_date', $today)->where('status', 'done')->count();
 
-        return view('admin.dashboard', compact('totalToday', 'waiting', 'completed'));
+        return view('admin.dashboard', compact('totalToday', 'waiting', 'serving', 'completed'));
     }
 
     public function waitingQueues(Request $request)
@@ -26,10 +27,20 @@ class AdminDashboardController extends Controller
         $queues = Queue::with('service')
             ->whereDate('queue_date', $today)
             ->where('status', 'waiting')
+            ->orderByDesc('priority')
             ->orderBy('id')
-            ->get(['id', 'queue_number', 'service_id', 'status']);
+            ->get(['id', 'queue_number', 'service_id', 'priority', 'status']);
 
-        return response()->json($queues);
+        $counts = [
+            'total' => Queue::whereDate('queue_date', $today)->count(),
+            'waiting' => Queue::whereDate('queue_date', $today)->where('status', 'waiting')->count(),
+            'serving' => Queue::whereDate('queue_date', $today)->where('status', 'serving')->count(),
+            'completed' => Queue::whereDate('queue_date', $today)->where('status', 'done')->count(),
+        ];
+
+        return response()->json([
+            'queues' => $queues,
+            'counts' => $counts,
+        ]);
     }
 }
-

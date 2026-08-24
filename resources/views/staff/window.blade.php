@@ -33,6 +33,9 @@
             <div id="currentQueue" class="pecit-serving-number">
                 {{ $currentQueue->queue_number ?? '---' }}
             </div>
+            <div id="serviceTimer" class="pecit-service-timer" @if(empty($servingStartedAt)) style="visibility:hidden;" @endif>
+                Service Time: <span id="serviceTimerValue">00:00</span>
+            </div>
         </div>
         <div class="pecit-serving-card is-next">
             <h2>Next Queue</h2>
@@ -164,6 +167,8 @@
 
             var stateUrl = '{{ route("window.state") }}';
             var pollInterval = 3000;
+            var servingStartedAt = @json($servingStartedAt ?? null);
+            var timerInterval = null;
 
             function priorityBadge(label) {
                 var isPriority = String(label).toLowerCase() === 'priority';
@@ -193,12 +198,43 @@
                 return div.innerHTML;
             }
 
+            function formatElapsed(ms) {
+                var totalSec = Math.max(0, Math.floor(ms / 1000));
+                var m = Math.floor(totalSec / 60);
+                var s = totalSec % 60;
+                return String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0');
+            }
+
+            function paintTimer() {
+                var wrap = document.getElementById('serviceTimer');
+                var valueEl = document.getElementById('serviceTimerValue');
+                if (!wrap || !valueEl) return;
+                if (!servingStartedAt) {
+                    wrap.style.visibility = 'hidden';
+                    valueEl.textContent = '00:00';
+                    return;
+                }
+                var started = new Date(servingStartedAt);
+                if (isNaN(started.getTime())) {
+                    wrap.style.visibility = 'hidden';
+                    return;
+                }
+                wrap.style.visibility = 'visible';
+                valueEl.textContent = formatElapsed(Date.now() - started.getTime());
+            }
+
+            function setServingStartedAt(iso) {
+                servingStartedAt = iso || null;
+                paintTimer();
+            }
+
             function updateQueueDisplay(data) {
                 var currentEl = document.getElementById('currentQueue');
                 var nextEl = document.getElementById('nextQueue');
                 if (currentEl) currentEl.textContent = data.current || '---';
                 if (nextEl) nextEl.textContent = data.next || 'No waiting';
                 if (data.waiting_list) renderWaitingList(data.waiting_list);
+                setServingStartedAt(data.serving_started_at || null);
             }
 
             function fetchState() {
@@ -208,6 +244,8 @@
                     .catch(function () {});
             }
 
+            paintTimer();
+            timerInterval = setInterval(paintTimer, 1000);
             setInterval(fetchState, pollInterval);
         });
     </script>

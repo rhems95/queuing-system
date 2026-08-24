@@ -14,7 +14,7 @@
             overflow: hidden;
             background: #00005c;
             color: #fff;
-            font-family: Candara, "Segoe UI", "Trebuchet MS", sans-serif;
+            font-family: "Source Sans 3 Variable", "Segoe UI", Tahoma, Arial, sans-serif;
             user-select: none;
         }
         .fl {

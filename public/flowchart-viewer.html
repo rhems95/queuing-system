@@ -12,7 +12,7 @@
         section h2 { font-size: 1.1rem; margin: 0 0 1rem; color: #1e3a8a; border-bottom: 1px solid #e2e8f0; padding-bottom: 0.5rem; }
         .mermaid { display: flex; justify-content: center; overflow-x: auto; }
     </style>
-    <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+    <script src="vendor/mermaid/mermaid.min.js"></script>
 </head>
 <body>
     <h1>Queue system — flowcharts</h1>
@@ -20,7 +20,7 @@
 
     <section id="s0">
         <h2>0. Master system overview (compact — print on bond paper)</h2>
-        <p class="hint" style="margin-top:-0.5rem;">Anonymous, print-only. Export SVG/PNG from <a href="https://mermaid.live" target="_blank" rel="noopener">mermaid.live</a>; print <strong>Landscape</strong> or <strong>Fit to page</strong> for Letter/A4.</p>
+        <p class="hint" style="margin-top:-0.5rem;">Anonymous, print-only. Print <strong>Landscape</strong> or <strong>Fit to page</strong> for Letter/A4. Mermaid is loaded from local <code>vendor/mermaid/</code> (offline-safe).</p>
         <div class="mermaid">
 %%{init: {'flowchart': {'nodeSpacing': 28, 'rankSpacing': 36, 'padding': 6, 'useMaxWidth': true}, 'themeVariables': { 'fontSize': '11px'}}}%%
 flowchart TD

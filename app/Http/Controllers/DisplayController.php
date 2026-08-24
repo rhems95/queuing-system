@@ -2,16 +2,19 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Queue;
+use App\Models\Service;
 use App\Models\Window;
+use App\Services\FairQueueScheduler;
 use App\Services\QueueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
 
 class DisplayController extends Controller
 {
-    public function __construct(private QueueService $queueService)
-    {
+    public function __construct(
+        private QueueService $queueService,
+        private FairQueueScheduler $scheduler,
+    ) {
     }
 
     /**
@@ -50,56 +53,42 @@ class DisplayController extends Controller
                 $queueNumber = $this->queueService->queueNumberFromCall($call);
 
                 $items[] = [
-                    'window_name'  => $window->window_name,
+                    'window_name' => $window->window_name,
                     'queue_number' => $queueNumber,
-                    'call_token'   => $call ? ($call->id.'|'.($call->called_time ?? '')) : null,
+                    'call_token' => $call ? ($call->id.'|'.($call->called_time ?? '')) : null,
                 ];
             }
 
             $nowServingGroups[] = [
                 'group_name' => $label,
-                'windows'    => $items,
+                'windows' => $items,
             ];
         }
 
-        $waitingQueues = Queue::query()
-            ->join('services', 'queues.service_id', '=', 'services.id')
-            ->whereDate('queues.queue_date', $today)
-            ->where('queues.status', 'waiting')
-            ->orderByDesc('queues.priority')
-            ->orderBy('queues.queue_number')
-            ->orderBy('queues.id')
-            ->get([
-                'queues.queue_number',
-                'queues.priority',
-                'services.service_name',
-            ]);
-
         $waitingColumns = [
-            'Cashier'   => [],
-            'N/A'       => [],
-            'DMO'       => [],
+            'Cashier' => [],
+            'N/A' => [],
+            'DMO' => [],
             'Registrar' => [],
         ];
 
-        foreach ($waitingQueues as $q) {
-            $column = $this->waitingColumnForService((string) $q->service_name);
+        // Same 2 Priority → 1 Regular order used by Call Next (per service).
+        foreach (Service::query()->orderBy('id')->get() as $service) {
+            $column = $this->waitingColumnForService((string) $service->service_name);
             if ($column === null) {
                 continue;
             }
 
-            $priorityLabel = $q->priority ? 'priority' : 'regular';
-            $waitingColumns[$column][] = $q->queue_number.'('.$priorityLabel.')';
-        }
-
-        // Keep each service column to a readable on-screen length.
-        foreach ($waitingColumns as $header => $tickets) {
-            $waitingColumns[$header] = array_slice($tickets, 0, 10);
+            $ordered = $this->scheduler->orderedWaiting((int) $service->id, $today, 10);
+            foreach ($ordered as $q) {
+                $priorityLabel = $q->priority ? 'priority' : 'regular';
+                $waitingColumns[$column][] = $q->queue_number.'('.$priorityLabel.')';
+            }
         }
 
         return [
             'now_serving_groups' => $nowServingGroups,
-            'waiting_columns'    => $waitingColumns,
+            'waiting_columns' => $waitingColumns,
         ];
     }
 
@@ -132,7 +121,7 @@ class DisplayController extends Controller
 
         return view('display.index', [
             'nowServingGroups' => $data['now_serving_groups'],
-            'waitingColumns'   => $data['waiting_columns'],
+            'waitingColumns' => $data['waiting_columns'],
         ]);
     }
 

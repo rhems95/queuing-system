@@ -29,9 +29,7 @@
                         <div class="pecit-login-field">
                             <label class="pecit-label">Email</label>
                             <div class="field-shell">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#5b6478">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                                </svg>
+                                @include('partials.icon', ['name' => 'mail', 'class' => 'pecit-field-icon'])
                                 <input
                                     type="email"
                                     name="email"
@@ -46,9 +44,7 @@
                         <div class="pecit-login-field">
                             <label class="pecit-label">Password</label>
                             <div class="field-shell">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="#5b6478">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 11V7a4 4 0 118 0v4M6 11h12v8a2 2 0 01-2 2H8a2 2 0 01-2-2v-8z" />
-                                </svg>
+                                @include('partials.icon', ['name' => 'lock', 'class' => 'pecit-field-icon'])
                                 <input
                                     type="password"
                                     name="password"

@@ -69,28 +69,39 @@
         }
         .waiting-panel {
             flex: 1 1 auto;
-            min-height: 52vh;
-            height: 100%;
-            overflow-y: auto;
+            min-height: 0;
+            overflow: hidden;
             background: #fff;
             border: 1px solid #e2e8f0;
             box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            display: flex;
+            flex-direction: column;
         }
         .waiting-table {
             width: 100%;
+            height: 100%;
             table-layout: fixed;
             text-align: center;
             border-collapse: collapse;
         }
-        .waiting-table th,
-        .waiting-table td {
+        .waiting-table thead th {
             width: 25%;
             vertical-align: middle;
+            padding: 0.35rem 0.4rem;
+            font-size: 1rem;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            line-height: 1.15;
+        }
+        .waiting-table tbody td {
+            width: 25%;
+            vertical-align: middle;
+            padding: 0.18rem 0.35rem;
         }
         .waiting-cell {
-            font-size: 1.45rem;
-            letter-spacing: 0.03em;
-            line-height: 1.25;
+            font-size: 1.05rem;
+            letter-spacing: 0.02em;
+            line-height: 1.1;
             white-space: nowrap;
         }
         .waiting-num { font-weight: 800; }
@@ -149,10 +160,10 @@
             <h2 class="text-xl font-semibold mb-2 text-slate-900">Waiting List</h2>
             <div class="waiting-panel">
                 <table class="waiting-table">
-                    <thead class="text-white sticky top-0" style="background:#000080;">
+                    <thead class="text-white" style="background:#000080;">
                         <tr>
                             @foreach(['Cashier', 'N/A', 'DMO', 'Registrar'] as $header)
-                                <th class="px-2 py-3 text-xl font-extrabold tracking-wide">{{ $header }}</th>
+                                <th>{{ $header }}</th>
                             @endforeach
                         </tr>
                     </thead>
@@ -164,7 +175,7 @@
                         @endphp
                         @if (! $hasAny)
                             <tr>
-                                <td colspan="4" class="px-4 py-4 text-center text-slate-500">
+                                <td colspan="4" class="waiting-empty text-center text-slate-500">
                                     No waiting queues.
                                 </td>
                             </tr>
@@ -183,7 +194,7 @@
                                                 $ticketTag = '';
                                             }
                                         @endphp
-                                        <td class="waiting-cell px-2 py-2.5 {{ $isPriority ? 'bg-slate-100' : '' }}">
+                                        <td class="waiting-cell {{ $isPriority ? 'bg-slate-100' : '' }}">
                                             @if ($ticketNum !== '')
                                                 <span class="waiting-num">{{ $ticketNum }}</span>@if ($ticketTag !== '')<span class="waiting-tag {{ $isPriority ? 'is-priority' : '' }}">{{ $ticketTag }}</span>@endif
                                             @endif
@@ -268,7 +279,7 @@
                 var maxRows = 10;
 
                 if (!hasAny) {
-                    return '<tr><td colspan="4" class="px-4 py-4 text-center text-slate-500">No waiting queues.</td></tr>';
+                    return '<tr><td colspan="4" class="waiting-empty text-center text-slate-500">No waiting queues.</td></tr>';
                 }
 
                 var html = '';
@@ -277,7 +288,7 @@
                     headers.forEach(function (h, idx) {
                         var label = lists[idx][i] || '';
                         var shade = String(label).indexOf('(priority)') !== -1 ? 'bg-slate-100' : '';
-                        html += '<td class="waiting-cell px-2 py-2.5 ' + shade + '">' +
+                        html += '<td class="waiting-cell ' + shade + '">' +
                             formatWaitingLabel(label) +
                             '</td>';
                     });
@@ -516,5 +527,6 @@
             setInterval(fetchAndUpdate, pollInterval);
         })();
     </script>
+    @include('partials.secret-about-hotkey')
 </body>
 </html>

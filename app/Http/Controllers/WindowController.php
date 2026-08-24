@@ -4,18 +4,22 @@ namespace App\Http\Controllers;
 
 use App\Models\Queue;
 use App\Models\QueueCall;
+use App\Models\Service;
 use App\Models\Window;
+use App\Services\FairQueueScheduler;
+use App\Services\QueueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Services\QueueService;
 
 class WindowController extends Controller
 {
-    public function __construct(private QueueService $queueService)
-    {
+    public function __construct(
+        private QueueService $queueService,
+        private FairQueueScheduler $scheduler,
+    ) {
     }
 
     /**
@@ -28,38 +32,31 @@ class WindowController extends Controller
         $currentCall = $this->queueService->latestCallForWindow($windowId, $today);
 
         $currentQueueNumber = null;
-        if ($currentCall) {
+        $servingStartedAt = null;
+
+        if ($currentCall && $currentCall->finished_time === null) {
             $currentQueueNumber = $this->queueService->queueNumberFromCall($currentCall);
+            $servingStartedAt = Carbon::parse($currentCall->called_time)->toIso8601String();
         }
 
         $window = Window::find($windowId);
-        $windowServiceId = $window ? $window->service_id : null;
+        $windowServiceId = $window ? (int) $window->service_id : null;
 
         $nextQueue = $windowServiceId
-            ? Queue::where('service_id', $windowServiceId)
-                ->whereDate('queue_date', $today)
-                ->where('status', 'waiting')
-                ->orderByDesc('priority')
-                ->orderBy('id')
-                ->first()
+            ? $this->scheduler->peekNextWaiting($windowServiceId, $today)
             : null;
 
         $waitingList = $windowServiceId
-            ? Queue::where('service_id', $windowServiceId)
-                ->whereDate('queue_date', $today)
-                ->where('status', 'waiting')
-                ->orderByDesc('priority')
-                ->orderBy('queue_number')
-                ->limit(10)
-                ->get(['id', 'queue_number', 'priority'])
+            ? $this->scheduler->orderedWaiting($windowServiceId, $today, 10)
             : collect();
 
         return [
-            'current'       => $currentQueueNumber,
-            'next'          => $nextQueue ? $nextQueue->queue_number : null,
-            'waiting_list'  => $waitingList->map(fn ($q) => [
+            'current' => $currentQueueNumber,
+            'next' => $nextQueue ? $nextQueue->queue_number : null,
+            'serving_started_at' => $servingStartedAt,
+            'waiting_list' => $waitingList->map(fn ($q) => [
                 'queue_number' => $q->queue_number,
-                'priority'     => $q->priority ? 'Priority' : 'Regular',
+                'priority' => $q->priority ? 'Priority' : 'Regular',
             ])->values()->all(),
         ];
     }
@@ -82,30 +79,23 @@ class WindowController extends Controller
             ->orderByDesc('called_time')
             ->first();
 
-        $currentQueue = $currentCall ? Queue::find($currentCall->queue_id) : null;
+        $currentQueue = null;
+        $servingStartedAt = null;
+        if ($currentCall && $currentCall->finished_time === null) {
+            $currentQueue = Queue::find($currentCall->queue_id);
+            $servingStartedAt = Carbon::parse($currentCall->called_time)->toIso8601String();
+        }
 
-        $windowServiceId = $window->service_id;
-
-        $nextQueue = Queue::where('service_id', $windowServiceId)
-            ->whereDate('queue_date', $today)
-            ->where('status', 'waiting')
-            ->orderByDesc('priority')
-            ->orderBy('id')
-            ->first();
-
-        $waitingTickets = Queue::where('service_id', $windowServiceId)
-            ->whereDate('queue_date', $today)
-            ->where('status', 'waiting')
-            ->orderByDesc('priority')
-            ->orderBy('queue_number')
-            ->limit(10)
-            ->get();
+        $windowServiceId = (int) $window->service_id;
+        $nextQueue = $this->scheduler->peekNextWaiting($windowServiceId, $today);
+        $waitingTickets = $this->scheduler->orderedWaiting($windowServiceId, $today, 10);
 
         return view('staff.window', [
-            'currentQueue'   => $currentQueue,
-            'nextQueue'      => $nextQueue,
-            'window'         => $window,
+            'currentQueue' => $currentQueue,
+            'nextQueue' => $nextQueue,
+            'window' => $window,
             'waitingTickets' => $waitingTickets,
+            'servingStartedAt' => $servingStartedAt,
         ]);
     }
 
@@ -129,19 +119,20 @@ class WindowController extends Controller
             ->orderByDesc('called_time')
             ->first();
 
-        $currentQueue = $currentCall ? Queue::find($currentCall->queue_id) : null;
+        $currentQueue = null;
+        $servingStartedAt = null;
+        if ($currentCall && $currentCall->finished_time === null) {
+            $currentQueue = Queue::find($currentCall->queue_id);
+            $servingStartedAt = Carbon::parse($currentCall->called_time)->toIso8601String();
+        }
 
-        $nextQueue = Queue::where('service_id', $window->service_id)
-            ->whereDate('queue_date', $today)
-            ->where('status', 'waiting')
-            ->orderByDesc('priority')
-            ->orderBy('id')
-            ->first();
+        $nextQueue = $this->scheduler->peekNextWaiting((int) $window->service_id, $today);
 
         return view('staff.float', [
             'currentQueue' => $currentQueue,
-            'nextQueue'    => $nextQueue,
-            'window'       => $window,
+            'nextQueue' => $nextQueue,
+            'window' => $window,
+            'servingStartedAt' => $servingStartedAt,
         ]);
     }
 
@@ -189,7 +180,12 @@ class WindowController extends Controller
         $windowId = $user->window_id;
 
         if (! $windowId) {
-            return response()->json(['current' => null, 'next' => null, 'waiting_list' => []], 403);
+            return response()->json([
+                'current' => null,
+                'next' => null,
+                'serving_started_at' => null,
+                'waiting_list' => [],
+            ], 403);
         }
 
         return response()->json($this->getWindowState($windowId));
@@ -199,14 +195,18 @@ class WindowController extends Controller
     {
         $user = Auth::user();
         $windowId = $user->window_id;
-        if (! $windowId) abort(403);
+        if (! $windowId) {
+            abort(403);
+        }
 
         $today = Carbon::today()->toDateString();
-        $windowServiceId = DB::table('windows')->where('id', $windowId)->value('service_id');
+        $windowServiceId = (int) DB::table('windows')->where('id', $windowId)->value('service_id');
 
         $queue = DB::transaction(function () use ($windowId, $windowServiceId, $today) {
-            // Finish the currently called queue for this window (same as "Complete"),
-            // so history + admin completed counts reflect immediately.
+            // Serialize Call Next across all windows for this service.
+            Service::where('id', $windowServiceId)->lockForUpdate()->first();
+
+            // Finish the currently called queue for THIS window only.
             $currentCall = QueueCall::where('window_id', $windowId)
                 ->whereDate('called_time', $today)
                 ->orderByDesc('called_time')
@@ -227,24 +227,15 @@ class WindowController extends Controller
                 }
             }
 
-            $queue = Queue::where('service_id', $windowServiceId)
-                ->whereDate('queue_date', $today)
-                ->where('status', 'waiting')
-                ->orderByDesc('priority')
-                ->orderBy('id')
-                ->lockForUpdate()
-                ->first();
+            $queue = $this->scheduler->claimNextWaiting($windowServiceId, $today);
 
             if (! $queue) {
                 return null;
             }
 
-            $queue->status = 'serving';
-            $queue->save();
-
             QueueCall::create([
-                'queue_id'    => $queue->id,
-                'window_id'   => $windowId,
+                'queue_id' => $queue->id,
+                'window_id' => $windowId,
                 'called_time' => now(),
             ]);
 
@@ -262,7 +253,9 @@ class WindowController extends Controller
     {
         $user = Auth::user();
         $windowId = $user->window_id;
-        if (! $windowId) abort(403);
+        if (! $windowId) {
+            abort(403);
+        }
 
         $today = Carbon::today()->toDateString();
 
@@ -271,11 +264,12 @@ class WindowController extends Controller
             ->orderByDesc('called_time')
             ->first();
 
-        if (! $currentCall) {
+        if (! $currentCall || $currentCall->finished_time !== null) {
             return back()->with('status', 'No current queue to recall.');
         }
 
         // Update called_time so display polling always sees recall as a fresh event.
+        // Timer resets on recall (re-announce starts a fresh call moment).
         $currentCall->called_time = now();
         $currentCall->save();
 
@@ -288,26 +282,37 @@ class WindowController extends Controller
     {
         $user = Auth::user();
         $windowId = $user->window_id;
-        if (! $windowId) abort(403);
+        if (! $windowId) {
+            abort(403);
+        }
 
         $today = Carbon::today()->toDateString();
 
-        $currentCall = QueueCall::where('window_id', $windowId)
-            ->whereDate('called_time', $today)
-            ->orderByDesc('called_time')
-            ->first();
+        $done = DB::transaction(function () use ($windowId, $today) {
+            $currentCall = QueueCall::where('window_id', $windowId)
+                ->whereDate('called_time', $today)
+                ->orderByDesc('called_time')
+                ->lockForUpdate()
+                ->first();
 
-        if (! $currentCall) {
+            if (! $currentCall || $currentCall->finished_time !== null) {
+                return false;
+            }
+
+            $currentCall->finished_time = now();
+            $currentCall->save();
+
+            $queue = Queue::where('id', $currentCall->queue_id)->lockForUpdate()->first();
+            if ($queue) {
+                $queue->status = 'done';
+                $queue->save();
+            }
+
+            return true;
+        });
+
+        if (! $done) {
             return back()->with('status', 'No current queue.');
-        }
-
-        $currentCall->finished_time = now();
-        $currentCall->save();
-
-        $queue = Queue::find($currentCall->queue_id);
-        if ($queue) {
-            $queue->status = 'done';
-            $queue->save();
         }
 
         return back()->with('status', 'Queue completed.');

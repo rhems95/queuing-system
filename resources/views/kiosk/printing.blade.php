@@ -166,25 +166,25 @@
             }
 
             #thermalTicket .thermal-title {
-                font-size: 11px !important;
+                font-size: 13px !important;
                 font-weight: 700 !important;
                 line-height: 1.2 !important;
             }
             #thermalTicket .thermal-number {
-                font-size: 28px !important;
+                font-size: 34px !important;
                 font-weight: 700 !important;
                 line-height: 1.25 !important;
-                min-height: 28px !important;
+                min-height: 34px !important;
                 overflow: visible !important;
             }
             #thermalTicket .thermal-line {
-                font-size: 11px !important;
-                line-height: 1.2 !important;
+                font-size: 13px !important;
+                line-height: 1.25 !important;
                 white-space: nowrap !important;
             }
             #thermalTicket .thermal-footer {
-                font-size: 10px !important;
-                line-height: 1.2 !important;
+                font-size: 12px !important;
+                line-height: 1.25 !important;
                 border-top: 1px dashed #000 !important;
                 padding-top: 1px !important;
                 margin-top: 1px !important;
@@ -201,6 +201,9 @@
                     <div class="thermal-number">{{ $queue->queue_number }}</div>
                     <div class="thermal-line">SERVICE: {{ $printServiceName }}</div>
                     <div class="thermal-line">PRIORITY: {{ strtoupper($priorityLabel) }}</div>
+                    @if (!empty($estimatedMinutes))
+                        <div class="thermal-line">Estimated Time: {{ (int) $estimatedMinutes }} minutes</div>
+                    @endif
                     <div class="thermal-line">ISSUED: <span id="issuedAtPrint">{{ $issuedAt->format('Y-m-d H:i') }}</span></div>
                     <div class="thermal-footer">PLEASE WAIT FOR YOUR NUMBER</div>
                 </td>

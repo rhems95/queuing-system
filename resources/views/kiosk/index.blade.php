@@ -111,6 +111,14 @@
                     <p class="step3-label">You selected:</p>
                     <div id="confirmServiceName" class="step3-service-name">---</div>
                     <p class="step3-priority">Priority: <span id="confirmPriorityLabel" class="step3-priority-value">Regular</span></p>
+
+                    <div id="confirmQueueInfo" class="step3-queue-info" aria-live="polite">
+                        <p class="step3-info-line">Currently Serving: <strong id="confirmServing">—</strong></p>
+                        <p class="step3-info-line">Priority Waiting: <strong id="confirmPriorityWaiting">0</strong></p>
+                        <p class="step3-info-line">Regular Waiting: <strong id="confirmRegularWaiting">0</strong></p>
+                        <p class="step3-eta" id="confirmEtaLine">Estimated Waiting Time: <strong id="confirmEta">Calculating…</strong></p>
+                    </div>
+
                     <p class="step3-question">Do you want to print your ticket?</p>
 
                     <div class="step3-actions">
@@ -133,6 +141,7 @@
             var confirmServiceName = document.getElementById('confirmServiceName');
             var confirmPriorityLabel = document.getElementById('confirmPriorityLabel');
             var selectedServiceName = '---';
+            var estimateUrl = @json(route('kiosk.estimate'));
 
             function showStep(stepNo) {
                 step1.classList.add('hidden');
@@ -149,6 +158,51 @@
                     step3.classList.remove('hidden');
                     stepIndicator.textContent = 'STEP 3 OF 3 - CONFIRM & PRINT';
                 }
+            }
+
+            function setEstimateLoading() {
+                var serving = document.getElementById('confirmServing');
+                var pWait = document.getElementById('confirmPriorityWaiting');
+                var rWait = document.getElementById('confirmRegularWaiting');
+                var eta = document.getElementById('confirmEta');
+                if (serving) serving.textContent = '—';
+                if (pWait) pWait.textContent = '—';
+                if (rWait) rWait.textContent = '—';
+                if (eta) eta.textContent = 'Calculating…';
+            }
+
+            function loadEstimate() {
+                setEstimateLoading();
+                if (!serviceIdInput.value) return;
+
+                var params = new URLSearchParams();
+                params.set('service_id', serviceIdInput.value);
+                params.set('priority', priorityInput.value || 'regular');
+
+                fetch(estimateUrl + '?' + params.toString(), {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        var serving = document.getElementById('confirmServing');
+                        var pWait = document.getElementById('confirmPriorityWaiting');
+                        var rWait = document.getElementById('confirmRegularWaiting');
+                        var eta = document.getElementById('confirmEta');
+                        if (serving) serving.textContent = data.currently_serving || 'None';
+                        if (pWait) pWait.textContent = String(data.priority_waiting ?? 0);
+                        if (rWait) rWait.textContent = String(data.regular_waiting ?? 0);
+                        if (eta) {
+                            if (data.estimated_minutes != null) {
+                                eta.textContent = 'Approximately ' + data.estimated_minutes + ' minutes';
+                            } else {
+                                eta.textContent = 'Not available yet';
+                            }
+                        }
+                    })
+                    .catch(function () {
+                        var eta = document.getElementById('confirmEta');
+                        if (eta) eta.textContent = 'Not available yet';
+                    });
             }
 
             document.querySelectorAll('.service-btn').forEach(function (btn) {
@@ -183,6 +237,7 @@
                 confirmServiceName.textContent = selectedServiceName;
                 confirmPriorityLabel.textContent = priorityLabel;
                 showStep(3);
+                loadEstimate();
             });
 
             document.getElementById('backToStep1').addEventListener('click', function () {
@@ -541,6 +596,36 @@
             margin-bottom: 2px;
         }
         .step3-priority-value { font-weight: 800; }
+        .step3-queue-info {
+            margin: 10px auto 8px;
+            max-width: 420px;
+            padding: 10px 12px;
+            border: 1px solid #dbe3f0;
+            border-radius: 10px;
+            background: #fff;
+            text-align: left;
+        }
+        .step3-info-line {
+            margin: 0 0 4px;
+            font-size: 15px;
+            color: #334155;
+        }
+        .step3-info-line strong {
+            color: #0f5fb8;
+            font-weight: 800;
+        }
+        .step3-eta {
+            margin: 8px 0 0;
+            padding-top: 6px;
+            border-top: 1px solid #e2e8f0;
+            font-size: 16px;
+            color: #1e3a5f;
+            font-weight: 700;
+        }
+        .step3-eta strong {
+            color: #0f5fb8;
+            font-weight: 900;
+        }
         .step3-question {
             font-size: 18px;
             color: #334155;
