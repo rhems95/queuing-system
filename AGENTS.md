@@ -48,7 +48,7 @@ Admin: live dashboard, users, history, wait/service reports
 
 - Dashboard: `GET /window` — Call Next, Recall, Complete; waiting list (10, fair call order); poll `GET /window/state` (includes `serving_started_at`).
 - Per-window **service timer** from open `queue_calls.called_time` (independent across Cashier 1 / Cashier 2 / …).
-- Shortcut: **Ctrl + Alt + Space** → Call Next.
+- Shortcuts: **Alt+N** → Call Next; **Alt+R** → Recall; **Alt+C** → Complete.
 - History: `GET /window/history` (own served tickets; no edit/delete).
 - **Fair scheduling (service-wide):** 2 Priority → 1 Regular across all windows sharing a `service_id`. `callNext` locks the `services` row then claims via `FairQueueScheduler` (atomic status update; no duplicate ticket assignment).
 - **System float (Windows always-on-top):**
@@ -129,7 +129,7 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | Panel theme | `layouts/panel.blade.php`, `css/panel.css`, `partials/admin-sidebar.blade.php`, `partials/staff-sidebar.blade.php`, `partials/icon.blade.php` |
 | Queue logic | `FairQueueScheduler`, `WaitTimeEstimator`, `QueueService` |
 | Capstone About | `AboutController`, `config/about.php`, `views/about/*`, `storage/app/private/about/team/` |
-| Diagrams | `README.md` (Mermaid ERD + flowchart), `docs/erd.md`, `docs/system-flowchart.md` |
+| Diagrams | `README.md` (Mermaid ERD + flowchart), `docs/erd.md`, `docs/erd/queuing_system.erd` (ERD Designer / MariaDB; do not hand-edit), `docs/system-flowchart.md`, Archify maps `docs/archify/pecit-runtime.architecture.html` and `docs/archify/pecit-erd.architecture.html` |
 | Security headers | `SetSecurityHeaders` middleware |
 | Logo | `public/logo/logo.png` |
 
@@ -256,6 +256,8 @@ Windows helpers (see `bats/GUIDE.txt`):
 ```bat
 bats\install-pecit-startup.bat
 bats\start-pecit-on-windows.bat
+bats\install-mysql-backup-startup.bat
+bats\backup-mysql-on-startup.bat
 bats\start-kiosk-chrome.bat
 bats\start-staff-float.bat
 ```

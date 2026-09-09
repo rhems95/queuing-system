@@ -1,8 +1,10 @@
 # Queue system — detailed system flowcharts
 
-Mermaid diagrams for the **anonymous, print-only** PECIT queue system (Laravel 12, Blade, MySQL).  
+Mermaid diagrams for the **anonymous, print-only** PECIT queue system (Laravel 12, Blade, MySQL).
 
-**View in browser (rendered):** with `php artisan serve` running, open  
+Interactive Archify architecture map (open in a browser): [docs/archify/pecit-runtime.architecture.html](archify/pecit-runtime.architecture.html).
+
+**View Mermaid in browser:** with `php artisan serve` running, open  
 [http://127.0.0.1:8000/flowchart-viewer.html](http://127.0.0.1:8000/flowchart-viewer.html)  
 (or `/flowchart-viewer.html` on your app host).  
 
@@ -206,7 +208,7 @@ flowchart TD
     CP --> CP1["Set finished_time<br/>queue done"]
 
     subgraph Shortcut["Keyboard"]
-        K1["Ctrl+Alt+Space → #call-next-btn"]
+        K1["Alt+N → Call Next<br/>Alt+R → Recall<br/>Alt+C → Complete"]
     end
     Shortcut --> CN
 

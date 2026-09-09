@@ -15,6 +15,7 @@ QUICK START
 3. Display TV/PC:                 start-display-edge.bat
 4. Staff float window:           start-staff-float.bat
 5. Auto-start at Windows login:  run install-pecit-startup.bat once
+6. Auto-backup MySQL at login:   run install-mysql-backup-startup.bat once
 
 
 FILE LIST AND PURPOSE
@@ -35,6 +36,25 @@ start-pecit-on-windows.bat
     3) Launches start-kiosk-chrome.bat
     4) Optionally launches the display (set START_DISPLAY=1 inside the file)
   When to use: At PC startup, or manually to bring the whole stack up.
+
+backup-mysql-on-startup.bat
+  Purpose: Dump current XAMPP MySQL user databases (including queuing_system).
+  What it does:
+    - Waits until MySQL accepts connections (up to ~2 minutes)
+    - Writes C:\xampp\mysql\backups\pecit-mysql-YYYY-MM-DD_HHMMSS.sql
+    - Updates pecit-mysql-latest.sql
+    - Deletes dated dumps older than KEEP_DAYS (default 14)
+  When to use: Manually, or at Windows login via install-mysql-backup-startup.bat.
+  Notes: Safe to run next to start-pecit-on-windows.bat; it waits for MySQL.
+         Does not dump the mysql system schema. Restore with:
+         C:\xampp\mysql\bin\mysql.exe -u root < pecit-mysql-latest.sql
+
+install-mysql-backup-startup.bat
+  Purpose: Creates a Windows Startup shortcut for the MySQL backup bat.
+  What it does: Adds "PECIT MySQL Backup.lnk" that runs
+                backup-mysql-on-startup.bat when you sign in.
+  When to use: Once on the kiosk/server PC that holds the database.
+  To remove: Delete the shortcut from the Windows Startup folder.
 
 start-kiosk-chrome.bat
   Purpose: Customer kiosk with silent thermal printing (Google Chrome).
@@ -86,6 +106,8 @@ Inside the .bat files you may change:
   PRINTER_EXACT / PRINTER_MATCH   default Exact=XP-58(XP-Q90EC), Match=XP-Q90EC
   XAMPP_DIR                 default C:\xampp
   START_DISPLAY=1           in start-pecit-on-windows.bat to also open display
+  KEEP_DAYS                 in backup-mysql-on-startup.bat (default 14)
+  BACKUP_DIR                default C:\xampp\mysql\backups
 
 
 TROUBLESHOOTING
@@ -95,6 +117,8 @@ TROUBLESHOOTING
 - Site not loading: start Apache/MySQL in XAMPP, or run start-pecit-on-windows.bat.
 - Float button in staff UI fails: confirm bats\start-staff-float.bat exists; Apache must run
   as the logged-in Windows desktop user.
+- Backup times out: start MySQL first (XAMPP or start-pecit-on-windows.bat), then re-run
+  backup-mysql-on-startup.bat. Check C:\xampp\mysql\backups\pecit-mysql-backup.log.
 
 
 Last updated: for PECIT Queuing System (Laravel) Windows deployment.

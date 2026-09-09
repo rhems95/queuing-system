@@ -188,7 +188,8 @@ Domain migrations (if aligning an existing DB instead of full import) live under
 1. Run `bats/install-pecit-startup.bat` once (creates a Startup shortcut).
 2. On each login, `bats/start-pecit-on-windows.bat` starts XAMPP Apache/MySQL, waits for the site, then launches the kiosk.
 3. To also open the display automatically, edit `bats/start-pecit-on-windows.bat` and set `START_DISPLAY=1`.
-4. To remove autostart, delete the shortcut in the Windows Startup folder.
+4. To dump MySQL at each login (recommended after a corruption scare), run `bats/install-mysql-backup-startup.bat` once. Dumps go to `C:\xampp\mysql\backups` and dated files older than 14 days are deleted.
+5. To remove autostart, delete the shortcut(s) in the Windows Startup folder.
 
 See `bats/GUIDE.txt` for every launcher’s purpose.
 
@@ -210,7 +211,7 @@ Waiting list columns follow the same **call order** as Call Next (2 Priority →
 ### Staff
 
 1. Log in with a staff account → `/window`.
-2. Use **Call Next**, **Recall**, **Complete** (or **Ctrl + Alt + Space** for Call Next).
+2. Use **Call Next**, **Recall**, **Complete** (or **Alt+N** Next, **Alt+R** Recall, **Alt+C** Complete).
 3. Watch the **Service Time** timer for the ticket on *this* counter only.
 4. Optional always-on-top panel: click **Open System Float**, or run `bats/start-staff-float.bat` (~260×220).
 
@@ -234,7 +235,7 @@ Log in as admin → `/admin`:
 
 ## Diagrams (Mermaid)
 
-GitHub renders these on the README. You can also paste them into [mermaid.live](https://mermaid.live), or open the local viewer at `/flowchart-viewer.html` (offline Mermaid in `public/vendor/mermaid/`). More detail: [docs/system-flowchart.md](docs/system-flowchart.md).
+GitHub renders these on the README. You can also paste them into [mermaid.live](https://mermaid.live), or open the local viewer at `/flowchart-viewer.html` (offline Mermaid in `public/vendor/mermaid/`). More detail: [docs/system-flowchart.md](docs/system-flowchart.md). Crow’s-foot ERD: [docs/erd/queuing_system.erd](docs/erd/queuing_system.erd) (open in [ERD Designer](https://kajitiluna.github.io/erd-designer) or the `kajitiluna.erd-designer` extension). Interactive Archify maps: [runtime architecture](docs/archify/pecit-runtime.architecture.html) and [ERD](docs/archify/pecit-erd.architecture.html).
 
 ### Entity-relationship diagram (ERD)
 

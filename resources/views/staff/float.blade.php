@@ -158,27 +158,35 @@
         <div class="sf-actions">
             <form method="POST" action="{{ route('window.callNext') }}">
                 @csrf
-                <button type="submit" id="call-next-btn" class="sf-btn sf-call">Call Next</button>
+                <button type="submit" id="call-next-btn" class="sf-btn sf-call" title="Alt+N">Call Next</button>
             </form>
             <form method="POST" action="{{ route('window.recall') }}">
                 @csrf
-                <button type="submit" class="sf-btn sf-recall">Recall</button>
+                <button type="submit" id="recall-btn" class="sf-btn sf-recall" title="Alt+R">Recall</button>
             </form>
             <form method="POST" action="{{ route('window.complete') }}">
                 @csrf
-                <button type="submit" class="sf-btn sf-complete">Complete</button>
+                <button type="submit" id="complete-btn" class="sf-btn sf-complete" title="Alt+C">Complete</button>
             </form>
         </div>
     </div>
 
     <script>
         document.addEventListener('keydown', function (e) {
-            if (e.ctrlKey && e.altKey && e.code === 'Space') {
-                e.preventDefault();
-                var btn = document.getElementById('call-next-btn');
-                if (btn) btn.click();
-            }
-        });
+            if (e.repeat || !e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+            var tag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '';
+            if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+            var key = String(e.key || '').toLowerCase();
+            var code = String(e.code || '');
+            var btnId = null;
+            if (key === 'n' || code === 'KeyN') btnId = 'call-next-btn';
+            else if (key === 'r' || code === 'KeyR') btnId = 'recall-btn';
+            else if (key === 'c' || code === 'KeyC') btnId = 'complete-btn';
+            if (!btnId) return;
+            e.preventDefault();
+            var btn = document.getElementById(btnId);
+            if (btn && !btn.disabled) btn.click();
+        }, true);
 
         document.addEventListener('DOMContentLoaded', function () {
             var toast = document.getElementById('statusToast');
