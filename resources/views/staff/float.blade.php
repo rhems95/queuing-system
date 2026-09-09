@@ -79,6 +79,20 @@
             letter-spacing: 0.03em;
             font-variant-numeric: tabular-nums;
         }
+        .sf-name {
+            display: block;
+            margin-top: 2px;
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0;
+            line-height: 1.15;
+            max-height: 1.15em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            opacity: 0.95;
+            color: #f5e6a3;
+        }
         .sf-timer {
             text-align: center;
             font-size: 10px;
@@ -94,7 +108,7 @@
         }
         .sf-actions {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 5px;
             align-items: stretch;
         }
@@ -118,6 +132,7 @@
         .sf-call { background: #0f7a4b; }
         .sf-recall { background: #d97706; }
         .sf-complete { background: #1d4ed8; }
+        .sf-hold { background: #64748b; }
         .sf-toast {
             background: rgba(255, 255, 255, 0.14);
             border: 1px solid rgba(255, 255, 255, 0.25);
@@ -131,8 +146,8 @@
     <div class="sf">
         <div class="sf-head">
             <div>
-                <h1>{{ $window->service->service_name ?? 'Window' }}</h1>
-                <p>{{ $window->window_name }}</p>
+                <h1>{{ $window->window_name }}</h1>
+                <p>{{ $window->service->service_name ?? 'Window' }}</p>
             </div>
             <div class="sf-pin">ON TOP</div>
         </div>
@@ -145,6 +160,7 @@
             <div>
                 <span>Current</span>
                 <strong id="currentQueue">{{ $currentQueue->queue_number ?? '---' }}</strong>
+                <span class="sf-name" id="currentStudentName">{{ $currentStudentName ?? '' }}</span>
             </div>
             <div>
                 <span>Next</span>
@@ -158,27 +174,39 @@
         <div class="sf-actions">
             <form method="POST" action="{{ route('window.callNext') }}">
                 @csrf
-                <button type="submit" id="call-next-btn" class="sf-btn sf-call">Call Next</button>
+                <button type="submit" id="call-next-btn" class="sf-btn sf-call" title="Alt+N">Call Next</button>
             </form>
             <form method="POST" action="{{ route('window.recall') }}">
                 @csrf
-                <button type="submit" class="sf-btn sf-recall">Recall</button>
+                <button type="submit" id="recall-btn" class="sf-btn sf-recall" title="Alt+R">Recall</button>
             </form>
             <form method="POST" action="{{ route('window.complete') }}">
                 @csrf
-                <button type="submit" class="sf-btn sf-complete">Complete</button>
+                <button type="submit" id="complete-btn" class="sf-btn sf-complete" title="Alt+C">Complete</button>
+            </form>
+            <form method="POST" action="{{ route('window.hold') }}">
+                @csrf
+                <button type="submit" id="hold-btn" class="sf-btn sf-hold">Hold</button>
             </form>
         </div>
     </div>
 
     <script>
         document.addEventListener('keydown', function (e) {
-            if (e.ctrlKey && e.altKey && e.code === 'Space') {
-                e.preventDefault();
-                var btn = document.getElementById('call-next-btn');
-                if (btn) btn.click();
-            }
-        });
+            if (e.repeat || !e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+            var tag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '';
+            if (tag === 'input' || tag === 'textarea' || tag === 'select' || (e.target && e.target.isContentEditable)) return;
+            var key = String(e.key || '').toLowerCase();
+            var code = String(e.code || '');
+            var btnId = null;
+            if (key === 'n' || code === 'KeyN') btnId = 'call-next-btn';
+            else if (key === 'r' || code === 'KeyR') btnId = 'recall-btn';
+            else if (key === 'c' || code === 'KeyC') btnId = 'complete-btn';
+            if (!btnId) return;
+            e.preventDefault();
+            var btn = document.getElementById(btnId);
+            if (btn && !btn.disabled) btn.click();
+        }, true);
 
         document.addEventListener('DOMContentLoaded', function () {
             var toast = document.getElementById('statusToast');
@@ -222,8 +250,10 @@
                     .then(function (r) { return r.json(); })
                     .then(function (data) {
                         var currentEl = document.getElementById('currentQueue');
+                        var currentNameEl = document.getElementById('currentStudentName');
                         var nextEl = document.getElementById('nextQueue');
                         if (currentEl) currentEl.textContent = data.current || '---';
+                        if (currentNameEl) currentNameEl.textContent = data.current_name || '';
                         if (nextEl) nextEl.textContent = data.next || '—';
                         servingStartedAt = data.serving_started_at || null;
                         paintTimer();

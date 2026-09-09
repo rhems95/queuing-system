@@ -50,6 +50,13 @@
                 <small>Staff accounts &amp; windows</small>
             </span>
         </a>
+        <a href="{{ route('admin.students.index') }}" class="pecit-quick-card">
+            @include('partials.icon', ['name' => 'students', 'class' => 'pecit-quick-icon'])
+            <span class="pecit-quick-copy">
+                <strong>Students</strong>
+                <small>Add, delete, or import CSV</small>
+            </span>
+        </a>
         <a href="{{ route('admin.history') }}" class="pecit-quick-card">
             @include('partials.icon', ['name' => 'history', 'class' => 'pecit-quick-icon'])
             <span class="pecit-quick-copy">

@@ -226,7 +226,7 @@
                     <div class="ticket-divider"></div>
                     <a href="{{ route('kiosk') }}" class="ticket-home-btn">Home</a>
                 </div>
-                <p class="screen-note">If ticket did not print, please ask staff assistance.</p>
+                <p class="screen-note">If ticket did not print, please ask staff assistance or take a photo of the screen.</p>
             </div>
         </div>
     </div>

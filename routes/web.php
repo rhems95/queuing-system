@@ -8,6 +8,7 @@ use App\Http\Controllers\WindowController;
 use App\Http\Controllers\DisplayController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\StudentManagementController;
 use App\Http\Controllers\AboutController;
 
 Route::get('/', function () {
@@ -28,6 +29,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 // Kiosk (public)
 Route::get('/kiosk', [KioskController::class, 'index'])->name('kiosk');
 Route::get('/kiosk/estimate', [KioskController::class, 'estimate'])->name('kiosk.estimate');
+Route::get('/kiosk/student', [KioskController::class, 'lookupStudent'])->name('kiosk.student');
 Route::post('/kiosk', [KioskController::class, 'store'])->name('kiosk.store');
 
 // Public display
@@ -42,6 +44,12 @@ Route::middleware('auth')->group(function () {
         Route::get('/queues/waiting', [AdminDashboardController::class, 'waitingQueues'])
             ->name('queues.waiting');
         Route::resource('/users', UserManagementController::class)->names('users');
+        Route::get('/students', [StudentManagementController::class, 'index'])->name('students.index');
+        Route::get('/students/create', [StudentManagementController::class, 'create'])->name('students.create');
+        Route::post('/students', [StudentManagementController::class, 'store'])->name('students.store');
+        Route::get('/students/sample', [StudentManagementController::class, 'sample'])->name('students.sample');
+        Route::post('/students/import', [StudentManagementController::class, 'import'])->name('students.import');
+        Route::delete('/students/{student}', [StudentManagementController::class, 'destroy'])->name('students.destroy');
         Route::get('/history', [HistoryController::class, 'index'])->name('history');
         Route::get('/history/tickets', [HistoryController::class, 'tickets'])->name('history.tickets');
         Route::get('/history/reports', [HistoryController::class, 'reports'])->name('history.reports');
@@ -59,6 +67,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/call-next', [WindowController::class, 'callNext'])->name('callNext');
         Route::post('/recall', [WindowController::class, 'recall'])->name('recall');
         Route::post('/complete', [WindowController::class, 'complete'])->name('complete');
+        Route::post('/hold', [WindowController::class, 'hold'])->name('hold');
+        Route::post('/call-held', [WindowController::class, 'callHeld'])->name('callHeld');
         Route::get('/history', [WindowController::class, 'history'])->name('history');
     });
 });

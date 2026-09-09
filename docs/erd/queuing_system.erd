@@ -1,0 +1,1577 @@
+{
+    "documentName": "PECIT Queuing System",
+    "lastUpdatedAt": "2026-09-08T10:16:39.926Z",
+    "tableViewModels": [
+        {
+            "tableModel": {
+                "tableModelId": "e5890cc1-3562-414d-bc96-6ce252b80939",
+                "physicalName": "services",
+                "logicalName": "Service",
+                "columnModelIds": [
+                    "c05e76eb-ef71-4722-82bc-b10b7a964f0a",
+                    "27b27c04-1847-40d0-8572-938cbd6fb16c",
+                    "c5ac4251-f0c8-40bf-bb29-e4c9e468fdab",
+                    "98308b28-b56e-4b7f-93f0-58e2ca566dcf",
+                    "7acccd3a-2c9e-49d8-8164-9a6f9489164f",
+                    "eebb9b76-003a-4ddf-a359-7c25ccb16a2c"
+                ],
+                "description": "Ticket types (Cashier, Registrar, DMO, Promissory Notes).",
+                "characterSet": "utf8mb4",
+                "collate": "utf8mb4_general_ci"
+            },
+            "top": -280,
+            "left": -480,
+            "headerBackgroundColor": {
+                "red": 37,
+                "green": 99,
+                "blue": 235
+            },
+            "headerForegroundColor": {
+                "red": 255,
+                "green": 255,
+                "blue": 255
+            },
+            "createdAt": "2026-09-08T10:16:37.122Z"
+        },
+        {
+            "tableModel": {
+                "tableModelId": "20958ac1-ef89-460d-b3da-58ed704d464d",
+                "physicalName": "windows",
+                "logicalName": "Window",
+                "columnModelIds": [
+                    "8b5963fc-33fa-4a60-bf21-3c0a9f83eac5",
+                    "5b8850df-aa83-430b-9aa2-e3e985557b5b",
+                    "e005f8cc-5b3f-41c1-a6d3-f33923ccd1c0",
+                    "6250f754-18bb-4585-abfc-131bb62bc9f0",
+                    "7074fdf6-d856-4b20-be2e-793f364fc7cc",
+                    "4c518073-346e-4595-b24a-e75c8c5f5358",
+                    "cf1a7d5a-31d2-44a8-a055-b601153cca04"
+                ],
+                "description": "Staff counters. Cashier 1–3 share service_id.",
+                "characterSet": "utf8mb4",
+                "collate": "utf8mb4_general_ci"
+            },
+            "top": -280,
+            "left": -80,
+            "headerBackgroundColor": {
+                "red": 13,
+                "green": 148,
+                "blue": 136
+            },
+            "headerForegroundColor": {
+                "red": 255,
+                "green": 255,
+                "blue": 255
+            },
+            "createdAt": "2026-09-08T10:16:37.311Z"
+        },
+        {
+            "tableModel": {
+                "tableModelId": "1d65d9d8-891d-430a-b604-2ae2c9c4ab77",
+                "physicalName": "users",
+                "logicalName": "User",
+                "columnModelIds": [
+                    "ab3adeca-26e7-49b5-a832-cf5d554ba1a3",
+                    "96f77d91-8392-400f-b04c-e2e1217e4cca",
+                    "f3f6114e-e20c-46b6-a86c-f51bd7cd42e5",
+                    "9875bfb7-affc-4997-b3d0-33d2e211e267",
+                    "2d783e38-86c2-4633-aa86-6e6a1fe85359",
+                    "275b3bfd-6871-4023-b238-c2221d603dea",
+                    "b82ff827-6d20-4385-be9a-d77a8d5ea1a0",
+                    "61abc548-4750-4cf9-8e8e-96c3b31a9b77"
+                ],
+                "description": "Admin or staff. Staff window_id is unique (one account per counter).",
+                "characterSet": "utf8mb4",
+                "collate": "utf8mb4_general_ci"
+            },
+            "top": -280,
+            "left": 320,
+            "headerBackgroundColor": {
+                "red": 190,
+                "green": 24,
+                "blue": 93
+            },
+            "headerForegroundColor": {
+                "red": 255,
+                "green": 255,
+                "blue": 255
+            },
+            "createdAt": "2026-09-08T10:16:37.455Z"
+        },
+        {
+            "tableModel": {
+                "tableModelId": "06ed444c-9b01-457f-a4c0-5c0ebd7c4d19",
+                "physicalName": "queues",
+                "logicalName": "Queue ticket",
+                "columnModelIds": [
+                    "ea9cb5c6-b160-4be7-80ff-406320754499",
+                    "d2091f33-5092-4a36-b8ef-324d6da77811",
+                    "f485959f-2eca-4885-b63d-12857ca7fe9a",
+                    "10db289e-5b70-402e-9466-8c8bfdcf8e49",
+                    "1df1a122-5ff0-4f27-9bae-ba64e22e87e0",
+                    "d6c80602-f08c-4eb0-a0ed-c3d12a779f3d",
+                    "29ca5945-6165-48a1-99d8-48b88bbe840b",
+                    "25963de8-e684-46f5-a6b9-e839ca7ce1a5"
+                ],
+                "tableIndexModels": [
+                    {
+                        "tableIndexModelId": "1cc23224-e6b9-4127-b9a1-a5b2a2ff6cf8",
+                        "physicalName": "idx_queue_date",
+                        "indexColumnModels": [
+                            {
+                                "columnModelId": "d6c80602-f08c-4eb0-a0ed-c3d12a779f3d"
+                            }
+                        ]
+                    }
+                ],
+                "description": "Anonymous tickets. No student name or ID.",
+                "characterSet": "utf8mb4",
+                "collate": "utf8mb4_general_ci"
+            },
+            "top": 80,
+            "left": -80,
+            "headerBackgroundColor": {
+                "red": 22,
+                "green": 163,
+                "blue": 74
+            },
+            "headerForegroundColor": {
+                "red": 255,
+                "green": 255,
+                "blue": 255
+            },
+            "createdAt": "2026-09-08T10:16:37.602Z"
+        },
+        {
+            "tableModel": {
+                "tableModelId": "3da0ce74-aa78-44ca-bcfc-299d17aa7ae4",
+                "physicalName": "queue_calls",
+                "logicalName": "Queue call",
+                "columnModelIds": [
+                    "e98852f4-f978-4e91-85bb-d3acce263a70",
+                    "7f8ea85f-ec0b-4697-a61a-bffe0edb1ddd",
+                    "8c5bab22-be0f-48cc-b2d3-2eedd1afd207",
+                    "c40edaab-9216-4201-a1ed-c894176ee28d",
+                    "4aa660bf-610f-44c0-85dd-7e34435a79fc",
+                    "1e7b7f3f-b6da-494a-bf0a-e9f0b0d2b7fb",
+                    "18ada5a4-9e74-4c9a-9755-f69e9223500f"
+                ],
+                "description": "Open row while serving (finished_time IS NULL). Recall reuses this record.",
+                "characterSet": "utf8mb4",
+                "collate": "utf8mb4_general_ci"
+            },
+            "top": 80,
+            "left": 320,
+            "headerBackgroundColor": {
+                "red": 217,
+                "green": 119,
+                "blue": 6
+            },
+            "headerForegroundColor": {
+                "red": 255,
+                "green": 255,
+                "blue": 255
+            },
+            "createdAt": "2026-09-08T10:16:37.762Z"
+        },
+        {
+            "tableModel": {
+                "tableModelId": "92f748fa-a79e-4e49-a08f-957b59c3eaab",
+                "physicalName": "daily_queue_counters",
+                "logicalName": "Daily queue counter",
+                "columnModelIds": [
+                    "793d738b-0a0f-4d77-8279-8bddce6a99d1",
+                    "e11b6469-19a9-4296-bb39-325e01577e94",
+                    "df7c0159-ec60-4ca8-9fc7-76445a5efc8c",
+                    "698c61ea-847a-4c8c-a832-fa744bcac3d8",
+                    "7bdbf28c-97d2-48dd-890d-aced68682a40",
+                    "198b7f81-50a3-4f2a-bed7-af4ba9048ea4"
+                ],
+                "description": "Locked increment per service and date for C001, R001, etc.",
+                "characterSet": "utf8mb4",
+                "collate": "utf8mb4_general_ci"
+            },
+            "top": 80,
+            "left": -480,
+            "headerBackgroundColor": {
+                "red": 124,
+                "green": 58,
+                "blue": 237
+            },
+            "headerForegroundColor": {
+                "red": 255,
+                "green": 255,
+                "blue": 255
+            },
+            "createdAt": "2026-09-08T10:16:37.918Z"
+        }
+    ],
+    "columnGroupModels": [],
+    "columnModels": [
+        {
+            "columnModelId": "10db289e-5b70-402e-9466-8c8bfdcf8e49",
+            "columnShareModelId": "76ba1404-12f5-4683-b535-5a255ea04352",
+            "defaultValue": "0"
+        },
+        {
+            "columnModelId": "18ada5a4-9e74-4c9a-9755-f69e9223500f",
+            "columnShareModelId": "52f30937-1e36-4aba-86fa-dd351b791c98"
+        },
+        {
+            "columnModelId": "198b7f81-50a3-4f2a-bed7-af4ba9048ea4",
+            "columnShareModelId": "73348a2b-ac04-4bcb-bf24-71b67e682aae"
+        },
+        {
+            "columnModelId": "1df1a122-5ff0-4f27-9bae-ba64e22e87e0",
+            "columnShareModelId": "7d03ea06-5149-44d4-830e-08c5dcb1f6cc",
+            "defaultValue": "'waiting'"
+        },
+        {
+            "columnModelId": "1e7b7f3f-b6da-494a-bf0a-e9f0b0d2b7fb",
+            "columnShareModelId": "55cce09c-6efa-4df1-9edd-a799a8ded456"
+        },
+        {
+            "columnModelId": "25963de8-e684-46f5-a6b9-e839ca7ce1a5",
+            "columnShareModelId": "d515908c-a083-4701-8eb2-1a4f5356751b"
+        },
+        {
+            "columnModelId": "275b3bfd-6871-4023-b238-c2221d603dea",
+            "columnShareModelId": "d969231d-0aef-443c-aadd-aca0d211b1ba",
+            "unique": true
+        },
+        {
+            "columnModelId": "27b27c04-1847-40d0-8572-938cbd6fb16c",
+            "columnShareModelId": "5717438b-be1e-43e6-bd42-6c924a18d430",
+            "notNull": true
+        },
+        {
+            "columnModelId": "29ca5945-6165-48a1-99d8-48b88bbe840b",
+            "columnShareModelId": "4c4c8481-b456-48c4-aa10-2884761db8e4"
+        },
+        {
+            "columnModelId": "2d783e38-86c2-4633-aa86-6e6a1fe85359",
+            "columnShareModelId": "834ce057-519d-4c93-b39c-366f7a446196",
+            "notNull": true
+        },
+        {
+            "columnModelId": "4aa660bf-610f-44c0-85dd-7e34435a79fc",
+            "columnShareModelId": "cdd30955-50a2-4b13-bcd8-cd3539babb6f"
+        },
+        {
+            "columnModelId": "4c518073-346e-4595-b24a-e75c8c5f5358",
+            "columnShareModelId": "638ff0cf-d26a-4261-9b26-efb2b22313b2"
+        },
+        {
+            "columnModelId": "5b8850df-aa83-430b-9aa2-e3e985557b5b",
+            "columnShareModelId": "f1c5c0d4-c1ea-407c-8283-e5480e00986f",
+            "notNull": true
+        },
+        {
+            "columnModelId": "61abc548-4750-4cf9-8e8e-96c3b31a9b77",
+            "columnShareModelId": "938b98ac-4a72-4775-ad48-87d1bc3e657f"
+        },
+        {
+            "columnModelId": "6250f754-18bb-4585-abfc-131bb62bc9f0",
+            "columnShareModelId": "c11b753c-2720-473a-a3f8-a6ab16ab5a9b",
+            "notNull": true
+        },
+        {
+            "columnModelId": "698c61ea-847a-4c8c-a832-fa744bcac3d8",
+            "columnShareModelId": "bf4636a8-4116-4bf8-8121-5d6f0bff5bcd",
+            "defaultValue": "0"
+        },
+        {
+            "columnModelId": "7074fdf6-d856-4b20-be2e-793f364fc7cc",
+            "columnShareModelId": "b61d9d33-7c9b-404b-b5df-09261e933fae",
+            "defaultValue": "'active'"
+        },
+        {
+            "columnModelId": "793d738b-0a0f-4d77-8279-8bddce6a99d1",
+            "columnShareModelId": "3187002e-32c8-4a2a-94c0-e6229f7d86fe",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
+        },
+        {
+            "columnModelId": "7acccd3a-2c9e-49d8-8164-9a6f9489164f",
+            "columnShareModelId": "0b384774-3a70-48e4-9f1f-1841c9c6f6d6"
+        },
+        {
+            "columnModelId": "7bdbf28c-97d2-48dd-890d-aced68682a40",
+            "columnShareModelId": "686d1fb1-bfe5-4a2c-8f5c-2de139579a40"
+        },
+        {
+            "columnModelId": "7f8ea85f-ec0b-4697-a61a-bffe0edb1ddd",
+            "columnShareModelId": "b23a4709-f52c-49b8-8eeb-06b1519a0b98",
+            "notNull": true
+        },
+        {
+            "columnModelId": "8b5963fc-33fa-4a60-bf21-3c0a9f83eac5",
+            "columnShareModelId": "cd7334cb-2b42-456f-a164-237e47ba73c8",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
+        },
+        {
+            "columnModelId": "8c5bab22-be0f-48cc-b2d3-2eedd1afd207",
+            "columnShareModelId": "04ab7524-362b-428a-a3a8-74152f7ac5e7",
+            "notNull": true
+        },
+        {
+            "columnModelId": "96f77d91-8392-400f-b04c-e2e1217e4cca",
+            "columnShareModelId": "0227b75f-d419-4559-8b75-8497a636a20a",
+            "notNull": true
+        },
+        {
+            "columnModelId": "98308b28-b56e-4b7f-93f0-58e2ca566dcf",
+            "columnShareModelId": "1d44f334-75ce-4f19-a969-32480f569eab"
+        },
+        {
+            "columnModelId": "9875bfb7-affc-4997-b3d0-33d2e211e267",
+            "columnShareModelId": "04e3bb4c-a095-4c62-94f8-501190b5b9e8",
+            "notNull": true
+        },
+        {
+            "columnModelId": "ab3adeca-26e7-49b5-a832-cf5d554ba1a3",
+            "columnShareModelId": "21aa05ae-8bde-42a9-9d27-2dce58c4b7a3",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
+        },
+        {
+            "columnModelId": "b82ff827-6d20-4385-be9a-d77a8d5ea1a0",
+            "columnShareModelId": "b1ea8737-3f54-48fc-b9d2-68069b8348c0"
+        },
+        {
+            "columnModelId": "c05e76eb-ef71-4722-82bc-b10b7a964f0a",
+            "columnShareModelId": "505c3c15-d412-405e-b9e1-f4aae0241540",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
+        },
+        {
+            "columnModelId": "c40edaab-9216-4201-a1ed-c894176ee28d",
+            "columnShareModelId": "96965629-fc90-4efe-b965-c7928d62744b"
+        },
+        {
+            "columnModelId": "c5ac4251-f0c8-40bf-bb29-e4c9e468fdab",
+            "columnShareModelId": "e40d5140-8556-41f0-8ce2-50d2cfdf0caa",
+            "notNull": true
+        },
+        {
+            "columnModelId": "cf1a7d5a-31d2-44a8-a055-b601153cca04",
+            "columnShareModelId": "46212a81-2792-41b2-8b55-f4ea31ad0f3d"
+        },
+        {
+            "columnModelId": "d2091f33-5092-4a36-b8ef-324d6da77811",
+            "columnShareModelId": "cc932e65-2bb8-4ce3-8503-b523bf0194c0",
+            "notNull": true
+        },
+        {
+            "columnModelId": "d6c80602-f08c-4eb0-a0ed-c3d12a779f3d",
+            "columnShareModelId": "bb395b04-7f6b-482e-9149-cc3858ca0221",
+            "notNull": true
+        },
+        {
+            "columnModelId": "df7c0159-ec60-4ca8-9fc7-76445a5efc8c",
+            "columnShareModelId": "c8916506-7019-4e63-ae64-6c7187129e96",
+            "notNull": true
+        },
+        {
+            "columnModelId": "e005f8cc-5b3f-41c1-a6d3-f33923ccd1c0",
+            "columnShareModelId": "882bece1-c265-430d-acd5-798d017c54a8"
+        },
+        {
+            "columnModelId": "e11b6469-19a9-4296-bb39-325e01577e94",
+            "columnShareModelId": "233a5a3f-3cd5-46ab-b02c-4e4544384136",
+            "notNull": true
+        },
+        {
+            "columnModelId": "e98852f4-f978-4e91-85bb-d3acce263a70",
+            "columnShareModelId": "6d1c7114-ef4a-488b-adbb-13be30aa55ff",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
+        },
+        {
+            "columnModelId": "ea9cb5c6-b160-4be7-80ff-406320754499",
+            "columnShareModelId": "4773bc85-8321-494f-88c0-456469deed32",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
+        },
+        {
+            "columnModelId": "eebb9b76-003a-4ddf-a359-7c25ccb16a2c",
+            "columnShareModelId": "37854979-4ceb-49a2-977d-e21c75512282"
+        },
+        {
+            "columnModelId": "f3f6114e-e20c-46b6-a86c-f51bd7cd42e5",
+            "columnShareModelId": "50295a81-1da7-4ba0-b55a-421dffb50912",
+            "notNull": true,
+            "unique": true
+        },
+        {
+            "columnModelId": "f485959f-2eca-4885-b63d-12857ca7fe9a",
+            "columnShareModelId": "623d128a-efec-4419-a1de-8290d655a6d5",
+            "notNull": true
+        }
+    ],
+    "columnShareModels": [
+        {
+            "columnShareModelId": "96965629-fc90-4efe-b965-c7928d62744b",
+            "physicalName": "called_time",
+            "logicalName": "Called time",
+            "columnTypeId": 112,
+            "createdAt": "2026-09-08T10:16:37.761Z"
+        },
+        {
+            "columnShareModelId": "0b384774-3a70-48e4-9f1f-1841c9c6f6d6",
+            "physicalName": "created_at",
+            "logicalName": "Created at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-08T10:16:37.121Z"
+        },
+        {
+            "columnShareModelId": "4c4c8481-b456-48c4-aa10-2884761db8e4",
+            "physicalName": "created_at",
+            "logicalName": "Created at",
+            "columnTypeId": 115,
+            "description": "Used for average wait time",
+            "createdAt": "2026-09-08T10:16:37.601Z"
+        },
+        {
+            "columnShareModelId": "55cce09c-6efa-4df1-9edd-a799a8ded456",
+            "physicalName": "created_at",
+            "logicalName": "Created at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-08T10:16:37.761Z"
+        },
+        {
+            "columnShareModelId": "638ff0cf-d26a-4261-9b26-efb2b22313b2",
+            "physicalName": "created_at",
+            "logicalName": "Created at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-08T10:16:37.311Z"
+        },
+        {
+            "columnShareModelId": "686d1fb1-bfe5-4a2c-8f5c-2de139579a40",
+            "physicalName": "created_at",
+            "logicalName": "Created at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-08T10:16:37.918Z"
+        },
+        {
+            "columnShareModelId": "b1ea8737-3f54-48fc-b9d2-68069b8348c0",
+            "physicalName": "created_at",
+            "logicalName": "Created at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-08T10:16:37.454Z"
+        },
+        {
+            "columnShareModelId": "1d44f334-75ce-4f19-a969-32480f569eab",
+            "physicalName": "description",
+            "logicalName": "Description",
+            "columnTypeId": 322,
+            "createdAt": "2026-09-08T10:16:37.121Z"
+        },
+        {
+            "columnShareModelId": "50295a81-1da7-4ba0-b55a-421dffb50912",
+            "physicalName": "email",
+            "logicalName": "Email",
+            "columnTypeId": 312,
+            "precision": "100",
+            "createdAt": "2026-09-08T10:16:37.454Z"
+        },
+        {
+            "columnShareModelId": "cdd30955-50a2-4b13-bcd8-cd3539babb6f",
+            "physicalName": "finished_time",
+            "logicalName": "Finished time",
+            "columnTypeId": 112,
+            "createdAt": "2026-09-08T10:16:37.761Z"
+        },
+        {
+            "columnShareModelId": "882bece1-c265-430d-acd5-798d017c54a8",
+            "physicalName": "group_name",
+            "logicalName": "Display group",
+            "columnTypeId": 312,
+            "precision": "50",
+            "createdAt": "2026-09-08T10:16:37.311Z"
+        },
+        {
+            "columnShareModelId": "21aa05ae-8bde-42a9-9d27-2dce58c4b7a3",
+            "physicalName": "id",
+            "logicalName": "ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-08T10:16:37.454Z"
+        },
+        {
+            "columnShareModelId": "3187002e-32c8-4a2a-94c0-e6229f7d86fe",
+            "physicalName": "id",
+            "logicalName": "ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-08T10:16:37.918Z"
+        },
+        {
+            "columnShareModelId": "4773bc85-8321-494f-88c0-456469deed32",
+            "physicalName": "id",
+            "logicalName": "ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-08T10:16:37.601Z"
+        },
+        {
+            "columnShareModelId": "505c3c15-d412-405e-b9e1-f4aae0241540",
+            "physicalName": "id",
+            "logicalName": "ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-08T10:16:37.121Z"
+        },
+        {
+            "columnShareModelId": "6d1c7114-ef4a-488b-adbb-13be30aa55ff",
+            "physicalName": "id",
+            "logicalName": "ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-08T10:16:37.761Z"
+        },
+        {
+            "columnShareModelId": "cd7334cb-2b42-456f-a164-237e47ba73c8",
+            "physicalName": "id",
+            "logicalName": "ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-08T10:16:37.311Z"
+        },
+        {
+            "columnShareModelId": "bf4636a8-4116-4bf8-8121-5d6f0bff5bcd",
+            "physicalName": "last_number",
+            "logicalName": "Last number",
+            "columnTypeId": 15,
+            "createdAt": "2026-09-08T10:16:37.918Z"
+        },
+        {
+            "columnShareModelId": "0227b75f-d419-4559-8b75-8497a636a20a",
+            "physicalName": "name",
+            "logicalName": "Name",
+            "columnTypeId": 312,
+            "precision": "100",
+            "createdAt": "2026-09-08T10:16:37.454Z"
+        },
+        {
+            "columnShareModelId": "04e3bb4c-a095-4c62-94f8-501190b5b9e8",
+            "physicalName": "password",
+            "logicalName": "Password",
+            "columnTypeId": 312,
+            "precision": "255",
+            "createdAt": "2026-09-08T10:16:37.454Z"
+        },
+        {
+            "columnShareModelId": "e40d5140-8556-41f0-8ce2-50d2cfdf0caa",
+            "physicalName": "prefix",
+            "logicalName": "Prefix",
+            "columnTypeId": 312,
+            "precision": "5",
+            "description": "Ticket code letter, e.g. C",
+            "createdAt": "2026-09-08T10:16:37.121Z"
+        },
+        {
+            "columnShareModelId": "76ba1404-12f5-4683-b535-5a255ea04352",
+            "physicalName": "priority",
+            "logicalName": "Priority",
+            "columnTypeId": 10,
+            "description": "0 = regular, 1 = priority",
+            "createdAt": "2026-09-08T10:16:37.601Z"
+        },
+        {
+            "columnShareModelId": "bb395b04-7f6b-482e-9149-cc3858ca0221",
+            "physicalName": "queue_date",
+            "logicalName": "Queue date",
+            "columnTypeId": 101,
+            "createdAt": "2026-09-08T10:16:37.601Z"
+        },
+        {
+            "columnShareModelId": "c8916506-7019-4e63-ae64-6c7187129e96",
+            "physicalName": "queue_date",
+            "logicalName": "Queue date",
+            "columnTypeId": 101,
+            "createdAt": "2026-09-08T10:16:37.918Z"
+        },
+        {
+            "columnShareModelId": "b23a4709-f52c-49b8-8eeb-06b1519a0b98",
+            "physicalName": "queue_id",
+            "logicalName": "Queue ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-08T10:16:37.761Z"
+        },
+        {
+            "columnShareModelId": "cc932e65-2bb8-4ce3-8503-b523bf0194c0",
+            "physicalName": "queue_number",
+            "logicalName": "Queue number",
+            "columnTypeId": 312,
+            "precision": "20",
+            "createdAt": "2026-09-08T10:16:37.601Z"
+        },
+        {
+            "columnShareModelId": "834ce057-519d-4c93-b39c-366f7a446196",
+            "physicalName": "role",
+            "logicalName": "Role",
+            "columnTypeId": 2101,
+            "optionExpression": "('admin','staff')",
+            "createdAt": "2026-09-08T10:16:37.454Z"
+        },
+        {
+            "columnShareModelId": "233a5a3f-3cd5-46ab-b02c-4e4544384136",
+            "physicalName": "service_id",
+            "logicalName": "Service ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-08T10:16:37.918Z"
+        },
+        {
+            "columnShareModelId": "623d128a-efec-4419-a1de-8290d655a6d5",
+            "physicalName": "service_id",
+            "logicalName": "Service ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-08T10:16:37.601Z"
+        },
+        {
+            "columnShareModelId": "c11b753c-2720-473a-a3f8-a6ab16ab5a9b",
+            "physicalName": "service_id",
+            "logicalName": "Service ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-08T10:16:37.311Z"
+        },
+        {
+            "columnShareModelId": "5717438b-be1e-43e6-bd42-6c924a18d430",
+            "physicalName": "service_name",
+            "logicalName": "Name",
+            "columnTypeId": 312,
+            "precision": "50",
+            "createdAt": "2026-09-08T10:16:37.121Z"
+        },
+        {
+            "columnShareModelId": "7d03ea06-5149-44d4-830e-08c5dcb1f6cc",
+            "physicalName": "status",
+            "logicalName": "Status",
+            "columnTypeId": 2101,
+            "optionExpression": "('waiting','serving','done','cancelled')",
+            "createdAt": "2026-09-08T10:16:37.601Z"
+        },
+        {
+            "columnShareModelId": "b61d9d33-7c9b-404b-b5df-09261e933fae",
+            "physicalName": "status",
+            "logicalName": "Status",
+            "columnTypeId": 2101,
+            "optionExpression": "('active','inactive')",
+            "createdAt": "2026-09-08T10:16:37.311Z"
+        },
+        {
+            "columnShareModelId": "37854979-4ceb-49a2-977d-e21c75512282",
+            "physicalName": "updated_at",
+            "logicalName": "Updated at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-08T10:16:37.121Z"
+        },
+        {
+            "columnShareModelId": "46212a81-2792-41b2-8b55-f4ea31ad0f3d",
+            "physicalName": "updated_at",
+            "logicalName": "Updated at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-08T10:16:37.311Z"
+        },
+        {
+            "columnShareModelId": "52f30937-1e36-4aba-86fa-dd351b791c98",
+            "physicalName": "updated_at",
+            "logicalName": "Updated at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-08T10:16:37.761Z"
+        },
+        {
+            "columnShareModelId": "73348a2b-ac04-4bcb-bf24-71b67e682aae",
+            "physicalName": "updated_at",
+            "logicalName": "Updated at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-08T10:16:37.918Z"
+        },
+        {
+            "columnShareModelId": "938b98ac-4a72-4775-ad48-87d1bc3e657f",
+            "physicalName": "updated_at",
+            "logicalName": "Updated at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-08T10:16:37.454Z"
+        },
+        {
+            "columnShareModelId": "d515908c-a083-4701-8eb2-1a4f5356751b",
+            "physicalName": "updated_at",
+            "logicalName": "Updated at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-08T10:16:37.601Z"
+        },
+        {
+            "columnShareModelId": "04ab7524-362b-428a-a3a8-74152f7ac5e7",
+            "physicalName": "window_id",
+            "logicalName": "Window ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-08T10:16:37.761Z"
+        },
+        {
+            "columnShareModelId": "d969231d-0aef-443c-aadd-aca0d211b1ba",
+            "physicalName": "window_id",
+            "logicalName": "Window ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-08T10:16:37.454Z"
+        },
+        {
+            "columnShareModelId": "f1c5c0d4-c1ea-407c-8283-e5480e00986f",
+            "physicalName": "window_name",
+            "logicalName": "Name",
+            "columnTypeId": 312,
+            "precision": "50",
+            "createdAt": "2026-09-08T10:16:37.311Z"
+        }
+    ],
+    "relationViewModels": [
+        {
+            "relationModel": {
+                "relationModelId": "0640dc2a-abdd-486d-b704-eb082b8ec7c2",
+                "relationName": "services_daily_queue_counters",
+                "parentTableModelId": "e5890cc1-3562-414d-bc96-6ce252b80939",
+                "parentCardinality": "1",
+                "childTableModelId": "92f748fa-a79e-4e49-a08f-957b59c3eaab",
+                "childCardinality": "0..N",
+                "relationPairs": [
+                    {
+                        "parentColumnModelId": "c05e76eb-ef71-4722-82bc-b10b7a964f0a",
+                        "childColumnModelId": "e11b6469-19a9-4296-bb39-325e01577e94"
+                    }
+                ],
+                "onUpdateAction": "RESTRICT",
+                "onDeleteAction": "RESTRICT"
+            },
+            "lineViewModel": {
+                "strokeWidth": 1,
+                "edges": [],
+                "orthogonalLines": [],
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "labelViewModel": {
+                "label": "services_daily_queue_counters",
+                "position": {
+                    "segment": -1,
+                    "fraction": 0,
+                    "offsetX": 0,
+                    "offsetY": 0
+                },
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "style": {
+                    "bold": false,
+                    "italic": false,
+                    "strikethrough": false,
+                    "fontSize": 10
+                }
+            },
+            "createdAt": "2026-09-08T10:16:39.159Z"
+        },
+        {
+            "relationModel": {
+                "relationModelId": "1bf9c5fb-435e-47d2-9801-ed4ab307073c",
+                "relationName": "windows_queue_calls",
+                "parentTableModelId": "20958ac1-ef89-460d-b3da-58ed704d464d",
+                "parentCardinality": "1",
+                "childTableModelId": "3da0ce74-aa78-44ca-bcfc-299d17aa7ae4",
+                "childCardinality": "0..N",
+                "relationPairs": [
+                    {
+                        "parentColumnModelId": "8b5963fc-33fa-4a60-bf21-3c0a9f83eac5",
+                        "childColumnModelId": "8c5bab22-be0f-48cc-b2d3-2eedd1afd207"
+                    }
+                ],
+                "onUpdateAction": "RESTRICT",
+                "onDeleteAction": "RESTRICT"
+            },
+            "lineViewModel": {
+                "strokeWidth": 1,
+                "edges": [],
+                "orthogonalLines": [],
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "labelViewModel": {
+                "label": "windows_queue_calls",
+                "position": {
+                    "segment": -1,
+                    "fraction": 0,
+                    "offsetX": 0,
+                    "offsetY": 0
+                },
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "style": {
+                    "bold": false,
+                    "italic": false,
+                    "strikethrough": false,
+                    "fontSize": 10
+                }
+            },
+            "createdAt": "2026-09-08T10:16:39.460Z"
+        },
+        {
+            "relationModel": {
+                "relationModelId": "67b66ee3-46c1-4138-803d-d1242ca70c99",
+                "relationName": "services_windows",
+                "parentTableModelId": "e5890cc1-3562-414d-bc96-6ce252b80939",
+                "parentCardinality": "1",
+                "childTableModelId": "20958ac1-ef89-460d-b3da-58ed704d464d",
+                "childCardinality": "0..N",
+                "relationPairs": [
+                    {
+                        "parentColumnModelId": "c05e76eb-ef71-4722-82bc-b10b7a964f0a",
+                        "childColumnModelId": "6250f754-18bb-4585-abfc-131bb62bc9f0"
+                    }
+                ],
+                "onUpdateAction": "RESTRICT",
+                "onDeleteAction": "RESTRICT"
+            },
+            "lineViewModel": {
+                "strokeWidth": 1,
+                "edges": [],
+                "orthogonalLines": [],
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "labelViewModel": {
+                "label": "services_windows",
+                "position": {
+                    "segment": -1,
+                    "fraction": 0,
+                    "offsetX": 0,
+                    "offsetY": 0
+                },
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "style": {
+                    "bold": false,
+                    "italic": false,
+                    "strikethrough": false,
+                    "fontSize": 10
+                }
+            },
+            "createdAt": "2026-09-08T10:16:38.858Z"
+        },
+        {
+            "relationModel": {
+                "relationModelId": "a9599b7c-8b62-49b5-a943-daf6dcd38f4b",
+                "relationName": "windows_users",
+                "parentTableModelId": "20958ac1-ef89-460d-b3da-58ed704d464d",
+                "parentCardinality": "1",
+                "childTableModelId": "1d65d9d8-891d-430a-b604-2ae2c9c4ab77",
+                "childCardinality": "0..1",
+                "relationPairs": [
+                    {
+                        "parentColumnModelId": "8b5963fc-33fa-4a60-bf21-3c0a9f83eac5",
+                        "childColumnModelId": "275b3bfd-6871-4023-b238-c2221d603dea"
+                    }
+                ],
+                "onUpdateAction": "RESTRICT",
+                "onDeleteAction": "RESTRICT"
+            },
+            "lineViewModel": {
+                "strokeWidth": 1,
+                "edges": [],
+                "orthogonalLines": [],
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "labelViewModel": {
+                "label": "windows_users",
+                "position": {
+                    "segment": -1,
+                    "fraction": 0,
+                    "offsetX": 0,
+                    "offsetY": 0
+                },
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "style": {
+                    "bold": false,
+                    "italic": false,
+                    "strikethrough": false,
+                    "fontSize": 10
+                }
+            },
+            "createdAt": "2026-09-08T10:16:39.312Z"
+        },
+        {
+            "relationModel": {
+                "relationModelId": "aa65c306-528e-4c12-a485-602059d384c0",
+                "relationName": "queues_queue_calls",
+                "parentTableModelId": "06ed444c-9b01-457f-a4c0-5c0ebd7c4d19",
+                "parentCardinality": "1",
+                "childTableModelId": "3da0ce74-aa78-44ca-bcfc-299d17aa7ae4",
+                "childCardinality": "0..N",
+                "relationPairs": [
+                    {
+                        "parentColumnModelId": "ea9cb5c6-b160-4be7-80ff-406320754499",
+                        "childColumnModelId": "7f8ea85f-ec0b-4697-a61a-bffe0edb1ddd"
+                    }
+                ],
+                "onUpdateAction": "RESTRICT",
+                "onDeleteAction": "RESTRICT"
+            },
+            "lineViewModel": {
+                "strokeWidth": 1,
+                "edges": [],
+                "orthogonalLines": [],
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "labelViewModel": {
+                "label": "queues_queue_calls",
+                "position": {
+                    "segment": -1,
+                    "fraction": 0,
+                    "offsetX": 0,
+                    "offsetY": 0
+                },
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "style": {
+                    "bold": false,
+                    "italic": false,
+                    "strikethrough": false,
+                    "fontSize": 10
+                }
+            },
+            "createdAt": "2026-09-08T10:16:39.609Z"
+        },
+        {
+            "relationModel": {
+                "relationModelId": "eec1b12a-19fe-4c45-9683-bb3a39f48102",
+                "relationName": "services_queues",
+                "parentTableModelId": "e5890cc1-3562-414d-bc96-6ce252b80939",
+                "parentCardinality": "1",
+                "childTableModelId": "06ed444c-9b01-457f-a4c0-5c0ebd7c4d19",
+                "childCardinality": "0..N",
+                "relationPairs": [
+                    {
+                        "parentColumnModelId": "c05e76eb-ef71-4722-82bc-b10b7a964f0a",
+                        "childColumnModelId": "f485959f-2eca-4885-b63d-12857ca7fe9a"
+                    }
+                ],
+                "onUpdateAction": "RESTRICT",
+                "onDeleteAction": "RESTRICT"
+            },
+            "lineViewModel": {
+                "strokeWidth": 1,
+                "edges": [],
+                "orthogonalLines": [],
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "labelViewModel": {
+                "label": "services_queues",
+                "position": {
+                    "segment": -1,
+                    "fraction": 0,
+                    "offsetX": 0,
+                    "offsetY": 0
+                },
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "style": {
+                    "bold": false,
+                    "italic": false,
+                    "strikethrough": false,
+                    "fontSize": 10
+                }
+            },
+            "createdAt": "2026-09-08T10:16:39.003Z"
+        }
+    ],
+    "foregroundMemos": [
+        {
+            "memoId": "538e2c13-a0ca-47cb-81ff-b88db187be8f",
+            "memo": "Anonymous kiosk: queues has no student name/ID.\nWait = created_at → called_time.\nService = called_time → finished_time.",
+            "rectangleViewModel": {
+                "positionX": -480,
+                "positionY": 420,
+                "width": 420,
+                "height": 120
+            },
+            "backgroundColor": {
+                "red": 255,
+                "green": 251,
+                "blue": 235
+            },
+            "foregroundColor": {
+                "red": 31,
+                "green": 41,
+                "blue": 55
+            },
+            "verticalAlign": "center",
+            "horizontalAlign": "center",
+            "fontSize": 9,
+            "createdAt": "2026-09-08T10:16:39.926Z"
+        }
+    ],
+    "backgroundMemos": [],
+    "erdSettingModel": {
+        "displayStyle": {
+            "styleName": "Both"
+        },
+        "exportDdlSetting": {
+            "fileName": "PECIT Queuing System",
+            "withTable": true,
+            "withIndex": true,
+            "withForeignKey": true,
+            "withSchema": true,
+            "withComment": true,
+            "commentStyle": "logical_name",
+            "commentSeparator": " : "
+        }
+    },
+    "databaseSetting": {
+        "databaseType": "mariadb",
+        "columnTypes": [
+            {
+                "id": 1,
+                "name": "bit",
+                "description": "ビット値型",
+                "baseQuery": "BIT",
+                "category": "bit"
+            },
+            {
+                "id": 2,
+                "name": "bit (m)",
+                "description": "ビット値型",
+                "baseQuery": "BIT[[PARAM]]",
+                "category": "bit",
+                "withPrecision": true
+            },
+            {
+                "id": 6,
+                "name": "boolean",
+                "description": "TINYINT(1) のシノニム",
+                "baseQuery": "BOOLEAN",
+                "category": "bit"
+            },
+            {
+                "id": 10,
+                "name": "tinyint",
+                "description": "非常に小さい整数。 符号付きの範囲は -128 から 127 です。 符号なしの範囲は 0 から 255 です。",
+                "baseQuery": "TINYINT",
+                "category": "integer",
+                "withUnsigned": true,
+                "withAutoIncrement": true
+            },
+            {
+                "id": 11,
+                "name": "smallint",
+                "description": "小さい整数。 符号付きの範囲は -32768 から 32767 です。 符号なしの範囲は 0 から 65535 です。",
+                "baseQuery": "SMALLINT",
+                "category": "integer",
+                "withUnsigned": true,
+                "withAutoIncrement": true
+            },
+            {
+                "id": 13,
+                "name": "mediumint",
+                "description": "中間サイズの整数。 符号付きの範囲は -8388608 から 8388607 です。 符号なしの範囲は 0 から 16777215 です。",
+                "baseQuery": "MEDIUMINT",
+                "category": "integer",
+                "withUnsigned": true,
+                "withAutoIncrement": true
+            },
+            {
+                "id": 15,
+                "name": "int",
+                "description": "普通サイズの整数。 符号付きの範囲は -2147483648 から 2147483647 です。 符号なしの範囲は 0 から 4294967295 です。",
+                "baseQuery": "INT",
+                "category": "integer",
+                "withUnsigned": true,
+                "withAutoIncrement": true
+            },
+            {
+                "id": 17,
+                "name": "bigint",
+                "description": "大きい整数。 符号付きの範囲は -9223372036854775808 から 9223372036854775807 です。 符号なしの範囲は 0 から 18446744073709551615 です。",
+                "baseQuery": "BIGINT",
+                "category": "integer",
+                "withUnsigned": true,
+                "withAutoIncrement": true
+            },
+            {
+                "id": 20,
+                "name": "tinyint (m)",
+                "description": "非常に小さい整数。 符号付きの範囲は -128 から 127 です。 符号なしの範囲は 0 から 255 です。",
+                "baseQuery": "TINYINT[[PARAM]]",
+                "category": "integer",
+                "withPrecision": true,
+                "withUnsigned": true
+            },
+            {
+                "id": 21,
+                "name": "smallint (m)",
+                "description": "小さい整数。 符号付きの範囲は -32768 から 32767 です。 符号なしの範囲は 0 から 65535 です。",
+                "baseQuery": "SMALLINT[[PARAM]]",
+                "category": "integer",
+                "withPrecision": true,
+                "withUnsigned": true,
+                "withAutoIncrement": true
+            },
+            {
+                "id": 23,
+                "name": "mediumint (m)",
+                "description": "中間サイズの整数。 符号付きの範囲は -8388608 から 8388607 です。 符号なしの範囲は 0 から 16777215 です。",
+                "baseQuery": "MEDIUMINT[[PARAM]]",
+                "category": "integer",
+                "withPrecision": true,
+                "withUnsigned": true,
+                "withAutoIncrement": true
+            },
+            {
+                "id": 25,
+                "name": "int (m)",
+                "description": "普通サイズの整数。 符号付きの範囲は -2147483648 から 2147483647 です。 符号なしの範囲は 0 から 4294967295 です。",
+                "baseQuery": "INT[[PARAM]]",
+                "category": "integer",
+                "withPrecision": true,
+                "withUnsigned": true,
+                "withAutoIncrement": true
+            },
+            {
+                "id": 27,
+                "name": "bigint (m)",
+                "description": "大きい整数。 符号付きの範囲は -9223372036854775808 から 9223372036854775807 です。 符号なしの範囲は 0 から 18446744073709551615 です。",
+                "baseQuery": "BIGINT[[PARAM]]",
+                "category": "integer",
+                "withPrecision": true,
+                "withUnsigned": true,
+                "withAutoIncrement": true
+            },
+            {
+                "id": 31,
+                "name": "float",
+                "description": "小さい (単精度) 浮動小数点数。 許可される値は、-3.402823466E+38 から -1.175494351E-38、0、および 1.175494351E-38 から 3.402823466E+38 です。",
+                "baseQuery": "FLOAT",
+                "category": "decimal",
+                "withAutoIncrement": true
+            },
+            {
+                "id": 33,
+                "name": "double",
+                "description": "普通サイズ (倍精度) の浮動小数点数。 許可されている値は、-1.7976931348623157E+308 から -2.2250738585072014E-308、0、および 2.2250738585072014E-308 から 1.7976931348623157E+308 です。",
+                "baseQuery": "DOUBLE",
+                "category": "decimal",
+                "withAutoIncrement": true
+            },
+            {
+                "id": 35,
+                "name": "decimal",
+                "description": "固定小数点数。 桁数10 (精度) で、小数点以下の桁数0です。",
+                "baseQuery": "DECIMAL",
+                "category": "decimal",
+                "withAutoIncrement": true
+            },
+            {
+                "id": 36,
+                "name": "numeric",
+                "description": "DECIMAL のシノニムです。固定小数点数。 桁数10 (精度) で、小数点以下の桁数0です。",
+                "baseQuery": "NUMERIC",
+                "category": "decimal",
+                "withAutoIncrement": true
+            },
+            {
+                "id": 41,
+                "name": "float (m, d)",
+                "description": "小さい (単精度) 浮動小数点数。 許可される値は、-3.402823466E+38 から -1.175494351E-38、0、および 1.175494351E-38 から 3.402823466E+38 です。",
+                "baseQuery": "FLOAT[[PARAM]]",
+                "category": "decimal",
+                "withPrecision": true,
+                "withScale": true
+            },
+            {
+                "id": 42,
+                "name": "float (p)",
+                "description": "浮動小数点数です。p は精度をビットで表現します。",
+                "baseQuery": "FLOAT[[PARAM]]",
+                "category": "decimal",
+                "withPrecision": true
+            },
+            {
+                "id": 43,
+                "name": "double (m, d)",
+                "description": "普通サイズ (倍精度) の浮動小数点数。 許可されている値は、-1.7976931348623157E+308 から -2.2250738585072014E-308、0、および 2.2250738585072014E-308 から 1.7976931348623157E+308 です。",
+                "baseQuery": "DOUBLE[[PARAM]]",
+                "category": "decimal",
+                "withPrecision": true,
+                "withScale": true
+            },
+            {
+                "id": 45,
+                "name": "decimal (m, d)",
+                "description": "固定小数点数。 M は桁数の合計 (精度) で、D は小数点以下の桁数 (スケール) です。",
+                "baseQuery": "DECIMAL[[PARAM]]",
+                "category": "decimal",
+                "withPrecision": true,
+                "withScale": true
+            },
+            {
+                "id": 46,
+                "name": "numeric (m, d)",
+                "description": "DECIMAL のシノニムです。固定小数点数。 M は桁数の合計 (精度) で、D は小数点以下の桁数 (スケール) です。",
+                "baseQuery": "NUMERIC[[PARAM]]",
+                "category": "decimal",
+                "withPrecision": true,
+                "withScale": true
+            },
+            {
+                "id": 101,
+                "name": "date",
+                "description": "日付です。 サポートしている範囲は \"1000-01-01\" から \"9999-12-31\" です。",
+                "baseQuery": "DATE",
+                "category": "timestamp",
+                "defaultValueCandidates": [
+                    "(CURRENT_DATE)"
+                ]
+            },
+            {
+                "id": 131,
+                "name": "time",
+                "description": "時間です。 範囲は、\"-838:59:59.000000\" から \"838:59:59.000000\" です。",
+                "baseQuery": "TIME",
+                "category": "timestamp",
+                "defaultValueCandidates": [
+                    "(CURRENT_TIME)"
+                ]
+            },
+            {
+                "id": 141,
+                "name": "time (p)",
+                "description": "時間です。 範囲は、\"-838:59:59.000000\" から \"838:59:59.000000\" です。",
+                "baseQuery": "TIME[[PARAM]]",
+                "category": "timestamp",
+                "withPrecision": true,
+                "defaultValueCandidates": [
+                    "(CURRENT_TIME)"
+                ]
+            },
+            {
+                "id": 112,
+                "name": "datetime",
+                "description": "日付と時間の組み合わせです。 サポートしている範囲は \"1000-01-01 00:00:00.000000\" から \"9999-12-31 23:59:59.999999\" です。",
+                "baseQuery": "DATETIME",
+                "category": "timestamp",
+                "defaultValueCandidates": [
+                    "CURRENT_TIMESTAMP",
+                    "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+                ]
+            },
+            {
+                "id": 115,
+                "name": "timestamp",
+                "description": "タイムスタンプです。 範囲は \"1970-01-01 00:00:01.000000\" UTC から \"2038-01-19 03:14:07.999999\" UTC です。",
+                "baseQuery": "TIMESTAMP",
+                "category": "timestamp",
+                "defaultValueCandidates": [
+                    "CURRENT_TIMESTAMP",
+                    "CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP"
+                ]
+            },
+            {
+                "id": 122,
+                "name": "datetime (p)",
+                "description": "日付と時間の組み合わせです。 サポートしている範囲は \"1000-01-01 00:00:00.000000\" から \"9999-12-31 23:59:59.999999\" です。",
+                "baseQuery": "DATETIME[[PARAM]]",
+                "category": "timestamp",
+                "withPrecision": true,
+                "defaultValueCandidates": [
+                    "CURRENT_TIMESTAMP[[PARAM]]",
+                    "CURRENT_TIMESTAMP[[PARAM]] ON UPDATE CURRENT_TIMESTAMP[[PARAM]]"
+                ]
+            },
+            {
+                "id": 125,
+                "name": "timestamp (p)",
+                "description": "タイムスタンプです。 範囲は \"1970-01-01 00:00:01.000000\" UTC から \"2038-01-19 03:14:07.999999\" UTC です。",
+                "baseQuery": "TIMESTAMP[[PARAM]]",
+                "category": "timestamp",
+                "withPrecision": true,
+                "defaultValueCandidates": [
+                    "CURRENT_TIMESTAMP[[PARAM]]",
+                    "CURRENT_TIMESTAMP[[PARAM]] ON UPDATE CURRENT_TIMESTAMP[[PARAM]]"
+                ]
+            },
+            {
+                "id": 151,
+                "name": "year",
+                "description": "4 桁形式の年。",
+                "baseQuery": "YEAR",
+                "category": "timestamp"
+            },
+            {
+                "id": 301,
+                "name": "char",
+                "description": "格納時に必ず、指定された長さになるように右側がスペースで埋められる固定長文字列です。",
+                "baseQuery": "CHAR",
+                "category": "text"
+            },
+            {
+                "id": 311,
+                "name": "char (m)",
+                "description": "格納時に必ず、指定された長さになるように右側がスペースで埋められる固定長文字列です。",
+                "baseQuery": "CHAR[[PARAM]]",
+                "category": "text",
+                "withPrecision": true
+            },
+            {
+                "id": 312,
+                "name": "varchar (m)",
+                "description": "可変長文字列です。",
+                "baseQuery": "VARCHAR[[PARAM]]",
+                "category": "text",
+                "withPrecision": true
+            },
+            {
+                "id": 321,
+                "name": "tinytext",
+                "description": "最大長が 255 文字の TEXT カラム。",
+                "baseQuery": "TINYTEXT",
+                "category": "text"
+            },
+            {
+                "id": 322,
+                "name": "text",
+                "description": "最大長が 65,535 文字の TEXT カラム。",
+                "baseQuery": "TEXT",
+                "category": "text"
+            },
+            {
+                "id": 323,
+                "name": "text (m)",
+                "description": "最大長が 65,535 文字の TEXT カラム。",
+                "baseQuery": "TEXT[[PARAM]]",
+                "category": "text",
+                "withPrecision": true
+            },
+            {
+                "id": 324,
+                "name": "mediumtext",
+                "description": "最大長が 16,777,215 文字の TEXT カラム。",
+                "baseQuery": "MEDIUMTEXT",
+                "category": "text"
+            },
+            {
+                "id": 325,
+                "name": "longtext",
+                "description": "最大長が 4G 文字の TEXT カラム。",
+                "baseQuery": "LONGTEXT",
+                "category": "text"
+            },
+            {
+                "id": 3,
+                "name": "binary (m)",
+                "description": "バイナリバイト文字列を格納します。",
+                "baseQuery": "BINARY[[PARAM]]",
+                "category": "bit",
+                "withPrecision": true
+            },
+            {
+                "id": 5,
+                "name": "varbinary (m)",
+                "description": "バイナリバイト文字列を格納します。",
+                "baseQuery": "VARBINARY[[PARAM]]",
+                "category": "bit",
+                "withPrecision": true
+            },
+            {
+                "id": 361,
+                "name": "tinyblob",
+                "description": "最大長が 255 バイトの BLOB カラム。",
+                "baseQuery": "TINYBLOB",
+                "category": "bit"
+            },
+            {
+                "id": 363,
+                "name": "blob",
+                "description": "最大長が 65,535 バイトの BLOB カラム。",
+                "baseQuery": "BLOB",
+                "category": "bit"
+            },
+            {
+                "id": 364,
+                "name": "blob (m)",
+                "description": "最大長が 65,535 バイトの BLOB カラム。",
+                "baseQuery": "BLOB[[PARAM]]",
+                "category": "bit",
+                "withPrecision": true
+            },
+            {
+                "id": 365,
+                "name": "mediumblob",
+                "description": "最大長が 16,777,215 バイトの BLOB カラム。",
+                "baseQuery": "MEDIUMBLOB",
+                "category": "bit"
+            },
+            {
+                "id": 367,
+                "name": "longblob",
+                "description": "最大長が 4G バイトの BLOB カラム。",
+                "baseQuery": "LONGBLOB",
+                "category": "bit"
+            },
+            {
+                "id": 422,
+                "name": "json",
+                "description": "文書の型式であるJSONデータを格納するために使用されるデータ型。",
+                "baseQuery": "JSON",
+                "category": "other"
+            },
+            {
+                "id": 2001,
+                "name": "geometry",
+                "description": "空間データを格納するために使用されるデータ型。点、線、多角形、およびその他の形状を含めることができます。",
+                "baseQuery": "GEOMETRY",
+                "category": "other"
+            },
+            {
+                "id": 2011,
+                "name": "point",
+                "description": "GEOMETRYデータ型の1つであり、2次元空間上の単一の点を表します。",
+                "baseQuery": "POINT",
+                "category": "other"
+            },
+            {
+                "id": 2012,
+                "name": "linestring",
+                "description": "GEOMETRYデータ型の1つであり、2次元空間上の複数の点を結ぶ直線セグメントの連続したセットを表します。",
+                "baseQuery": "LINESTRING",
+                "category": "other"
+            },
+            {
+                "id": 2013,
+                "name": "polygon",
+                "description": "GEOMETRYデータ型の1つであり、2次元平面上の単一の領域を表す閉じたループの集合です。",
+                "baseQuery": "POLYGON",
+                "category": "other"
+            },
+            {
+                "id": 2021,
+                "name": "multipoint",
+                "description": "GEOMETRYデータ型の1つであり、複数の点を表す複数のPOINTオブジェクトの集合です。",
+                "baseQuery": "MULTIPOINT",
+                "category": "other"
+            },
+            {
+                "id": 2022,
+                "name": "multilinestring",
+                "description": "GEOMETRYデータ型の1つであり、複数の線分を表す複数のLINESTRINGオブジェクトの集合です。",
+                "baseQuery": "MULTILINESTRING",
+                "category": "other"
+            },
+            {
+                "id": 2023,
+                "name": "multipolygon",
+                "description": "GEOMETRYデータ型の1つであり、複数のポリゴンを表す複数のPOLYGONオブジェクトの集合です。",
+                "baseQuery": "MULTIPOLYGON",
+                "category": "other"
+            },
+            {
+                "id": 2031,
+                "name": "geometrycollection",
+                "description": "GEOMETRYデータ型の1つであり、複数のGEOMETRYオブジェクトの集合を表します。",
+                "baseQuery": "GEOMETRYCOLLECTION",
+                "category": "other"
+            },
+            {
+                "id": 2101,
+                "name": "enum",
+                "description": "文字列のリストの中から1つを選択するために使用されるデータ型。",
+                "baseQuery": "ENUM",
+                "category": "other"
+            },
+            {
+                "id": 2102,
+                "name": "set",
+                "description": "ENUMの拡張版であり、文字列のリストから複数の選択肢を選択するために使用されるデータ型。",
+                "baseQuery": "SET",
+                "category": "other"
+            },
+            {
+                "id": 411,
+                "name": "uuid",
+                "description": "128ビットのUUID値を格納するデータ型 (MariaDB 10.7+)。",
+                "baseQuery": "UUID",
+                "category": "other"
+            },
+            {
+                "id": 1113,
+                "name": "inet4",
+                "description": "IPv4アドレスを格納するデータ型 (MariaDB 10.10+)。",
+                "baseQuery": "INET4",
+                "category": "other"
+            },
+            {
+                "id": 1114,
+                "name": "inet6",
+                "description": "IPv6アドレスを格納するデータ型 (MariaDB 10.5+)。",
+                "baseQuery": "INET6",
+                "category": "other"
+            },
+            {
+                "id": 0,
+                "name": "",
+                "description": "",
+                "baseQuery": "",
+                "category": "other"
+            }
+        ],
+        "version": 20260504
+    }
+}

@@ -108,22 +108,59 @@
                 <div class="step3-head" aria-hidden="true"></div>
                 <div class="step3-body">
                     <h3 class="step3-title">CONFIRM YOUR SELECTION</h3>
-                    <p class="step3-label">You selected:</p>
-                    <div id="confirmServiceName" class="step3-service-name">---</div>
-                    <p class="step3-priority">Priority: <span id="confirmPriorityLabel" class="step3-priority-value">Regular</span></p>
+                    <div class="step3-grid">
+                        <div class="step3-col">
+                            <p class="step3-label">You selected:</p>
+                            <div id="confirmServiceName" class="step3-service-name">---</div>
+                            <p class="step3-priority">Priority: <span id="confirmPriorityLabel" class="step3-priority-value">Regular</span></p>
 
-                    <div id="confirmQueueInfo" class="step3-queue-info" aria-live="polite">
-                        <p class="step3-info-line">Currently Serving: <strong id="confirmServing">—</strong></p>
-                        <p class="step3-info-line">Priority Waiting: <strong id="confirmPriorityWaiting">0</strong></p>
-                        <p class="step3-info-line">Regular Waiting: <strong id="confirmRegularWaiting">0</strong></p>
-                        <p class="step3-eta" id="confirmEtaLine">Estimated Waiting Time: <strong id="confirmEta">Calculating…</strong></p>
+                            <div id="confirmQueueInfo" class="step3-queue-info" aria-live="polite">
+                                <p class="step3-info-line">Currently Serving: <strong id="confirmServing">—</strong></p>
+                                <p class="step3-info-line">Priority Waiting: <strong id="confirmPriorityWaiting">0</strong></p>
+                                <p class="step3-info-line">Regular Waiting: <strong id="confirmRegularWaiting">0</strong></p>
+                                <p class="step3-eta" id="confirmEtaLine">Estimated Waiting Time: <strong id="confirmEta">Calculating…</strong></p>
+                            </div>
+                        </div>
+
+                        <div class="step3-id-box">
+                            <label class="step3-id-label" for="studentIdInput">Student ID</label>
+                            <input
+                                type="text"
+                                name="student_id"
+                                id="studentIdInput"
+                                class="step3-id-input"
+                                value="{{ old('student_id') }}"
+                                maxlength="20"
+                                inputmode="none"
+                                autocomplete="off"
+                                readonly
+                                aria-describedby="studentLookupMsg"
+                            >
+                            <div class="step3-keypad" role="group" aria-label="Student ID keypad">
+                                <button type="button" class="step3-key" data-key="1">1</button>
+                                <button type="button" class="step3-key" data-key="2">2</button>
+                                <button type="button" class="step3-key" data-key="3">3</button>
+                                <button type="button" class="step3-key step3-key-action" data-key="back">⌫</button>
+                                <button type="button" class="step3-key" data-key="4">4</button>
+                                <button type="button" class="step3-key" data-key="5">5</button>
+                                <button type="button" class="step3-key" data-key="6">6</button>
+                                <button type="button" class="step3-key" data-key="-">-</button>
+                                <button type="button" class="step3-key" data-key="7">7</button>
+                                <button type="button" class="step3-key" data-key="8">8</button>
+                                <button type="button" class="step3-key" data-key="9">9</button>
+                                <button type="button" class="step3-key step3-key-action" data-key="clear">C</button>
+                                <button type="button" class="step3-key step3-key-zero" data-key="0">0</button>
+                            </div>
+                            <p id="studentLookupMsg" class="step3-id-msg" aria-live="polite">Enter your student ID.</p>
+                        </div>
                     </div>
 
-                    <p class="step3-question">Do you want to print your ticket?</p>
-
-                    <div class="step3-actions">
-                        <button type="button" id="backToStep2" class="step3-back-btn">Back</button>
-                        <button type="submit" class="step3-confirm-btn">Confirm &amp; Print</button>
+                    <div class="step3-footer">
+                        <p class="step3-question">Do you want to print your ticket?</p>
+                        <div class="step3-actions">
+                            <button type="button" id="backToStep2" class="step3-back-btn">Back</button>
+                            <button type="submit" id="confirmPrintBtn" class="step3-confirm-btn" disabled>Confirm &amp; Print</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -140,8 +177,19 @@
             var priorityInput = document.getElementById('priorityInput');
             var confirmServiceName = document.getElementById('confirmServiceName');
             var confirmPriorityLabel = document.getElementById('confirmPriorityLabel');
+            var studentIdInput = document.getElementById('studentIdInput');
+            var studentLookupMsg = document.getElementById('studentLookupMsg');
+            var confirmPrintBtn = document.getElementById('confirmPrintBtn');
+            var kioskForm = document.getElementById('kioskForm');
+            var kioskShell = document.querySelector('.kiosk-shell');
             var selectedServiceName = '---';
             var estimateUrl = @json(route('kiosk.estimate'));
+            var studentLookupUrl = @json(route('kiosk.student'));
+            var servicesById = @json($services->mapWithKeys(fn ($s) => [(string) $s->id => strtoupper($s->service_name)]));
+            var hasKioskErrors = @json($errors->any());
+            var studentOk = false;
+            var lookupTimer = null;
+            var lookupSeq = 0;
 
             function showStep(stepNo) {
                 step1.classList.add('hidden');
@@ -158,6 +206,108 @@
                     step3.classList.remove('hidden');
                     stepIndicator.textContent = 'STEP 3 OF 3 - CONFIRM & PRINT';
                 }
+                if (kioskShell) kioskShell.classList.toggle('is-step3', stepNo === 3);
+            }
+
+            function setStudentMessage(text, kind) {
+                if (!studentLookupMsg) return;
+                studentLookupMsg.textContent = text;
+                studentLookupMsg.className = 'step3-id-msg' + (kind ? ' is-' + kind : '');
+            }
+
+            function setStudentOk(ok) {
+                studentOk = !!ok;
+                if (confirmPrintBtn) confirmPrintBtn.disabled = !studentOk;
+            }
+
+            function currentStudentId() {
+                return String(studentIdInput && studentIdInput.value ? studentIdInput.value : '')
+                    .replace(/\s+/g, '')
+                    .toUpperCase();
+            }
+
+            function setStudentIdValue(value) {
+                if (!studentIdInput) return;
+                studentIdInput.value = String(value || '').replace(/\s+/g, '').toUpperCase().slice(0, 20);
+            }
+
+            function resetStudentLookup(keepValue) {
+                if (lookupTimer) {
+                    clearTimeout(lookupTimer);
+                    lookupTimer = null;
+                }
+                lookupSeq += 1;
+                setStudentOk(false);
+                if (!keepValue) setStudentIdValue('');
+                var id = currentStudentId();
+                if (!id) {
+                    setStudentMessage('Enter your student ID.');
+                    return;
+                }
+                setStudentMessage('Checking…');
+                scheduleStudentLookup();
+            }
+
+            function scheduleStudentLookup() {
+                if (lookupTimer) clearTimeout(lookupTimer);
+                lookupTimer = setTimeout(lookupStudent, 350);
+            }
+
+            function lookupStudent() {
+                var id = currentStudentId();
+                if (id.length < 4) {
+                    setStudentOk(false);
+                    setStudentMessage(id ? 'Keep entering your student ID.' : 'Enter your student ID.');
+                    return;
+                }
+
+                var seq = ++lookupSeq;
+                setStudentOk(false);
+                setStudentMessage('Checking…');
+
+                var params = new URLSearchParams();
+                params.set('student_id', id);
+
+                fetch(studentLookupUrl + '?' + params.toString(), {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (r) { return r.json().then(function (data) { return { ok: r.ok, data: data }; }); })
+                    .then(function (res) {
+                        if (seq !== lookupSeq) return;
+                        if (res.data && res.data.ok) {
+                            if (res.data.student_id) setStudentIdValue(res.data.student_id);
+                            setStudentOk(true);
+                            setStudentMessage('Welcome, ' + (res.data.name || 'student') + '.', 'ok');
+                            return;
+                        }
+                        setStudentOk(false);
+                        setStudentMessage((res.data && res.data.error) ? res.data.error : 'Student ID was not found.', 'error');
+                    })
+                    .catch(function () {
+                        if (seq !== lookupSeq) return;
+                        setStudentOk(false);
+                        setStudentMessage('Could not check student ID. Try again.', 'error');
+                    });
+            }
+
+            function appendStudentKey(key) {
+                var current = currentStudentId();
+                if (key === 'back') {
+                    setStudentIdValue(current.slice(0, -1));
+                } else if (key === 'clear') {
+                    setStudentIdValue('');
+                } else if (/^[0-9-]$/.test(key)) {
+                    setStudentIdValue(current + key);
+                } else {
+                    return;
+                }
+                setStudentOk(false);
+                if (!currentStudentId()) {
+                    setStudentMessage('Enter your student ID.');
+                    return;
+                }
+                setStudentMessage('Checking…');
+                scheduleStudentLookup();
             }
 
             function setEstimateLoading() {
@@ -236,6 +386,7 @@
                 var priorityLabel = priorityInput.value === 'priority' ? 'Priority' : 'Regular';
                 confirmServiceName.textContent = selectedServiceName;
                 confirmPriorityLabel.textContent = priorityLabel;
+                resetStudentLookup(false);
                 showStep(3);
                 loadEstimate();
             });
@@ -247,6 +398,56 @@
             document.getElementById('backToStep2').addEventListener('click', function () {
                 showStep(2);
             });
+
+            document.querySelectorAll('.step3-key').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    appendStudentKey(btn.getAttribute('data-key') || '');
+                });
+            });
+
+            if (kioskForm) {
+                kioskForm.addEventListener('submit', function (e) {
+                    if (!studentOk || !currentStudentId()) {
+                        e.preventDefault();
+                        setStudentMessage('Enter a valid student ID first.', 'error');
+                    }
+                });
+            }
+
+            document.addEventListener('keydown', function (e) {
+                if (step3.classList.contains('hidden')) return;
+                if (e.ctrlKey || e.metaKey || e.altKey) return;
+                var tag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '';
+                if (tag === 'textarea' || tag === 'select') return;
+                var key = String(e.key || '');
+                if (/^[0-9]$/.test(key) || key === '-') {
+                    e.preventDefault();
+                    appendStudentKey(key);
+                } else if (key === 'Backspace') {
+                    e.preventDefault();
+                    appendStudentKey('back');
+                } else if (key === 'Escape' || key === 'Delete') {
+                    e.preventDefault();
+                    appendStudentKey('clear');
+                }
+            });
+
+            if (serviceIdInput.value && servicesById[serviceIdInput.value]) {
+                selectedServiceName = servicesById[serviceIdInput.value];
+                confirmServiceName.textContent = selectedServiceName;
+            }
+            confirmPriorityLabel.textContent = priorityInput.value === 'priority' ? 'Priority' : 'Regular';
+            document.querySelectorAll('.priority-btn').forEach(function (btn) {
+                btn.classList.toggle('priority-selected', btn.dataset.priority === (priorityInput.value || 'regular'));
+            });
+
+            if (hasKioskErrors && serviceIdInput.value) {
+                resetStudentLookup(true);
+                showStep(3);
+                loadEstimate();
+            } else {
+                setStudentOk(false);
+            }
         });
     </script>
 
@@ -268,6 +469,15 @@
         }
         .kiosk-form {
             padding-top: 14px;
+        }
+        .kiosk-shell.is-step3 .kiosk-title {
+            font-size: 1.35rem;
+        }
+        .kiosk-shell.is-step3 .kiosk-title-block {
+            margin-bottom: 0.15rem;
+        }
+        .kiosk-shell.is-step3 .kiosk-form {
+            padding-top: 8px;
         }
         .kiosk-main {
             max-width: 1024px;
@@ -538,7 +748,7 @@
         .step2-registrar .step2-body { background: #f3fbef; }
 
         .step3-wrap {
-            max-width: 720px;
+            max-width: 980px;
             margin-left: auto;
             margin-right: auto;
             border-radius: 20px;
@@ -556,58 +766,67 @@
             text-align: center;
             font-size: 18px;
             font-weight: 800;
-            padding: 10px 12px;
+            padding: 4px 12px;
             letter-spacing: 0.02em;
             border-radius: 20px 20px 0 0;
             overflow: hidden;
-            min-height: 10px;
+            min-height: 6px;
         }
         .step3-body {
-            padding: 14px 14px 16px;
+            padding: 8px 12px 10px;
             text-align: center;
         }
         .step3-title {
-            font-size: 24px;
+            font-size: 18px;
             font-weight: 800;
             color: #1e5daa;
             line-height: 1.1;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             border-bottom: 1px solid #e2e8f0;
-            padding-bottom: 6px;
+            padding-bottom: 4px;
+        }
+        .step3-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+            gap: 10px 14px;
+            align-items: stretch;
+            text-align: left;
         }
         .step3-label {
             color: #475569;
-            font-size: 16px;
+            font-size: 13px;
             margin-bottom: 4px;
         }
         .step3-service-name {
             background: linear-gradient(90deg, #4b9bec, #3b82f6);
             color: #fff;
             font-weight: 900;
-            font-size: 32px;
+            font-size: 22px;
             border-radius: 10px;
-            padding: 8px 12px;
-            margin-bottom: 6px;
+            padding: 6px 10px;
+            margin-bottom: 4px;
             letter-spacing: 0.04em;
+            text-align: center;
         }
         .step3-priority {
-            font-size: 15px;
+            font-size: 14px;
             color: #334155;
-            margin-bottom: 2px;
+            margin-bottom: 6px;
+            text-align: center;
         }
         .step3-priority-value { font-weight: 800; }
         .step3-queue-info {
-            margin: 10px auto 8px;
-            max-width: 420px;
-            padding: 10px 12px;
+            margin: 0;
+            max-width: none;
+            padding: 8px 10px;
             border: 1px solid #dbe3f0;
             border-radius: 10px;
             background: #fff;
             text-align: left;
         }
         .step3-info-line {
-            margin: 0 0 4px;
-            font-size: 15px;
+            margin: 0 0 3px;
+            font-size: 14px;
             color: #334155;
         }
         .step3-info-line strong {
@@ -615,10 +834,10 @@
             font-weight: 800;
         }
         .step3-eta {
-            margin: 8px 0 0;
-            padding-top: 6px;
+            margin: 6px 0 0;
+            padding-top: 5px;
             border-top: 1px solid #e2e8f0;
-            font-size: 16px;
+            font-size: 14px;
             color: #1e3a5f;
             font-weight: 700;
         }
@@ -626,10 +845,72 @@
             color: #0f5fb8;
             font-weight: 900;
         }
-        .step3-question {
+        .step3-id-box {
+            margin: 0;
+            max-width: none;
+            padding: 8px 10px;
+            border: 1px solid #dbe3f0;
+            border-radius: 10px;
+            background: #fff;
+            text-align: center;
+        }
+        .step3-id-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #1e5daa;
+            margin-bottom: 4px;
+        }
+        .step3-id-input {
+            width: 100%;
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #1e3a8a;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-align: center;
+            padding: 4px 8px;
+            margin-bottom: 6px;
+            caret-color: transparent;
+        }
+        .step3-keypad {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 5px;
+        }
+        .step3-key {
+            min-height: 36px;
+            border-radius: 8px;
+            border: 1px solid #93c5fd;
+            background: linear-gradient(180deg, #ffffff, #e8f1ff);
+            color: #1e3a8a;
             font-size: 18px;
+            font-weight: 800;
+        }
+        .step3-key-zero { grid-column: 2 / 4; }
+        .step3-key-action {
+            background: linear-gradient(180deg, #dbeafe, #bfdbfe);
+        }
+        .step3-id-msg {
+            margin: 6px 0 0;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            min-height: 1.2em;
+        }
+        .step3-id-msg.is-ok { color: #0f7a4b; }
+        .step3-id-msg.is-error { color: #b91c1c; }
+        .step3-footer {
+            margin-top: 8px;
+        }
+        .step3-question {
+            font-size: 14px;
             color: #334155;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
         .step3-actions {
             display: flex;
@@ -655,6 +936,10 @@
             background: linear-gradient(90deg, #1f6dd6, #1d4ed8);
             border: 1px solid #1d4ed8;
             color: #fff;
+        }
+        .step3-confirm-btn:disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
         }
         .priority-regular {
             background: #ffffff;
@@ -707,13 +992,20 @@
             .priority-btn .text-4xl { font-size: 1.7rem !important; }
             .priority-btn .text-lg { font-size: 0.9rem !important; }
             .step2-back-btn, .step2-print-btn { font-size: 18px; min-width: 140px; padding: 8px 12px; }
-            .step3-service-name { font-size: 26px; }
-            .step3-title { font-size: 20px; }
+            .step3-service-name { font-size: 20px; }
+            .step3-title { font-size: 16px; }
+            .step3-id-input { font-size: 20px; }
+            .step3-key { min-height: 32px; font-size: 16px; }
+            .step3-body { padding: 6px 10px 8px; }
+            .kiosk-shell.is-step3 .kiosk-title { font-size: 1.2rem; }
         }
 
         @media (max-width: 900px) {
             .step1-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .step1-head-icon { display: none; }
+        }
+        @media (max-width: 720px) {
+            .step3-grid { grid-template-columns: 1fr; }
         }
         @media (max-width: 640px) {
             .step1-body { grid-template-columns: 1fr; }

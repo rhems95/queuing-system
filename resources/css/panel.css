@@ -849,6 +849,11 @@
     color: var(--pecit-danger);
 }
 
+.pecit-badge-held {
+    background: #f1f5f9;
+    color: #475569;
+}
+
 .pecit-badge-priority {
     background: var(--pecit-gold-soft);
     color: #7a5b00;
@@ -940,6 +945,14 @@
     color: var(--pecit-navy);
     font-variant-numeric: tabular-nums;
     line-height: 1;
+}
+
+.pecit-serving-name {
+    margin-top: 0.45rem;
+    min-height: 1.35em;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--pecit-navy-mid);
 }
 
 .pecit-serving-card.is-next .pecit-serving-number {

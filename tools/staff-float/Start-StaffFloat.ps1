@@ -36,10 +36,13 @@ if (-not $browserExe) {
 $profileDir = Join-Path $env:LOCALAPPDATA $profileName
 New-Item -ItemType Directory -Force -Path $profileDir | Out-Null
 
+$windowWidth = 260
+$windowHeight = 270
+
 Start-Process -FilePath $browserExe -ArgumentList @(
     "--user-data-dir=`"$profileDir`"",
     "--app=$Url",
-    "--window-size=260,220",
+    "--window-size=$windowWidth,$windowHeight",
     "--window-position=40,80",
     "--disable-extensions",
     "--no-first-run"
@@ -90,7 +93,7 @@ function Set-TopMost([IntPtr]$hwnd) {
     [void][PecitWin]::SetWindowPos(
         $hwnd,
         [PecitWin]::HWND_TOPMOST,
-        40, 80, 260, 220,
+        40, 80, $windowWidth, $windowHeight,
         [PecitWin]::SWP_SHOWWINDOW
     )
 }

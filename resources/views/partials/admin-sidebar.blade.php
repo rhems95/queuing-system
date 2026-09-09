@@ -14,6 +14,11 @@
             @include('partials.icon', ['name' => 'users'])
             <span>Users</span>
         </a>
+        <a href="{{ route('admin.students.index') }}"
+           class="pecit-nav-link {{ request()->routeIs('admin.students.*') ? 'is-active' : '' }}">
+            @include('partials.icon', ['name' => 'students'])
+            <span>Students</span>
+        </a>
 
         <div class="pecit-nav-section">Queue records</div>
         <a href="{{ route('admin.history') }}"

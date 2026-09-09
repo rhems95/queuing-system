@@ -70,6 +70,31 @@ CREATE TABLE `migrations` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `students`
+--
+
+CREATE TABLE `students` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `student_id` varchar(50) NOT NULL,
+  `name` varchar(100) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `students`
+--
+
+INSERT INTO `students` (`id`, `student_id`, `name`, `created_at`, `updated_at`) VALUES
+(1, '2024-0001', 'Juan Dela Cruz', NULL, NULL),
+(2, '2024-0002', 'Maria Santos', NULL, NULL),
+(3, '2024-0003', 'Jose Rizal', NULL, NULL),
+(4, '2024-0004', 'Ana Reyes', NULL, NULL),
+(5, '2024-0005', 'Pedro Garcia', NULL, NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `queues`
 --
 
@@ -77,8 +102,9 @@ CREATE TABLE `queues` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `queue_number` varchar(20) NOT NULL,
   `service_id` bigint(20) UNSIGNED NOT NULL,
+  `student_id` varchar(50) DEFAULT NULL,
   `priority` tinyint(1) DEFAULT 0,
-  `status` enum('waiting','serving','done','cancelled') DEFAULT 'waiting',
+  `status` enum('waiting','serving','done','cancelled','held') DEFAULT 'waiting',
   `queue_date` date NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -382,12 +408,20 @@ ALTER TABLE `migrations`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `students`
+--
+ALTER TABLE `students`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `students_student_id_unique` (`student_id`);
+
+--
 -- Indexes for table `queues`
 --
 ALTER TABLE `queues`
   ADD PRIMARY KEY (`id`),
   ADD KEY `service_id` (`service_id`),
-  ADD KEY `idx_queue_date` (`queue_date`);
+  ADD KEY `idx_queue_date` (`queue_date`),
+  ADD KEY `queues_student_id_index` (`student_id`);
 
 --
 -- Indexes for table `queue_calls`
@@ -433,6 +467,12 @@ ALTER TABLE `daily_queue_counters`
 --
 ALTER TABLE `migrations`
   MODIFY `id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `students`
+--
+ALTER TABLE `students`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `queues`
