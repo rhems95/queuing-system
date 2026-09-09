@@ -68,6 +68,7 @@ flowchart TB
     subgraph Admin["Admin — auth + admin middleware"]
         AD["/admin — AdminDashboardController"]
         UM["/admin/users — UserManagementController"]
+        STU["/admin/students — StudentManagementController"]
         HI["/admin/history* — HistoryController"]
     end
     DB[(MySQL)]
@@ -76,6 +77,7 @@ flowchart TB
     SW --> DB
     AD --> DB
     UM --> DB
+    STU --> DB
     HI --> DB
     LG --> DB
 ```
@@ -123,7 +125,7 @@ flowchart TD
         B4["Per window: QueueService<br/>latestCallForWindow today"]
         B5["queueNumberFromCall or<br/>placeholder ----"]
         B6["call_token = id + called_time<br/>for TTS refresh / recall"]
-        B7["Global waiting: queues.status=waiting<br/>today, order priority desc, queue_number"]
+        B7["Waiting: FairQueueScheduler orderedWaiting<br/>today, omit held, max 10"]
         B8["Map priority bool to Priority/Regular label"]
     end
     A2 --> B1 --> B2 --> B3 --> B4 --> B5
@@ -177,9 +179,9 @@ flowchart TD
 
     subgraph Page["GET /window — WindowController@index"]
         P1["Load Window + service"]
-        P2["Latest QueueCall today for window<br/>→ current ticket"]
-        P3["Next waiting: same service_id<br/>today, priority desc, id"]
-        P4["waitingTickets: up to 10<br/>priority desc, queue_number"]
+        P2["Latest open QueueCall today for window<br/>→ current ticket"]
+        P3["Next waiting: FairQueueScheduler peek<br/>same service_id, 2P→1R"]
+        P4["waitingTickets: up to 10 fair order<br/>heldTickets: Call held list"]
         P5["staff.window view<br/>buttons above table"]
     end
     Gate --> Page
@@ -202,7 +204,7 @@ flowchart TD
     CN --> CNstep["Transaction"]
     subgraph CallNextTx["callNext transaction"]
         X1["If open call: set finished_time<br/>queue status done"]
-        X2["Pick next waiting same service<br/>today priority desc, id"]
+        X2["FairQueueScheduler claimNextWaiting<br/>2P→1R, this window_id on queue_calls"]
         X3["Set queue serving + QueueCall<br/>called_time now"]
     end
 
@@ -268,6 +270,12 @@ flowchart TD
         U4["password hashed"]
     end
 
+    subgraph Students["/admin/students — StudentManagementController"]
+        S1["Add / delete allowlisted Student IDs"]
+        S2["CSV import student_id,name"]
+        S3["Cannot delete if open ticket today"]
+    end
+
     subgraph History["HistoryController — admin only"]
         H1["GET /admin/history — served queue_calls<br/>staff name via users.window_id"]
         H2["GET /admin/history/tickets — all queues rows"]
@@ -278,7 +286,7 @@ flowchart TD
     subgraph AdminFlow["Typical flow"]
         A1["Login /login as admin"]
         A2["Dashboard overview"]
-        A3["Manage users & windows"]
+        A3["Manage users, windows, students"]
         A4["Audit history / tickets / reports"]
     end
     A1 --> A2 --> A3 --> A4
@@ -294,6 +302,7 @@ flowchart LR
         SV[services]
         WIN[windows]
         US[users]
+        STU[students]
     end
     HI["admin/history"] --> QC
     HI --> Q
@@ -302,6 +311,7 @@ flowchart LR
     HI --> US
     TK["admin/history/tickets"] --> Q
     TK --> SV
+    STUL["admin/students"] --> STU
     RP["admin/history/reports"] --> QC
     RP --> Q
     RP --> SV
@@ -329,6 +339,8 @@ flowchart LR
         K --> D[(daily_queue_counters)]
         CN["call-next"] --> Q
         CN --> QC[(queue_calls)]
+        HD["hold / call-held"] --> Q
+        HD --> QC
         CP["complete"] --> Q
         CP --> QC
     end

@@ -17,14 +17,14 @@
       {
         "id": "ticket-issue",
         "label": "Ticket issue",
-        "focus": ["services", "daily_counters", "queues"],
-        "note": "Kiosk locks the daily serial, then inserts an anonymous queues row."
+        "focus": ["services", "daily_counters", "queues", "students"],
+        "note": "Kiosk locks the daily serial, then inserts a queues row with student_id."
       },
       {
         "id": "serve-ticket",
         "label": "Call and complete",
         "focus": ["queues", "windows", "queue_calls"],
-        "note": "Staff claim a waiting ticket at one window and write queue_calls."
+        "note": "Staff claim a waiting ticket at one window, or Hold it; write queue_calls."
       },
       {
         "id": "staffing",
@@ -38,12 +38,13 @@
     { "id": "services", "type": "database", "label": "services", "sublabel": "id PK · prefix", "pos": [48, 240], "size": [160, 68], "tag": "1:N hub" },
     { "id": "windows", "type": "database", "label": "windows", "sublabel": "service_id FK", "pos": [300, 80], "size": [160, 68] },
     { "id": "users", "type": "database", "label": "users", "sublabel": "window_id FK unique", "pos": [560, 80], "size": [170, 68] },
-    { "id": "queues", "type": "database", "label": "queues", "sublabel": "service_id FK · priority", "pos": [300, 240], "size": [170, 68] },
+    { "id": "queues", "type": "database", "label": "queues", "sublabel": "service_id · student_id", "pos": [300, 240], "size": [170, 68] },
     { "id": "queue_calls", "type": "database", "label": "queue_calls", "sublabel": "queue_id · window_id", "pos": [560, 240], "size": [170, 68] },
-    { "id": "daily_counters", "type": "database", "label": "daily_queue_counters", "sublabel": "service_id + date", "pos": [300, 400], "size": [190, 68] }
+    { "id": "daily_counters", "type": "database", "label": "daily_queue_counters", "sublabel": "service_id + date", "pos": [300, 400], "size": [190, 68] },
+    { "id": "students", "type": "database", "label": "students", "sublabel": "student_id UK · name", "pos": [790, 400], "size": [160, 68] }
   ],
   "boundaries": [
-    { "kind": "region", "label": "queuing_system", "wraps": ["services", "windows", "users", "queues", "queue_calls", "daily_counters"] }
+    { "kind": "region", "label": "queuing_system", "wraps": ["services", "windows", "users", "queues", "queue_calls", "daily_counters", "students"] }
   ],
   "connections": [
     { "id": "services-to-queues", "from": "services", "to": "queues", "label": "1:N tickets", "variant": "emphasis" },
@@ -51,13 +52,14 @@
     { "id": "services-to-windows", "from": "services", "to": "windows", "label": "1:N counters", "fromSide": "top", "toSide": "left" },
     { "id": "windows-to-users", "from": "windows", "to": "users", "label": "1:0..1 staff" },
     { "id": "windows-to-calls", "from": "windows", "to": "queue_calls", "label": "1:N called at", "fromSide": "bottom", "toSide": "top" },
-    { "id": "services-to-daily", "from": "services", "to": "daily_counters", "label": "1:N daily serial", "fromSide": "bottom", "toSide": "left" }
+    { "id": "services-to-daily", "from": "services", "to": "daily_counters", "label": "1:N daily serial", "fromSide": "bottom", "toSide": "left" },
+    { "id": "students-to-queues", "from": "students", "to": "queues", "label": "optional ID", "fromSide": "top", "toSide": "bottom" }
   ],
   "cards": [
     {
       "dot": "cyan",
       "title": "Ticket identity",
-      "items": ["queues has no student name or ID; queue_number comes from daily_queue_counters"]
+      "items": ["queues.student_id is optional; name lives on students and is never printed"]
     },
     {
       "dot": "emerald",

@@ -20,19 +20,21 @@
 
     <section id="s0">
         <h2>0. Master system overview (compact — print on bond paper)</h2>
-        <p class="hint" style="margin-top:-0.5rem;">Anonymous, print-only. Print <strong>Landscape</strong> or <strong>Fit to page</strong> for Letter/A4. Mermaid is loaded from local <code>vendor/mermaid/</code> (offline-safe).</p>
+        <p class="hint" style="margin-top:-0.5rem;">Student ID on confirm; print/display stay number-only. Print <strong>Landscape</strong> or <strong>Fit to page</strong> for Letter/A4. Mermaid is loaded from local <code>vendor/mermaid/</code> (offline-safe).</p>
         <div class="mermaid">
 %%{init: {'flowchart': {'nodeSpacing': 28, 'rankSpacing': 36, 'padding': 6, 'useMaxWidth': true}, 'themeVariables': { 'fontSize': '11px'}}}%%
 flowchart TD
-    St([Start]) --> K["Kiosk: service → Regular/Priority → confirm"]
+    St([Start]) --> K["Kiosk: service → Regular/Priority → confirm ID + ETA"]
     K --> DB[("DB: new queue + daily counter")]
     DB --> PA["Customer: ticket #, print, countdown, then wait"]
-    DB --> PB["TV: now serving + waiting list + voice"]
-    PA --> SW["Staff: next / recall / complete"]
+    DB --> PB["TV: now serving + waiting 2P→1R + voice"]
+    PA --> SW["Staff: next / recall / complete / hold + timer"]
     PB --> SW
-    SW --> DB
+    SW --> Fair["FairQueueScheduler shared per service"]
+    Fair --> DB
     SW --> Q{Done?}
     Q -->|Recall / same ticket| SW
+    Q -->|Hold / set aside| DB
     Q -->|Complete| H["Save queue_calls + done"]
     H --> En([End])
         </div>
@@ -75,14 +77,15 @@ flowchart TB
 flowchart TD
     Start([Visitor: /kiosk]) --> S1["Step 1: Select service<br/>services excluding Promissory in KioskController@index"]
     S1 --> S2["Step 2: Regular or Priority<br/>hidden input priority"]
-    S2 --> S3["Step 3: Confirm & Print"]
+    S2 --> S3["Step 3: Confirm — Student ID keypad + ETA"]
     S3 --> POST["POST /kiosk — KioskController@store"]
-    POST --> V{"Validate service_id, priority<br/>in: regular, priority?"}
-    V -->|Fail| E["Show validation errors"]
+    POST --> V{"Validate service_id, priority, student_id"}
+    V -->|Fail| E["Show validation errors on step 3"]
     V -->|OK| Txn["DB transaction"]
     subgraph Trn["Transaction"]
+        T0["Lock student; reject unknown / already queued"]
         T1["Lock/update daily_queue_counters<br/>per service + today"]
-        T2["Insert queues row<br/>priority 0|1, status waiting"]
+        T2["Insert queues row<br/>student_id, priority 0|1, status waiting"]
     end
     Txn --> Print["View kiosk.printing<br/>issuedAt, priorityLabel"]
     Print --> AP["window.print + countdown"]
@@ -180,6 +183,8 @@ flowchart TD
         CN["POST /window/call-next"]
         RC["POST /window/recall"]
         CP["POST /window/complete"]
+        HD["POST /window/hold"]
+        CH["POST /window/call-held"]
     end
 
     CN --> CNstep["Transaction"]
@@ -193,8 +198,11 @@ flowchart TD
 
     CP --> CP1["Set finished_time<br/>queue done"]
 
+    HD --> HD1["Set finished_time<br/>queue held; window free"]
+    CH --> CH1["Require no open serving ticket<br/>status serving + new queue_call"]
+
     subgraph Shortcut["Keyboard"]
-        K1["Ctrl+Alt+Space → #call-next-btn"]
+        K1["Alt+N → Call Next<br/>Alt+R → Recall<br/>Alt+C → Complete"]
     end
     Shortcut --> CN
 
@@ -248,6 +256,12 @@ flowchart TD
         U4["password hashed"]
     end
 
+    subgraph Students["/admin/students — StudentManagementController"]
+        S1["Add / delete allowlisted Student IDs"]
+        S2["CSV import student_id,name"]
+        S3["Cannot delete if open ticket today"]
+    end
+
     subgraph History["HistoryController — admin only"]
         H1["GET /admin/history — served queue_calls<br/>staff name via users.window_id"]
         H2["GET /admin/history/tickets — all queues rows"]
@@ -258,7 +272,7 @@ flowchart TD
     subgraph AdminFlow["Typical flow"]
         A1["Login /login as admin"]
         A2["Dashboard overview"]
-        A3["Manage users & windows"]
+        A3["Manage users, windows, students"]
         A4["Audit history / tickets / reports"]
     end
     A1 --> A2 --> A3 --> A4
@@ -296,6 +310,8 @@ stateDiagram-v2
     [*] --> waiting: Kiosk creates ticket
     waiting --> serving: Staff Call Next
     serving --> done: Staff Complete<br/>or Call Next auto-completes previous
+    serving --> held: Staff Hold
+    held --> serving: Staff Call held
     done --> [*]
     note right of serving: Recall updates called_time<br/>same queue_number, new token
         </div>
@@ -366,36 +382,36 @@ flowchart TB
         D4[("D4 Master data")]
     end
 
-    EC -->|Service choice, priority| P1
-    P1 -->|Queue number, service| EC
+    EC -->|Service, priority, Student ID| P1
+    P1 -->|Queue number, ETA| EC
 
     ED -->|Poll /display, /display/data| P2
     P2 -->|Now serving, waiting list| ED
 
-    ES -->|Call next, recall, complete| P3
-    P3 -->|Flash / status| ES
+    ES -->|Call next, recall, complete, hold| P3
+    P3 -->|Current ticket, name, timer| ES
 
-    EA -->|Users, filters, reports| P4
-    P4 -->|Screens, exports| EA
+    EA -->|Users, students, reports| P4
+    P4 -->|Screens, CSV result| EA
 
-    D4 -->|Valid services| P1
+    D4 -->|Valid services + student allowlist| P1
     P1 -->|New ticket row| D1
     P1 -->|Increment serial| D2
 
-    D1 -->|Waiting, by date| P2
-    D3 -->|Latest call per window| P2
+    D1 -->|Waiting 2P→1R; omit held| P2
+    D3 -->|Open serving call per window| P2
     D4 -->|Windows, groups| P2
 
     D4 -->|Window, service| P3
-    D1 -->|Next waiting, status| P3
+    D1 -->|Next waiting, hold list| P3
     D3 -->|Open call| P3
     P3 -->|Update ticket status| D1
-    P3 -->|Insert or update call| D3
+    P3 -->|Insert or finish call| D3
 
-    D4 -->|Users, windows| P4
+    D4 -->|Users, windows, students| P4
     D1 -->|Tickets, filters| P4
-    D3 -->|Served history| P4
-    P4 -->|Update users| D4
+    D3 -->|Served history done only| P4
+    P4 -->|Update users, students| D4
         </div>
     </section>
 

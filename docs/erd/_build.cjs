@@ -78,6 +78,7 @@ const colors = {
   windows: { background: "#0D9488", foreground: "#FFFFFF" },
   users: { background: "#BE185D", foreground: "#FFFFFF" },
   queues: { background: "#16A34A", foreground: "#FFFFFF" },
+  students: { background: "#0F766E", foreground: "#FFFFFF" },
   queue_calls: { background: "#D97706", foreground: "#FFFFFF" },
   daily_queue_counters: { background: "#7C3AED", foreground: "#FFFFFF" },
 };
@@ -168,16 +169,32 @@ tables.users = addTable(
   ]
 );
 
+tables.students = addTable(
+  "students",
+  "Student",
+  "Allowlisted kiosk IDs. Name is staff/admin only; never printed.",
+  -480,
+  280,
+  [
+    col("id", "ID", T.bigint, { unsigned: true, pk: true, notNull: true, ai: true }),
+    col("student_id", "Student ID", T.varchar, { precision: 32, notNull: true, unique: true }),
+    col("name", "Name", T.varchar, { precision: 150, notNull: true }),
+    col("created_at", "Created at", T.timestamp, { notNull: false }),
+    col("updated_at", "Updated at", T.timestamp, { notNull: false }),
+  ]
+);
+
 tables.queues = addTable(
   "queues",
   "Queue ticket",
-  "Anonymous tickets. No student name or ID.",
+  "Number-only on print/display. Optional student_id; name is not stored on the ticket.",
   -80,
   80,
   [
     col("id", "ID", T.bigint, { unsigned: true, pk: true, notNull: true, ai: true }),
     col("queue_number", "Queue number", T.varchar, { precision: 20, notNull: true }),
     col("service_id", "Service ID", T.bigint, { unsigned: true, notNull: true }),
+    col("student_id", "Student ID", T.varchar, { precision: 32, notNull: false, description: "Allowlisted ID; name lives on students" }),
     col("priority", "Priority", T.tinyint, {
       notNull: false,
       defaultValue: "0",
@@ -186,7 +203,7 @@ tables.queues = addTable(
     col("status", "Status", T.enum, {
       notNull: false,
       defaultValue: "'waiting'",
-      optionExpression: "('waiting','serving','done','cancelled')",
+      optionExpression: "('waiting','serving','done','cancelled','held')",
     }),
     col("queue_date", "Queue date", T.date, { notNull: true }),
     col("created_at", "Created at", T.timestamp, { notNull: false, description: "Used for average wait time" }),
@@ -272,6 +289,7 @@ relate("services_daily_queue_counters", "services", "daily_queue_counters", "id"
 relate("windows_users", "windows", "users", "id", "window_id", "1", "0..1");
 relate("windows_queue_calls", "windows", "queue_calls", "id", "window_id", "1", "0..N");
 relate("queues_queue_calls", "queues", "queue_calls", "id", "queue_id", "1", "0..N");
+relate("students_queues", "students", "queues", "student_id", "student_id", "1", "0..N");
 
 run("add-table-index", {
   tableId: tables.queues,
@@ -287,7 +305,7 @@ run("add-table-index", {
 
 run("add-memo", {
   memo: {
-    memo: "Anonymous kiosk: queues has no student name/ID.\nWait = created_at → called_time.\nService = called_time → finished_time.",
+    memo: "Kiosk confirm collects Student ID; print and display stay number-only.\nHold sets status=held (not done). Wait = created_at → called_time.\nService = called_time → finished_time (done calls only).",
     position: { x: -480, y: 420 },
     size: { width: 420, height: 120 },
     color: { background: "#FFFBEB", foreground: "#1F2937" },

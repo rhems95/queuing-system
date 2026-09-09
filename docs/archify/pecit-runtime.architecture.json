@@ -12,13 +12,13 @@
         "id": "ticket-path",
         "label": "Ticket issue path",
         "focus": ["customer", "kiosk", "laravel", "mysql", "printer"],
-        "note": "Anonymous kiosk creates a ticket, stores it, and prints 80mm."
+        "note": "Kiosk confirm collects a Student ID, stores the ticket, and prints 80mm (number only)."
       },
       {
         "id": "staff-call",
         "label": "Staff call path",
         "focus": ["staff", "login", "laravel", "scheduler", "mysql"],
-        "note": "Authenticated staff claim the next ticket with shared 2P→1R order."
+        "note": "Authenticated staff claim the next ticket with shared 2P→1R order, or Hold/call-held."
       },
       {
         "id": "public-display",
@@ -30,14 +30,14 @@
   },
   "components": [
     { "id": "customer", "type": "external", "label": "Customer", "sublabel": "Lobby / no login", "pos": [48, 300], "size": [132, 64] },
-    { "id": "kiosk", "type": "frontend", "label": "Kiosk", "sublabel": "/kiosk print-only", "pos": [260, 300], "size": [150, 64], "tag": "anonymous" },
+    { "id": "kiosk", "type": "frontend", "label": "Kiosk", "sublabel": "/kiosk + Student ID", "pos": [260, 300], "size": [150, 64], "tag": "print-only" },
     { "id": "display", "type": "frontend", "label": "Public Display", "sublabel": "/display + TTS", "pos": [48, 120], "size": [150, 64] },
     { "id": "laravel", "type": "backend", "label": "Laravel 12", "sublabel": "Apache / routes/web.php", "pos": [520, 300], "size": [170, 64], "tag": "XAMPP" },
     { "id": "scheduler", "type": "backend", "label": "FairQueueScheduler", "sublabel": "2P → 1R per service", "pos": [520, 120], "size": [170, 64] },
     { "id": "mysql", "type": "database", "label": "MySQL", "sublabel": "queuing_system", "pos": [790, 300], "size": [150, 64] },
     { "id": "printer", "type": "external", "label": "Thermal Printer", "sublabel": "XP-58 (XP-Q90EC)", "pos": [48, 448], "size": [150, 64] },
     { "id": "staff", "type": "frontend", "label": "Staff Window", "sublabel": "/window + float", "pos": [520, 448], "size": [170, 64] },
-    { "id": "admin", "type": "frontend", "label": "Admin Panel", "sublabel": "/admin reports", "pos": [790, 448], "size": [150, 64] },
+    { "id": "admin", "type": "frontend", "label": "Admin Panel", "sublabel": "/admin + students", "pos": [790, 448], "size": [150, 64] },
     { "id": "login", "type": "security", "label": "Login", "sublabel": "staff | admin", "pos": [260, 448], "size": [132, 64] }
   ],
   "boundaries": [
@@ -45,23 +45,23 @@
     { "kind": "region", "label": "XAMPP host", "wraps": ["laravel", "scheduler", "mysql"] }
   ],
   "connections": [
-    { "id": "customer-to-kiosk", "from": "customer", "to": "kiosk", "label": "service + priority", "variant": "emphasis", "labelAt": [220, 248] },
+    { "id": "customer-to-kiosk", "from": "customer", "to": "kiosk", "label": "service + ID", "variant": "emphasis", "labelAt": [220, 248] },
     { "id": "kiosk-to-laravel", "from": "kiosk", "to": "laravel", "label": "POST /kiosk", "variant": "emphasis", "labelAt": [465, 278] },
     { "id": "laravel-to-mysql", "from": "laravel", "to": "mysql", "label": "queues + counters", "variant": "emphasis", "labelDy": -28 },
     { "id": "kiosk-to-printer", "from": "kiosk", "to": "printer", "label": "80mm print", "fromSide": "left", "toSide": "top", "labelDy": 20 },
     { "id": "display-to-scheduler", "from": "display", "to": "scheduler", "label": "GET /display/data", "labelDy": -22 },
     { "id": "laravel-to-scheduler", "from": "laravel", "to": "scheduler", "label": "claim / peek", "fromSide": "top", "toSide": "bottom", "labelDx": 36 },
     { "id": "scheduler-to-mysql", "from": "scheduler", "to": "mysql", "label": "lock + status", "fromSide": "right", "toSide": "top" },
-    { "id": "staff-to-laravel", "from": "staff", "to": "laravel", "label": "call / recall / complete", "fromSide": "top", "toSide": "bottom", "labelDx": -40 },
+    { "id": "staff-to-laravel", "from": "staff", "to": "laravel", "label": "call / hold / complete", "fromSide": "top", "toSide": "bottom", "labelDx": -40 },
     { "id": "login-to-staff", "from": "login", "to": "staff", "label": "session", "variant": "security", "labelDy": 22 },
     { "id": "login-to-admin", "from": "login", "to": "admin", "label": "session", "variant": "security", "fromSide": "bottom", "toSide": "bottom", "labelDy": 22 },
-    { "id": "admin-to-mysql", "from": "admin", "to": "mysql", "label": "history + averages", "fromSide": "top", "toSide": "bottom", "labelDx": 28 }
+    { "id": "admin-to-mysql", "from": "admin", "to": "mysql", "label": "users + students", "fromSide": "top", "toSide": "bottom", "labelDx": 28 }
   ],
   "cards": [
     {
       "dot": "cyan",
       "title": "Public lobby",
-      "items": ["Anonymous print-only kiosk; display uses the same 2P→1R waiting order"]
+      "items": ["Print-only kiosk requires Student ID on confirm; display stays number-only and omits held"]
     },
     {
       "dot": "emerald",
@@ -71,7 +71,7 @@
     {
       "dot": "rose",
       "title": "Staff and admin",
-      "items": ["Window-scoped timers; admin averages wait and service time from queue_calls"]
+      "items": ["Window-scoped timers and Hold; admin averages wait/service from done tickets only"]
     }
   ]
 }

@@ -36,55 +36,55 @@ flowchart TB
         D4[("D4 Master data")]
     end
 
-    EC -->|Service choice, priority| P1
-    P1 -->|Queue number, service| EC
+    EC -->|Service, priority, Student ID| P1
+    P1 -->|Queue number, ETA| EC
 
     ED -->|Poll /display, /display/data| P2
     P2 -->|Now serving, waiting list| ED
 
-    ES -->|Call next, recall, complete| P3
-    P3 -->|Flash / status| ES
+    ES -->|Call next, recall, complete, hold| P3
+    P3 -->|Current ticket, name, timer| ES
 
-    EA -->|Users, filters, reports| P4
-    P4 -->|Screens, exports| EA
+    EA -->|Users, students, reports| P4
+    P4 -->|Screens, CSV result| EA
 
-    D4 -->|Valid services| P1
+    D4 -->|Valid services + student allowlist| P1
     P1 -->|New ticket row| D1
     P1 -->|Increment serial| D2
 
-    D1 -->|Waiting, by date| P2
-    D3 -->|Latest call per window| P2
+    D1 -->|Waiting 2P→1R; omit held| P2
+    D3 -->|Open serving call per window| P2
     D4 -->|Windows, groups| P2
 
     D4 -->|Window, service| P3
-    D1 -->|Next waiting, status| P3
+    D1 -->|Next waiting, hold list| P3
     D3 -->|Open call| P3
     P3 -->|Update ticket status| D1
-    P3 -->|Insert or update call| D3
+    P3 -->|Insert or finish call| D3
 
-    D4 -->|Users, windows| P4
+    D4 -->|Users, windows, students| P4
     D1 -->|Tickets, filters| P4
-    D3 -->|Served history| P4
-    P4 -->|Update users| D4
+    D3 -->|Served history done only| P4
+    P4 -->|Update users, students| D4
 ```
 
 ### Data store definitions
 
 | ID | Maps to tables (logical) | Contents |
 |----|---------------------------|----------|
-| **D1** | `queues` | Ticket rows: number, service, priority, status, date |
+| **D1** | `queues` | Ticket rows: number, service, optional `student_id`, priority, status (`waiting`/`serving`/`done`/`cancelled`/`held`), date |
 | **D2** | `daily_queue_counters` | Per service per day: last issued serial |
-| **D3** | `queue_calls` | Links queue to window: called / finished times |
-| **D4** | `services`, `windows`, `users` | Service prefixes, window groups, accounts |
+| **D3** | `queue_calls` | Links queue to window: called / finished times (open = `finished_time` null) |
+| **D4** | `services`, `windows`, `users`, `students` | Service prefixes, window groups, accounts, Student ID allowlist |
 
 ### Process definitions
 
 | ID | Name | Typical controller / route |
 |----|------|------------------------------|
-| **1.0** | Issue ticket | `KioskController@store`, `GET /kiosk` |
+| **1.0** | Issue ticket | `KioskController@store`, `GET /kiosk`, `GET /kiosk/student` |
 | **2.0** | Produce display data | `DisplayController@index`, `DisplayController@data` |
-| **3.0** | Serve at window | `WindowController` call-next / recall / complete, `GET /window` |
-| **4.0** | Administer system | `AdminDashboardController`, `UserManagementController`, `HistoryController` |
+| **3.0** | Serve at window | `WindowController` call-next / recall / complete / hold / call-held, `GET /window` |
+| **4.0** | Administer system | `AdminDashboardController`, `UserManagementController`, `StudentManagementController`, `HistoryController` |
 
 ### External entities
 
