@@ -17,6 +17,8 @@
             <option value="waiting" {{ request('status') === 'waiting' ? 'selected' : '' }}>Waiting</option>
             <option value="serving" {{ request('status') === 'serving' ? 'selected' : '' }}>Serving</option>
             <option value="done" {{ request('status') === 'done' ? 'selected' : '' }}>Done</option>
+            <option value="held" {{ request('status') === 'held' ? 'selected' : '' }}>Held</option>
+            <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
         </select>
         <button type="submit" class="pecit-btn pecit-btn-secondary">Apply</button>
     </form>
@@ -28,6 +30,7 @@
                     <tr>
                         <th>Queue #</th>
                         <th>Service</th>
+                        <th>Student</th>
                         <th>Priority</th>
                         <th>Status</th>
                         <th>Queue Date</th>
@@ -38,6 +41,7 @@
                         <tr>
                             <td style="font-weight:700;">{{ $row->queue_number }}</td>
                             <td>{{ $row->service_name }}</td>
+                            <td>{{ $row->student_name ?: '—' }}</td>
                             <td>
                                 @if ($row->priority)
                                     <span class="pecit-badge pecit-badge-priority">Priority</span>
@@ -47,7 +51,7 @@
                             </td>
                             <td>
                                 @php $st = strtolower((string) $row->status); @endphp
-                                <span class="pecit-badge pecit-badge-{{ in_array($st, ['waiting','serving','done','cancelled'], true) ? $st : 'waiting' }}">
+                                <span class="pecit-badge pecit-badge-{{ in_array($st, ['waiting','serving','done','cancelled','held'], true) ? $st : 'waiting' }}">
                                     {{ $row->status }}
                                 </span>
                             </td>
@@ -55,7 +59,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="5" class="empty">No tickets found.</td>
+                            <td colspan="6" class="empty">No tickets found.</td>
                         </tr>
                     @endforelse
                 </tbody>

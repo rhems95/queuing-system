@@ -47,7 +47,8 @@ class HistoryController extends Controller
     {
         $query = Queue::query()
             ->join('services', 'queues.service_id', '=', 'services.id')
-            ->select('queues.*', 'services.service_name')
+            ->leftJoin('students', 'students.student_id', '=', 'queues.student_id')
+            ->select('queues.*', 'services.service_name', 'students.name as student_name')
             ->orderByDesc('queues.queue_date')
             ->orderByDesc('queues.id');
 
@@ -71,13 +72,21 @@ class HistoryController extends Controller
         $dateFrom = $request->input('date_from', now()->subDays(30)->toDateString());
         $dateTo = $request->input('date_to', now()->toDateString());
 
+        $latestFinishedCall = 'queue_calls.id = (SELECT MAX(qc2.id) FROM queue_calls qc2 WHERE qc2.queue_id = queues.id AND qc2.finished_time IS NOT NULL)';
+
         $servedCount = DB::table('queue_calls')
+            ->join('queues', 'queue_calls.queue_id', '=', 'queues.id')
+            ->where('queues.status', 'done')
+            ->whereRaw($latestFinishedCall)
             ->whereBetween(DB::raw('DATE(called_time)'), [$dateFrom, $dateTo])
-            ->count();
+            ->distinct()
+            ->count('queues.id');
 
         $byService = DB::table('queue_calls')
             ->join('queues', 'queue_calls.queue_id', '=', 'queues.id')
             ->join('services', 'queues.service_id', '=', 'services.id')
+            ->where('queues.status', 'done')
+            ->whereRaw($latestFinishedCall)
             ->whereBetween(DB::raw('DATE(queue_calls.called_time)'), [$dateFrom, $dateTo])
             ->select('services.service_name', DB::raw('COUNT(*) as total'))
             ->groupBy('services.id', 'services.service_name')
@@ -85,6 +94,9 @@ class HistoryController extends Controller
             ->get();
 
         $avgServiceTime = DB::table('queue_calls')
+            ->join('queues', 'queue_calls.queue_id', '=', 'queues.id')
+            ->where('queues.status', 'done')
+            ->whereRaw($latestFinishedCall)
             ->whereBetween(DB::raw('DATE(called_time)'), [$dateFrom, $dateTo])
             ->whereNotNull('finished_time')
             ->whereRaw('TIMESTAMPDIFF(SECOND, called_time, finished_time) BETWEEN 0 AND 28800')
@@ -93,6 +105,8 @@ class HistoryController extends Controller
 
         $avgWaitingTime = DB::table('queue_calls')
             ->join('queues', 'queue_calls.queue_id', '=', 'queues.id')
+            ->where('queues.status', 'done')
+            ->whereRaw($latestFinishedCall)
             ->whereBetween(DB::raw('DATE(queue_calls.called_time)'), [$dateFrom, $dateTo])
             ->whereNotNull('queues.created_at')
             ->whereRaw('TIMESTAMPDIFF(SECOND, queues.created_at, queue_calls.called_time) BETWEEN 0 AND 28800')
@@ -107,6 +121,8 @@ class HistoryController extends Controller
                 $join->on('users.window_id', '=', 'queue_calls.window_id')
                     ->where('users.role', '=', 'staff');
             })
+            ->where('queues.status', 'done')
+            ->whereRaw($latestFinishedCall)
             ->whereBetween(DB::raw('DATE(queue_calls.called_time)'), [$dateFrom, $dateTo])
             ->select(
                 'queue_calls.window_id',

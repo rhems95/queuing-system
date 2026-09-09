@@ -55,7 +55,7 @@ class DisplayController extends Controller
                 $items[] = [
                     'window_name' => $window->window_name,
                     'queue_number' => $queueNumber,
-                    'call_token' => $call ? ($call->id.'|'.($call->called_time ?? '')) : null,
+                    'call_token' => $queueNumber ? ($call->id.'|'.($call->called_time ?? '')) : null,
                 ];
             }
 

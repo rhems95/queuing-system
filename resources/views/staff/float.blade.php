@@ -79,6 +79,20 @@
             letter-spacing: 0.03em;
             font-variant-numeric: tabular-nums;
         }
+        .sf-name {
+            display: block;
+            margin-top: 2px;
+            font-size: 8px;
+            font-weight: 700;
+            letter-spacing: 0;
+            line-height: 1.15;
+            max-height: 1.15em;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            opacity: 0.95;
+            color: #f5e6a3;
+        }
         .sf-timer {
             text-align: center;
             font-size: 10px;
@@ -94,7 +108,7 @@
         }
         .sf-actions {
             display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 5px;
             align-items: stretch;
         }
@@ -118,6 +132,7 @@
         .sf-call { background: #0f7a4b; }
         .sf-recall { background: #d97706; }
         .sf-complete { background: #1d4ed8; }
+        .sf-hold { background: #64748b; }
         .sf-toast {
             background: rgba(255, 255, 255, 0.14);
             border: 1px solid rgba(255, 255, 255, 0.25);
@@ -131,8 +146,8 @@
     <div class="sf">
         <div class="sf-head">
             <div>
-                <h1>{{ $window->service->service_name ?? 'Window' }}</h1>
-                <p>{{ $window->window_name }}</p>
+                <h1>{{ $window->window_name }}</h1>
+                <p>{{ $window->service->service_name ?? 'Window' }}</p>
             </div>
             <div class="sf-pin">ON TOP</div>
         </div>
@@ -145,6 +160,7 @@
             <div>
                 <span>Current</span>
                 <strong id="currentQueue">{{ $currentQueue->queue_number ?? '---' }}</strong>
+                <span class="sf-name" id="currentStudentName">{{ $currentStudentName ?? '' }}</span>
             </div>
             <div>
                 <span>Next</span>
@@ -167,6 +183,10 @@
             <form method="POST" action="{{ route('window.complete') }}">
                 @csrf
                 <button type="submit" id="complete-btn" class="sf-btn sf-complete" title="Alt+C">Complete</button>
+            </form>
+            <form method="POST" action="{{ route('window.hold') }}">
+                @csrf
+                <button type="submit" id="hold-btn" class="sf-btn sf-hold">Hold</button>
             </form>
         </div>
     </div>
@@ -230,8 +250,10 @@
                     .then(function (r) { return r.json(); })
                     .then(function (data) {
                         var currentEl = document.getElementById('currentQueue');
+                        var currentNameEl = document.getElementById('currentStudentName');
                         var nextEl = document.getElementById('nextQueue');
                         if (currentEl) currentEl.textContent = data.current || '---';
+                        if (currentNameEl) currentNameEl.textContent = data.current_name || '';
                         if (nextEl) nextEl.textContent = data.next || '—';
                         servingStartedAt = data.serving_started_at || null;
                         paintTimer();

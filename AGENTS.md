@@ -11,21 +11,22 @@ Read **[README.md](README.md)** for operator-oriented setup. This file is the **
 ## System purpose (mental model)
 
 ```text
-Customer → Kiosk (anonymous ticket + ETA confirm + 80mm print)
+Customer → Kiosk (student ID on confirm + ETA + 80mm print, no name on ticket)
                 ↓
-         queues / daily_queue_counters
+         queues / daily_queue_counters / students
                 ↓
-Staff windows (shared service queue, 2P→1R) → queue_calls
+Staff windows (shared 2P→1R, Hold/set-aside, student name while serving) → queue_calls
                 ↓
-         Public display (+ optional TTS)
+         Public display (numbers only, no names, no held)
                 ↓
-Admin: live dashboard, users, history, wait/service reports
+Admin: live dashboard, users, history, wait/service reports (done only)
 ```
 
-- **No student name/ID** on tickets or in queue creation.
+- **Student ID on confirm only** — name is never printed or shown on the public display.
 - **Print-only** kiosk (Eco Mode removed).
 - **One staff user per window** (app + DB unique when migration applied).
 - **Multi-cashier compatible:** Cashier 1–3 share one Cashier waiting queue; each has an independent open call + timer.
+- **One open ticket per student per day** (`waiting` \| `serving` \| `held`, any service).
 
 ---
 
@@ -33,12 +34,14 @@ Admin: live dashboard, users, history, wait/service reports
 
 ### Kiosk (public) — UI LOCKED
 
-- Flow: service → priority (`regular` \| `priority`) → confirm → `KioskController@store` → `kiosk.printing` (auto `window.print()` + countdown).
-- Confirm step may show live waiting counts + estimated wait (`GET /kiosk/estimate`); do not redesign the step chrome.
+- Flow: service → priority (`regular` \| `priority`) → confirm (Student ID keypad + ETA) → `KioskController@store` → `kiosk.printing` (auto `window.print()` + countdown). Still **3 steps**.
+- Confirm step may show live waiting counts + estimated wait (`GET /kiosk/estimate`) and Student ID lookup (`GET /kiosk/student`); do not redesign the step chrome.
+- Confirm stays disabled until lookup succeeds. Unknown ID or an already-open ticket today is an error. Name may appear on confirm only so the student can check it; **never print the name**.
+- Confirm uses a compact two-column layout (summary + keypad) so a **1024×600** kiosk screen does not need to scroll.
 - Thermal ticket may add **one** compact line when ETA is available: `Estimated Time: N minutes` (omit when history is insufficient).
 - Print sizing (current baseline): title/lines ~13px, number ~34px, footer ~12px — change only when asked.
 - Promissory Notes **hidden** from kiosk service list (filter in `KioskController@index`); may still exist for staff/display.
-- **Do not redesign/restyle/restructure** kiosk Blade/CSS/JS unless the user explicitly asks (print sizing / ETA line are allowed exceptions when requested).
+- **Do not redesign/restyle/restructure** kiosk Blade/CSS/JS unless the user explicitly asks (print sizing / ETA line / confirm Student ID keypad are allowed exceptions when requested).
 - Shell: `layouts/app.blade.php`. Views: `resources/views/kiosk/*`.
 - Thermal layout: **80mm** (XP-58(XP-Q90EC)), centered number — `kiosk/printing.blade.php`.
 - Silent print: not possible from a normal tab; use `bats/start-kiosk-chrome.bat` (`--kiosk --kiosk-printing`). Launcher matches printer **XP-Q90EC**, waits 10s, clears Chrome sticky printer; close all Chrome first.
@@ -46,15 +49,18 @@ Admin: live dashboard, users, history, wait/service reports
 
 ### Staff (auth, `staff` middleware)
 
-- Dashboard: `GET /window` — Call Next, Recall, Complete; waiting list (10, fair call order); poll `GET /window/state` (includes `serving_started_at`).
+- Dashboard: `GET /window` — Call Next, Recall, Complete, Hold; waiting list (10, fair call order); held list with Call; poll `GET /window/state` (includes `serving_started_at`, `current_name`, `held_list`).
 - Per-window **service timer** from open `queue_calls.called_time` (independent across Cashier 1 / Cashier 2 / …).
+- Staff sees **student name** while serving (and on held rows). Public display does not.
+- **Hold** (`POST /window/hold`): finish the open call, set `queues.status = held`, free the window. Held tickets leave Now Serving and waiting lists.
+- **Call held** (`POST /window/call-held`): resume a held ticket at this window without 2P→1R; requires no open serving ticket.
 - Shortcuts: **Alt+N** → Call Next; **Alt+R** → Recall; **Alt+C** → Complete.
-- History: `GET /window/history` (own served tickets; no edit/delete).
+- History: `GET /window/history` (own **done** tickets only; hold sessions are not counted as served).
 - **Fair scheduling (service-wide):** 2 Priority → 1 Regular across all windows sharing a `service_id`. `callNext` locks the `services` row then claims via `FairQueueScheduler` (atomic status update; no duplicate ticket assignment).
 - **System float (Windows always-on-top):**
   - UI: `GET /window/float` → `staff/float.blade.php` (also shows compact timer)
   - Launch: `POST /window/launch-float` (from **Open System Float**) or `bats/start-staff-float.bat` → `tools/staff-float/Start-StaffFloat.ps1`
-  - Chrome `--app` window sized ~**260×220**, TopMost, launcher exits after pin
+  - Chrome `--app` window sized ~**260×270**, TopMost, launcher exits after pin
   - **No in-browser float mode** (removed on purpose)
   - `launchFloat` uses Windows `cmd start` on the `.bat`; works best when Apache runs as the interactive desktop user
 
@@ -64,21 +70,24 @@ Admin: live dashboard, users, history, wait/service reports
 |-------|------|
 | `App\Services\FairQueueScheduler` | Shared 2P→1R order; claim/peek; tickets-ahead simulation |
 | `App\Services\WaitTimeEstimator` | Multi-counter ETA from history + waiting + serving |
-| `App\Services\QueueService` | Latest call helpers for a window |
+| `App\Services\QueueService` | Latest call helpers; serving-only now-serving; staff-only student name |
+| `App\Services\StudentQueueGuard` | Normalize ID; lookup; one open ticket today |
 
 ### Display (public)
 
 - Standalone Blade (not panel layout): `display/index.blade.php`.
 - Grouped by `windows.group_name`; polls `GET /display/data`.
-- Waiting columns use **same fair call order** as Call Next (`FairQueueScheduler::orderedWaiting`), max 10 rows.
+- Waiting columns use **same fair call order** as Call Next (`FairQueueScheduler::orderedWaiting`), max 10 rows. **Held tickets are omitted.**
+- Now Serving uses open calls whose queue is still `serving` (Hold clears the number).
 - Compact table CSS so 10 rows fit without scrolling; keep waiting section position under Now Serving (do not pull it upward casually).
 - Voice: `speechSynthesis` (preferred voice may be set in page JS; browser may require a gesture).
+- **No student names** on the display.
 
 ### Admin (auth, `admin` middleware)
 
 - Dashboard: live totals + waiting table (polls `/admin/queues/waiting` with counts + priority); quick links; SVG icons.
-- Users CRUD, served history (edit/delete), all tickets.
-- **Reports:** overall avg waiting time + avg service time; **Averages by Window** table (served count, avg wait, avg service).
+- Users CRUD, **students** (add / delete / CSV import), served history (edit/delete), all tickets (includes `held` + student name for admin).
+- **Reports:** overall avg waiting time + avg service time; **Averages by Window** table (served count, avg wait, avg service). Count **done** tickets only (latest completed call; hold sessions excluded).
   - Wait ≈ `queues.created_at` → `queue_calls.called_time`
   - Service ≈ `called_time` → `finished_time`
 - Theme: PECIT panel (`layouts/panel`, `panel.css`, sidebars in `partials/` with local SVG icons via `partials/icon.blade.php`).
@@ -125,9 +134,9 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | Float tools | `bats/start-staff-float.bat`, `tools/staff-float/Start-StaffFloat.ps1` |
 | Kiosk silent print | `bats/start-kiosk-chrome.bat`, `tools/kiosk/*.ps1` |
 | Launcher guide | `bats/GUIDE.txt` |
-| Admin | `AdminDashboardController`, `HistoryController`, `UserManagementController`, `views/admin/*` |
+| Admin | `AdminDashboardController`, `HistoryController`, `UserManagementController`, `StudentManagementController`, `views/admin/*` |
 | Panel theme | `layouts/panel.blade.php`, `css/panel.css`, `partials/admin-sidebar.blade.php`, `partials/staff-sidebar.blade.php`, `partials/icon.blade.php` |
-| Queue logic | `FairQueueScheduler`, `WaitTimeEstimator`, `QueueService` |
+| Queue logic | `FairQueueScheduler`, `WaitTimeEstimator`, `QueueService`, `StudentQueueGuard` |
 | Capstone About | `AboutController`, `config/about.php`, `views/about/*`, `storage/app/private/about/team/` |
 | Diagrams | `README.md` (Mermaid ERD + flowchart), `docs/erd.md`, `docs/erd/queuing_system.erd` (ERD Designer / MariaDB; do not hand-edit), `docs/system-flowchart.md`, Archify maps `docs/archify/pecit-runtime.architecture.html` and `docs/archify/pecit-erd.architecture.html` |
 | Security headers | `SetSecurityHeaders` middleware |
@@ -141,20 +150,22 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 |--------|------|----------------|
 | GET | `/` | Redirect → kiosk |
 | GET/POST | `/login`, POST `/logout` | Auth |
-| GET/POST | `/kiosk` | Public ticket |
+| GET/POST | `/kiosk` | Public ticket (`student_id` required on POST) |
 | GET | `/kiosk/estimate` | Waiting counts + ETA JSON |
+| GET | `/kiosk/student` | Confirm-step student ID lookup |
 | GET | `/about` | Secret capstone About (Ctrl+Alt+Shift+A) |
 | GET | `/about/photo/{file}` | Private team photo stream (allowlisted only) |
 | GET | `/display`, `/display/data` | Public display |
 | GET | `/admin` | Admin dashboard |
 | GET | `/admin/queues/waiting` | Live waiting JSON (+ counts) |
 | resource | `/admin/users` | User CRUD |
+| GET/POST/DELETE | `/admin/students…` | Student allowlist (add, delete, CSV import) |
 | GET/PUT/DELETE | `/admin/history…` | History, tickets, reports, edit |
 | GET | `/window` | Staff dashboard |
 | GET | `/window/float` | Float UI |
 | POST | `/window/launch-float` | Start `.bat` on server PC |
-| GET | `/window/state` | Staff poll JSON (`serving_started_at`) |
-| POST | `/window/call-next`, `/recall`, `/complete` | Actions (`back()`) |
+| GET | `/window/state` | Staff poll JSON (`serving_started_at`, `current_name`, `held_list`) |
+| POST | `/window/call-next`, `/recall`, `/complete`, `/hold`, `/call-held` | Actions (`back()`) |
 | GET | `/window/history` | Staff history |
 
 ---
@@ -176,6 +187,8 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | `2026_04_18_010000_drop_student_columns_from_queues_table.php` | Drop student columns |
 | `2026_04_18_020000_configure_windows_services_and_staff_constraints.php` | Seed + `users.window_id` unique |
 | `2026_04_18_030000_reconfigure_window_layout.php` | Window layout reconfiguration |
+| `2026_09_09_000000_add_students_hold_and_queue_student_id.php` | `students` table, `queues.student_id`, status `held`, demo IDs |
+| `2026_09_09_010000_align_students_collation_with_queues.php` | Match `students` collation to dump (`utf8mb4_general_ci`) |
 
 Rebuild dump helper: `php database/sql/build_queuing_system_dump.php`.
 
@@ -187,7 +200,8 @@ Rebuild dump helper: `php database/sql/build_queuing_system_dump.php`.
 | `windows` | Counter; `service_id`, `group_name`, `status` |
 | `users` | `role` admin\|staff; staff `window_id` |
 | `daily_queue_counters` | Locked increment per service + date in kiosk store |
-| `queues` | `queue_number`, `service_id`, `priority` 0/1, `status` waiting\|serving\|done\|cancelled, `queue_date`, optional `created_at` for wait metrics — **no student columns** |
+| `students` | Allowlisted kiosk IDs (`student_id`, `name`) — dump seeds `2024-0001`…`2024-0005` |
+| `queues` | `queue_number`, `service_id`, optional `student_id`, `priority` 0/1, `status` waiting\|serving\|done\|cancelled\|held, `queue_date`, optional `created_at` for wait metrics — **name is never stored on the ticket** |
 | `queue_calls` | `queue_id`, `window_id`, `called_time`, `finished_time` (null = open). Display recall token derived in app (`id` + `called_time`) |
 
 ### Seeded reference data (dump)
@@ -210,20 +224,21 @@ Models: check `$timestamps` / `$fillable` per model — several domain models us
 
 ## Business rules agents must respect
 
-1. Anonymous kiosk — no student fields in UI or create path; `Queue` `$fillable` excludes them.
+1. Kiosk collects **Student ID** on confirm only; print and public display stay number-only (no name). `Queue` `$fillable` may include `student_id`.
 2. Print-only — no Eco Mode / `output_mode`.
-3. Priority — only `regular` \| `priority`; DB `priority` = 0/1. Call order is **2 Priority → 1 Regular** per service (shared across multi-window services like Cashier).
+3. Priority — only `regular` \| `priority`; DB `priority` = 0/1. Call order is **2 Priority → 1 Regular** per service (shared across multi-window services like Cashier). **Call held** skips that order.
 4. Recall/TTS — keep call-token (or equivalent) change behavior for re-announce.
 5. Issued time — pass `$issuedAt` to views; don’t rely on Eloquent `created_at` for kiosk display time (still set DB `created_at` when present for wait averages).
 6. One staff per window — validate in `UserManagementController` + unique index when present.
 7. Avoid Laravel `Cache` for kiosk/display unless cache store is known-good.
-8. **Kiosk design lock** — theme work → login/staff/admin (`panel`), not kiosk. Confirm ETA block + single thermal ETA line are intentional exceptions.
+8. **Kiosk design lock** — theme work → login/staff/admin (`panel`), not kiosk. Confirm ETA block, Student ID keypad, and single thermal ETA line are intentional exceptions.
 9. Don’t change DB schema / queue generation logic for pure UI tasks unless asked.
 10. System float — keep Windows launcher path; don’t revive browser-only float unless asked.
-11. Multi-counter ETA — divide by active cashiers/windows for the service; omit print ETA when historical completes are insufficient (< 3).
-12. `callNext` / `complete` must stay window-scoped for timers and must not complete another counter’s open call.
+11. Multi-counter ETA — divide by active cashiers/windows for the service; omit print ETA when historical completes are insufficient (< 3). Hold sessions are not used as completed-service samples.
+12. `callNext` / `complete` / `hold` must stay window-scoped for timers and must not complete another counter’s open call.
 13. Do not put team photos under `public/`; keep `storage/app/private/about/team/` and allowlisted photo streaming.
 14. Do not add the About page to sidebars; keep Ctrl+Alt+Shift+A as the entry.
+15. One open ticket per student per day (`waiting`/`serving`/`held`). Hold is not Complete; reports count **done** only.
 
 ---
 
@@ -279,18 +294,21 @@ Kiosk launchers wait **10 seconds** before opening the browser (gives Apache/pri
 
 ## Smoke checks
 
-- [ ] Kiosk 3-step + print (UI unchanged unless print/ETA task)
+- [ ] Kiosk 3-step + print (confirm adds Student ID keypad; rest of chrome unchanged)
 - [ ] Kiosk confirm shows waiting counts + ETA via `/kiosk/estimate`
-- [ ] Kiosk POST validation (`service_id`, `priority`)
-- [ ] 80mm thermal (XP-58(XP-Q90EC)); optional `Estimated Time: N minutes` line only; fonts readable
+- [ ] Kiosk Student ID lookup via `/kiosk/student`; Confirm disabled until OK
+- [ ] Unknown ID and second ticket same day are rejected
+- [ ] Kiosk POST validation (`service_id`, `priority`, `student_id`)
+- [ ] 80mm thermal (XP-58(XP-Q90EC)); optional `Estimated Time: N minutes` line only; **no student name**
 - [ ] Silent print via `bats/start-kiosk-chrome.bat` (survives countdown; XP-Q90EC match)
-- [ ] Display + `/display/data`; waiting list = fair call order; 10 rows no scroll; voice if enabled
-- [ ] Staff call-next / recall / complete; fair 2P→1R; independent service timers
+- [ ] Display + `/display/data`; waiting list = fair call order; 10 rows no scroll; voice if enabled; no names; held absent
+- [ ] Staff call-next / recall / complete / hold / call-held; name while serving; fair 2P→1R; independent service timers
 - [ ] Concurrent Call Next on Cashier 1 + Cashier 2 never duplicates a ticket
-- [ ] Open System Float / bat → always-on-top ~260×220; launcher exits
-- [ ] Admin dashboard live counts; reports show overall + per-window avg wait/service
+- [ ] Open System Float / bat → always-on-top ~260×270; launcher exits; compact name + Hold
+- [ ] Admin dashboard live counts; reports show overall + per-window avg wait/service (**done** only)
 - [ ] Offline: no CDN fonts/icons; `npm run build` assets load
 - [ ] Ctrl+Alt+Shift+A opens About; photos from private folder when present
+- [ ] Admin Students: add, delete, CSV import; kiosk lookup uses the list
 - [ ] Auth middleware: admin vs staff
 
 ---

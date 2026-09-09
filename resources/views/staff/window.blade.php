@@ -1,15 +1,15 @@
 @extends('layouts.panel')
 
-@section('title', ($window->service->service_name ?? 'Window') . ' Dashboard')
+@section('title', ($window->window_name ?? 'Window') . ' Dashboard')
 
 @section('content')
     <div class="pecit-page-header">
         <div>
             <h1 class="pecit-page-title">
-                {{ $window->service->service_name ?? 'Window' }} Dashboard
+                {{ $window->window_name }}
             </h1>
             <p class="pecit-page-sub">
-                {{ $window->window_name }} · Alt+N Next · Alt+R Recall · Alt+C Complete
+                {{ $window->service->service_name ?? 'Window' }} · Alt+N Next · Alt+R Recall · Alt+C Complete
             </p>
         </div>
         <form method="POST" action="{{ route('window.launchFloat') }}" id="launchFloatForm">
@@ -33,6 +33,7 @@
             <div id="currentQueue" class="pecit-serving-number">
                 {{ $currentQueue->queue_number ?? '---' }}
             </div>
+            <div id="currentStudentName" class="pecit-serving-name">{{ $currentStudentName ?? '' }}</div>
             <div id="serviceTimer" class="pecit-service-timer" @if(empty($servingStartedAt)) style="visibility:hidden;" @endif>
                 Service Time: <span id="serviceTimerValue">00:00</span>
             </div>
@@ -57,6 +58,10 @@
         <form method="POST" action="{{ route('window.complete') }}">
             @csrf
             <button type="submit" id="complete-btn" class="pecit-btn pecit-btn-primary pecit-btn-lg" title="Alt+C">Complete</button>
+        </form>
+        <form method="POST" action="{{ route('window.hold') }}">
+            @csrf
+            <button type="submit" id="hold-btn" class="pecit-btn pecit-btn-secondary pecit-btn-lg">Hold</button>
         </form>
     </div>
 
@@ -90,6 +95,53 @@
                     @empty
                         <tr>
                             <td colspan="2" class="empty">No waiting tickets.</td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="pecit-card">
+        <div class="pecit-card-head">
+            <div>
+                <h2>Held (set aside)</h2>
+                <p>Call later without waiting in the 2P→1R line</p>
+            </div>
+        </div>
+        <div class="pecit-table-wrap">
+            <table class="pecit-table">
+                <thead>
+                    <tr>
+                        <th>Queue #</th>
+                        <th>Name</th>
+                        <th>Priority</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="heldTicketsBody">
+                    @forelse($heldTickets as $q)
+                        <tr>
+                            <td style="font-weight:700;">{{ $q->queue_number }}</td>
+                            <td>{{ $q->student->name ?? '—' }}</td>
+                            <td>
+                                @if ($q->priority)
+                                    <span class="pecit-badge pecit-badge-priority">Priority</span>
+                                @else
+                                    <span class="pecit-badge pecit-badge-regular">Regular</span>
+                                @endif
+                            </td>
+                            <td>
+                                <form method="POST" action="{{ route('window.callHeld') }}">
+                                    @csrf
+                                    <input type="hidden" name="queue_id" value="{{ $q->id }}">
+                                    <button type="submit" class="pecit-btn pecit-btn-success">Call</button>
+                                </form>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="4" class="empty">No held tickets.</td>
                         </tr>
                     @endforelse
                 </tbody>
@@ -174,6 +226,8 @@
             }
 
             var stateUrl = '{{ route("window.state") }}';
+            var callHeldUrl = @json(route('window.callHeld'));
+            var csrfToken = @json(csrf_token());
             var pollInterval = 3000;
             var servingStartedAt = @json($servingStartedAt ?? null);
             var timerInterval = null;
@@ -195,6 +249,29 @@
                     return '<tr>' +
                         '<td style="font-weight:700;">' + escapeHtml(r.queue_number) + '</td>' +
                         '<td>' + priorityBadge(r.priority) + '</td>' +
+                        '</tr>';
+                }).join('');
+            }
+
+            function renderHeldList(rows) {
+                var body = document.getElementById('heldTicketsBody');
+                if (!body) return;
+                if (!rows || !rows.length) {
+                    body.innerHTML = '<tr><td colspan="4" class="empty">No held tickets.</td></tr>';
+                    return;
+                }
+                body.innerHTML = rows.map(function (r) {
+                    return '<tr>' +
+                        '<td style="font-weight:700;">' + escapeHtml(r.queue_number) + '</td>' +
+                        '<td>' + escapeHtml(r.student_name || '—') + '</td>' +
+                        '<td>' + priorityBadge(r.priority) + '</td>' +
+                        '<td>' +
+                            '<form method="POST" action="' + callHeldUrl + '">' +
+                                '<input type="hidden" name="_token" value="' + escapeHtml(csrfToken) + '">' +
+                                '<input type="hidden" name="queue_id" value="' + escapeHtml(r.id) + '">' +
+                                '<button type="submit" class="pecit-btn pecit-btn-success">Call</button>' +
+                            '</form>' +
+                        '</td>' +
                         '</tr>';
                 }).join('');
             }
@@ -238,10 +315,13 @@
 
             function updateQueueDisplay(data) {
                 var currentEl = document.getElementById('currentQueue');
+                var currentNameEl = document.getElementById('currentStudentName');
                 var nextEl = document.getElementById('nextQueue');
                 if (currentEl) currentEl.textContent = data.current || '---';
+                if (currentNameEl) currentNameEl.textContent = data.current_name || '';
                 if (nextEl) nextEl.textContent = data.next || 'No waiting';
                 if (data.waiting_list) renderWaitingList(data.waiting_list);
+                if (data.held_list) renderHeldList(data.held_list);
                 setServingStartedAt(data.serving_started_at || null);
             }
 

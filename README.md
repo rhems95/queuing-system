@@ -2,7 +2,7 @@
 
 Queue management system for **Philippine Electronics and Communication Institute of Technology Inc. (PECIT)** — capstone research project.
 
-Customers get anonymous tickets from a public **kiosk**. Staff call numbers at service windows. A public **display** shows who is being served. **Admins** manage users, history, and reports.
+Customers take a ticket from a public **kiosk** after entering a Student ID on confirm. Staff call numbers at service windows (and can Hold a ticket). A public **display** shows who is being served — numbers only, no names. **Admins** manage users, history, and reports.
 
 **Stack:** Laravel 12 · Blade · Vite/Tailwind · MySQL/MariaDB (typical **XAMPP** on Windows)
 
@@ -12,18 +12,21 @@ Customers get anonymous tickets from a public **kiosk**. Staff call numbers at s
 
 | Module | Access | Purpose |
 |--------|--------|---------|
-| **Kiosk** | Public | 3-step ticket: service → priority → confirm (live wait estimate) → 80mm print |
-| **Display** | Public | Now serving (by window group) + waiting list in call order + optional voice |
-| **Staff window** | Staff login | Call Next (fair 2P→1R), Recall, Complete; per-counter service timer |
-| **Staff float** | Staff | Small always-on-top Windows panel for the same actions |
-| **Admin** | Admin login | Live dashboard, users, history, tickets, wait/service reports |
+| **Kiosk** | Public | 3-step ticket: service → priority → confirm (Student ID + live wait estimate) → 80mm print |
+| **Display** | Public | Now serving (by window group) + waiting list in call order + optional voice (no names, no held) |
+| **Staff window** | Staff login | Call Next (fair 2P→1R), Recall, Complete, Hold; per-counter service timer; student name while serving |
+| **Staff float** | Staff | Small always-on-top Windows panel for the same actions (incl. Hold) |
+| **Admin** | Admin login | Live dashboard, users, students (CSV), history, tickets, wait/service reports |
 
-- Tickets are **anonymous** (no student name/ID).
+- Tickets stay **anonymous on print and the public display** (no student name). The kiosk confirm step requires a **Student ID**.
+- One student may have only **one open ticket per day** (waiting, serving, or held), across all services.
+- Demo IDs in the dump: `2024-0001` Juan Dela Cruz, `2024-0002` Maria Santos, `2024-0003` Jose Rizal, `2024-0004` Ana Reyes, `2024-0005` Pedro Garcia.
+- Staff can **Hold** (set aside) the current ticket, then **Call** it later without waiting in the 2P→1R line.
 - Priority is **Regular** or **Priority** only.
 - Calling uses shared **2 Priority → 1 Regular** per service (Cashier 1 / 2 / 3 share one Cashier queue).
 - Each counter has its own **service timer**; Complete on one window never affects another.
 - Estimated wait uses active counters + history; the thermal ticket may add one line: `Estimated Time: N minutes`.
-- Kiosk UI is **finalized** — do not redesign it casually (print sizing / ETA line are allowed exceptions).
+- Kiosk UI is **finalized** — do not redesign it casually (print sizing / ETA line / confirm Student ID keypad are allowed exceptions).
 - Login / staff / admin use the **PECIT** navy/gold theme (local fonts + SVG icons, no CDN).
 - Thermal tickets target **XP-58(XP-Q90EC)** (80mm).
 - Secret **About / capstone credits** page: press **Ctrl + Alt + Shift + A** (not in menus).
@@ -133,6 +136,8 @@ Roles: **`admin`** or **`staff`**. Staff must be assigned a **window**; only **o
 
 Create or edit users under **Admin → Users**. Staff accounts require a window; a window cannot have two staff users.
 
+Kiosk IDs are managed under **Admin → Students** (add one, delete, or bulk import a CSV with `student_id,name`). Existing IDs in a CSV are skipped. A student with an open ticket today cannot be deleted.
+
 ---
 
 ## Database overview
@@ -148,7 +153,8 @@ Create or edit users under **Admin → Users**. Staff accounts require a window;
 | `windows` | Counters; `service_id`, `group_name` (display groups), `status` |
 | `users` | `role` = `admin` \| `staff`; staff have `window_id` (unique when migration applied) |
 | `daily_queue_counters` | Per-service daily serial for ticket numbers |
-| `queues` | Tickets: number, service, priority (0/1), status, date (no student columns) |
+| `students` | Allowlisted Student IDs + names for kiosk lookup |
+| `queues` | Tickets: number, service, optional `student_id`, priority (0/1), status (`waiting`/`serving`/`done`/`cancelled`/`held`), date |
 | `queue_calls` | Call history: queue ↔ window, called/finished times (service duration) |
 
 ### Seeded services & windows (dump)
@@ -211,9 +217,9 @@ Waiting list columns follow the same **call order** as Call Next (2 Priority →
 ### Staff
 
 1. Log in with a staff account → `/window`.
-2. Use **Call Next**, **Recall**, **Complete** (or **Alt+N** Next, **Alt+R** Recall, **Alt+C** Complete).
+2. Use **Call Next**, **Recall**, **Complete**, **Hold** (or **Alt+N** Next, **Alt+R** Recall, **Alt+C** Complete). Hold sets the ticket aside so you can call someone else; **Call** on the held list brings them back without the 2P→1R wait.
 3. Watch the **Service Time** timer for the ticket on *this* counter only.
-4. Optional always-on-top panel: click **Open System Float**, or run `bats/start-staff-float.bat` (~260×220).
+4. Optional always-on-top panel: click **Open System Float**, or run `bats/start-staff-float.bat` (~260×270).
 
 ### Admin
 
@@ -247,6 +253,7 @@ erDiagram
     WINDOWS ||--o| USERS : "one staff"
     WINDOWS ||--o{ QUEUE_CALLS : "calls at"
     QUEUES ||--o{ QUEUE_CALLS : "served as"
+    STUDENTS ||--o{ QUEUES : "optional id"
 
     SERVICES {
         bigint id PK
@@ -283,10 +290,17 @@ erDiagram
         bigint id PK
         varchar queue_number
         bigint service_id FK
+        varchar student_id
         tinyint priority
         enum status
         date queue_date
         timestamp created_at
+    }
+
+    STUDENTS {
+        bigint id PK
+        varchar student_id UK
+        varchar name
     }
 
     QUEUE_CALLS {
@@ -302,16 +316,16 @@ erDiagram
 
 ```mermaid
 flowchart TD
-    Start([Customer arrives]) --> Kiosk["Kiosk: service → priority → confirm"]
-    Kiosk --> Est["Show waiting counts + ETA"]
-    Est --> Issue["POST /kiosk: lock counter, insert queue"]
-    Issue --> Print["Print 80mm ticket + optional Estimated Time"]
+    Start([Customer arrives]) --> Kiosk["Kiosk: service → priority → confirm ID + ETA"]
+    Kiosk --> Est["Show waiting counts + ETA; lookup student"]
+    Est --> Issue["POST /kiosk: lock student + counter, insert queue"]
+    Issue --> Print["Print 80mm ticket (no name) + optional Estimated Time"]
     Print --> Wait([Customer waits])
 
     Issue --> Display["Display: now serving + waiting in 2P→1R order"]
     Wait --> Display
 
-    Display --> Staff{"Staff Call Next / Recall / Complete"}
+    Display --> Staff{"Staff Call Next / Recall / Complete / Hold"}
     Staff -->|Call Next| Fair["FairQueueScheduler: 2 Priority → 1 Regular"]
     Fair --> Lock["Lock service row; claim one waiting ticket"]
     Lock --> Serving["queue status=serving; queue_calls open; timer starts"]
@@ -319,6 +333,9 @@ flowchart TD
     Serving --> Staff
     Staff -->|Recall| Reannounce["Refresh called_time for TTS/display"]
     Reannounce --> Display
+    Staff -->|Hold| Held["finished_time set; status=held; gone from display"]
+    Held --> Staff
+    Staff -->|Call held| Serving
     Staff -->|Complete| Done["finished_time set; status=done"]
     Done --> Reports["Admin reports: avg wait & service by window"]
     Done --> End([Ticket complete])

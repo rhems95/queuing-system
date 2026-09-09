@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Sep 09, 2026 at 05:47 AM
+-- Generation Time: Sep 09, 2026 at 06:46 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -58,8 +58,9 @@ CREATE TABLE `queues` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `queue_number` varchar(20) NOT NULL,
   `service_id` bigint(20) UNSIGNED NOT NULL,
+  `student_id` varchar(50) DEFAULT NULL,
   `priority` tinyint(1) DEFAULT 0,
-  `status` enum('waiting','serving','done','cancelled') DEFAULT 'waiting',
+  `status` enum('waiting','serving','done','cancelled','held') DEFAULT 'waiting',
   `queue_date` date NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -92,6 +93,20 @@ CREATE TABLE `services` (
   `service_name` varchar(50) NOT NULL,
   `prefix` varchar(5) NOT NULL,
   `description` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `students`
+--
+
+CREATE TABLE `students` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `student_id` varchar(50) NOT NULL,
+  `name` varchar(100) NOT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -152,7 +167,8 @@ ALTER TABLE `migrations`
 ALTER TABLE `queues`
   ADD PRIMARY KEY (`id`),
   ADD KEY `service_id` (`service_id`),
-  ADD KEY `idx_queue_date` (`queue_date`);
+  ADD KEY `idx_queue_date` (`queue_date`),
+  ADD KEY `queues_student_id_index` (`student_id`);
 
 --
 -- Indexes for table `queue_calls`
@@ -167,6 +183,13 @@ ALTER TABLE `queue_calls`
 --
 ALTER TABLE `services`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `students`
+--
+ALTER TABLE `students`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `students_student_id_unique` (`student_id`);
 
 --
 -- Indexes for table `users`
@@ -215,6 +238,12 @@ ALTER TABLE `queue_calls`
 -- AUTO_INCREMENT for table `services`
 --
 ALTER TABLE `services`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `students`
+--
+ALTER TABLE `students`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --

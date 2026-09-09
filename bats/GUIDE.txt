@@ -79,7 +79,7 @@ start-display-edge.bat
 
 start-staff-float.bat
   Purpose: Small always-on-top staff control window (Chrome app mode).
-  What it does: Runs tools\staff-float\Start-StaffFloat.ps1 with Chrome (~260x220, TopMost).
+  What it does: Runs tools\staff-float\Start-StaffFloat.ps1 with Chrome (~260x270, TopMost).
   When to use: Staff desk; also launched from staff panel "Open System Float".
 
 start-staff-float-edge.bat

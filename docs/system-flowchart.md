@@ -1,6 +1,6 @@
 # Queue system — detailed system flowcharts
 
-Mermaid diagrams for the **anonymous, print-only** PECIT queue system (Laravel 12, Blade, MySQL).
+Mermaid diagrams for the **print-only** PECIT queue system (Laravel 12, Blade, MySQL). Student ID is collected on kiosk confirm; names are staff-only.
 
 Interactive Archify architecture map (open in a browser): [docs/archify/pecit-runtime.architecture.html](archify/pecit-runtime.architecture.html).
 
@@ -27,18 +27,18 @@ Also render in **GitHub**, **VS Code** (Mermaid preview), or [mermaid.live](http
 
 ## 0. Master system overview (similar style to classic kiosk flow)
 
-Single end-to-end picture aligned with **this** codebase: **no name/ID**, **print-only** (no eco/photo path), **display** + **voice**, **staff** writes to the same tables.
+Single end-to-end picture aligned with **this** codebase: **Student ID on confirm**, **print/display stay number-only**, **print-only** (no eco/photo path), **display** + **voice**, **staff** writes to the same tables.
 
 **Printing:** This diagram is **compact** so it fits **Letter/A4 bond paper** when exported from [mermaid.live](https://mermaid.live) (SVG/PNG) or printed: use **Landscape** if needed, or **scale to fit** in the print dialog.
 
 ```mermaid
 %%{init: {'flowchart': {'nodeSpacing': 28, 'rankSpacing': 36, 'padding': 6, 'useMaxWidth': true}, 'themeVariables': { 'fontSize': '11px'}}}%%
 flowchart TD
-    St([Start]) --> K["Kiosk: service → Regular/Priority → confirm + ETA"]
+    St([Start]) --> K["Kiosk: service → Regular/Priority → confirm ID + ETA"]
     K --> DB[("DB: new queue + daily counter")]
     DB --> PA["Customer: ticket #, print, countdown, then wait"]
     DB --> PB["TV: now serving + waiting 2P→1R + voice"]
-    PA --> SW["Staff: next / recall / complete + timer"]
+    PA --> SW["Staff: next / recall / complete / hold + timer"]
     PB --> SW
     SW --> Fair["FairQueueScheduler shared per service"]
     Fair --> DB
@@ -88,14 +88,15 @@ flowchart TB
 flowchart TD
     Start([Visitor: /kiosk]) --> S1["Step 1: Select service<br/>services excluding Promissory in KioskController@index"]
     S1 --> S2["Step 2: Regular or Priority<br/>hidden input priority"]
-    S2 --> S3["Step 3: Confirm & Print"]
+    S2 --> S3["Step 3: Confirm — Student ID keypad + ETA"]
     S3 --> POST["POST /kiosk — KioskController@store"]
-    POST --> V{"Validate service_id, priority<br/>in: regular, priority?"}
-    V -->|Fail| E["Show validation errors"]
+    POST --> V{"Validate service_id, priority, student_id"}
+    V -->|Fail| E["Show validation errors on step 3"]
     V -->|OK| Txn["DB transaction"]
     subgraph Trn["Transaction"]
+        T0["Lock student; reject unknown / already queued"]
         T1["Lock/update daily_queue_counters<br/>per service + today"]
-        T2["Insert queues row<br/>priority 0|1, status waiting"]
+        T2["Insert queues row<br/>student_id, priority 0|1, status waiting"]
     end
     Txn --> Print["View kiosk.printing<br/>issuedAt, priorityLabel"]
     Print --> AP["window.print + countdown"]
@@ -194,6 +195,8 @@ flowchart TD
         CN["POST /window/call-next"]
         RC["POST /window/recall"]
         CP["POST /window/complete"]
+        HD["POST /window/hold"]
+        CH["POST /window/call-held"]
     end
 
     CN --> CNstep["Transaction"]
@@ -206,6 +209,9 @@ flowchart TD
     RC --> RC1["Latest call today<br/>bump called_time now<br/>display + TTS see new token"]
 
     CP --> CP1["Set finished_time<br/>queue done"]
+
+    HD --> HD1["Set finished_time<br/>queue held; window free"]
+    CH --> CH1["Require no open serving ticket<br/>status serving + new queue_call"]
 
     subgraph Shortcut["Keyboard"]
         K1["Alt+N → Call Next<br/>Alt+R → Recall<br/>Alt+C → Complete"]
@@ -310,6 +316,8 @@ stateDiagram-v2
     [*] --> waiting: Kiosk creates ticket
     waiting --> serving: Staff Call Next
     serving --> done: Staff Complete<br/>or Call Next auto-completes previous
+    serving --> held: Staff Hold
+    held --> serving: Staff Call held
     done --> [*]
     note right of serving: Recall updates called_time<br/>same queue_number, new token
 ```
