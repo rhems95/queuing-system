@@ -19,6 +19,16 @@
             @include('partials.icon', ['name' => 'students'])
             <span>Students</span>
         </a>
+        <a href="{{ route('admin.settings.edit') }}"
+           class="pecit-nav-link {{ request()->routeIs('admin.settings.*') ? 'is-active' : '' }}">
+            @include('partials.icon', ['name' => 'lock'])
+            <span>Kiosk PIN</span>
+        </a>
+        <a href="{{ route('guard.issue') }}"
+           class="pecit-nav-link {{ request()->routeIs('guard.*') ? 'is-active' : '' }}">
+            @include('partials.icon', ['name' => 'ticket'])
+            <span>Walk-in Tickets</span>
+        </a>
 
         <div class="pecit-nav-section">Queue records</div>
         <a href="{{ route('admin.history') }}"

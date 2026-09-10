@@ -2,7 +2,9 @@
 %%{init: {'flowchart': {'nodeSpacing': 28, 'rankSpacing': 36, 'padding': 6, 'useMaxWidth': true}, 'themeVariables': { 'fontSize': '11px'}}}%%
 flowchart TD
     St([Start]) --> K["Kiosk: service → Regular/Priority → confirm ID + ETA"]
+    St --> W["Walk-in: kiosk corner PIN from settings"]
     K --> DB[("DB: new queue + daily counter")]
+    W --> DB
     DB --> PA["Customer: ticket #, print, countdown, then wait"]
     DB --> PB["TV: now serving + waiting 2P→1R + voice"]
     PA --> SW["Staff: next / recall / complete / hold + timer"]

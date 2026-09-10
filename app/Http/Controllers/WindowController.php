@@ -54,7 +54,7 @@ class WindowController extends Controller
 
         return [
             'current' => $currentQueueNumber,
-            'current_name' => $this->queueService->studentNameForQueue($currentQueue),
+            'current_name' => $this->queueService->servingLabelForQueue($currentQueue),
             'next' => $nextQueue ? $nextQueue->queue_number : null,
             'serving_started_at' => $servingStartedAt,
             'waiting_list' => $waitingList->map(fn ($q) => [
@@ -65,7 +65,7 @@ class WindowController extends Controller
                 'id' => $q->id,
                 'queue_number' => $q->queue_number,
                 'priority' => $q->priority ? 'Priority' : 'Regular',
-                'student_name' => $this->queueService->studentNameForQueue($q),
+                'student_name' => $this->queueService->servingLabelForQueue($q),
             ])->values()->all(),
         ];
     }
@@ -97,7 +97,7 @@ class WindowController extends Controller
 
         return view('staff.window', [
             'currentQueue' => $currentQueue,
-            'currentStudentName' => $this->queueService->studentNameForQueue($currentQueue),
+            'currentStudentName' => $this->queueService->servingLabelForQueue($currentQueue),
             'nextQueue' => $nextQueue,
             'window' => $window,
             'waitingTickets' => $waitingTickets,
@@ -132,7 +132,7 @@ class WindowController extends Controller
 
         return view('staff.float', [
             'currentQueue' => $currentQueue,
-            'currentStudentName' => $this->queueService->studentNameForQueue($currentQueue),
+            'currentStudentName' => $this->queueService->servingLabelForQueue($currentQueue),
             'nextQueue' => $nextQueue,
             'window' => $window,
             'servingStartedAt' => $servingStartedAt,

@@ -40,6 +40,13 @@ class LoginController extends Controller
             }
 
             if ($ok) {
+                if ($user->role === 'guard') {
+                    return redirect()
+                        ->route('login')
+                        ->withErrors(['email' => 'Guard accounts cannot log in. Use the kiosk PIN to issue walk-in tickets.'])
+                        ->withInput($request->only('email', 'float_login'));
+                }
+
                 Auth::login($user, $request->boolean('remember'));
                 $request->session()->regenerate();
 

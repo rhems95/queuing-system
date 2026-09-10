@@ -15,6 +15,8 @@ class Queue extends Model
         'priority',
         'status',
         'queue_date',
+        'issued_by',
+        'issue_reason',
     ];
 
     public $timestamps = false;
@@ -27,6 +29,11 @@ class Queue extends Model
     public function student()
     {
         return $this->belongsTo(Student::class, 'student_id', 'student_id');
+    }
+
+    public function issuer()
+    {
+        return $this->belongsTo(User::class, 'issued_by');
     }
 }
 

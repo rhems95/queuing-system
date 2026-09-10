@@ -2,33 +2,128 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\DailyQueueCounter;
 use App\Models\Queue;
 use App\Models\Service;
+use App\Services\KioskWalkInGate;
 use App\Services\StudentQueueGuard;
+use App\Services\TicketIssuer;
 use App\Services\WaitTimeEstimator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\Rule;
 
 class KioskController extends Controller
 {
     public function __construct(
         private WaitTimeEstimator $estimator,
         private StudentQueueGuard $students,
+        private TicketIssuer $issuer,
+        private KioskWalkInGate $walkInGate,
     ) {
     }
 
-    public function index()
+    public function index(Request $request)
     {
         // Temporarily hide Promissory Notes from kiosk choices.
         $services = Service::query()
             ->whereRaw('LOWER(service_name) NOT LIKE ?', ['%promissory%'])
             ->get();
 
-        return view('kiosk.index', compact('services'));
+        return view('kiosk.index', [
+            'services' => $services,
+            'walkInReasons' => TicketIssuer::walkInReasons(),
+            'walkInUnlocked' => $this->walkInGate->isUnlocked($request),
+            'walkInPinLength' => $this->walkInGate->pinLength(),
+        ]);
+    }
+
+    public function walkInStatus(Request $request): JsonResponse
+    {
+        return response()->json([
+            'ok' => true,
+            'unlocked' => $this->walkInGate->isUnlocked($request),
+        ]);
+    }
+
+    public function walkInUnlock(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'pin' => ['required', 'string', 'max:12'],
+        ]);
+
+        $result = $this->walkInGate->unlock($request, $data['pin']);
+        if (! $result['ok']) {
+            $status = str_contains((string) ($result['error'] ?? ''), 'Too many') ? 429 : 422;
+
+            return response()->json($result, $status);
+        }
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function walkInStore(Request $request)
+    {
+        $issuerId = $this->walkInGate->issuerId($request);
+        if (! $issuerId) {
+            return redirect()
+                ->route('kiosk')
+                ->withErrors(['walkin_pin' => 'Enter the staff PIN first.']);
+        }
+
+        $validator = Validator::make($request->all(), [
+            'service_id' => ['required', 'exists:services,id'],
+            'priority' => ['required', 'in:regular,priority'],
+            'issue_reason' => ['required', Rule::in(array_keys(TicketIssuer::walkInReasons()))],
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()
+                ->route('kiosk')
+                ->withErrors($validator)
+                ->withInput()
+                ->with('kiosk_walkin_open', true);
+        }
+
+        $data = $validator->validated();
+
+        $service = Service::findOrFail($data['service_id']);
+        if (str_contains(strtolower((string) $service->service_name), 'promissory')) {
+            return redirect()
+                ->route('kiosk')
+                ->withErrors(['service_id' => 'That service is not available here.'])
+                ->withInput()
+                ->with('kiosk_walkin_open', true);
+        }
+
+        $isPriority = $data['priority'] === 'priority';
+
+        $queue = DB::transaction(function () use ($service, $isPriority, $data, $issuerId) {
+            return $this->issuer->issueWaiting(
+                $service,
+                $isPriority,
+                null,
+                $issuerId,
+                $data['issue_reason'],
+            );
+        });
+
+        $issuedAt = now();
+        $priorityLabel = $isPriority ? 'Priority' : 'Regular';
+        $estimate = $this->estimator->snapshot((int) $service->id, $isPriority, $queue);
+        $estimatedMinutes = $estimate['estimated_minutes'];
+        $printHomeUrl = route('kiosk');
+
+        return view('kiosk.printing', compact(
+            'queue',
+            'service',
+            'issuedAt',
+            'priorityLabel',
+            'estimatedMinutes',
+            'printHomeUrl',
+        ));
     }
 
     /**
@@ -126,45 +221,11 @@ class KioskController extends Controller
                     throw new \RuntimeException('already_queued:'.$open->queue_number);
                 }
 
-                $counter = DailyQueueCounter::where('service_id', $service->id)
-                    ->whereDate('queue_date', $today)
-                    ->lockForUpdate()
-                    ->first();
-
-                if (! $counter) {
-                    $counter = DailyQueueCounter::create([
-                        'service_id' => $service->id,
-                        'queue_date' => $today,
-                        'last_number' => 0,
-                    ]);
-                }
-
-                $next = $counter->last_number + 1;
-                $counter->last_number = $next;
-                $counter->save();
-
-                $numberStr = str_pad((string) $next, 3, '0', STR_PAD_LEFT);
-                $queueNumber = $service->prefix.$numberStr;
-
-                $payload = [
-                    'queue_number' => $queueNumber,
-                    'service_id' => $service->id,
-                    'student_id' => $studentId,
-                    'priority' => $data['priority'] === 'priority' ? 1 : 0,
-                    'status' => 'waiting',
-                    'queue_date' => $today,
-                ];
-
-                if (Schema::hasColumn('queues', 'created_at')) {
-                    $payload['created_at'] = now();
-                }
-                if (Schema::hasColumn('queues', 'updated_at')) {
-                    $payload['updated_at'] = now();
-                }
-
-                $queueId = DB::table('queues')->insertGetId($payload);
-
-                return Queue::findOrFail($queueId);
+                return $this->issuer->issueWaiting(
+                    $service,
+                    $data['priority'] === 'priority',
+                    $studentId,
+                );
             });
         } catch (\RuntimeException $e) {
             $msg = $e->getMessage();

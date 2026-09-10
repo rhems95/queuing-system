@@ -6,13 +6,23 @@
     <div class="pecit-page-header">
         <div>
             <h1 class="pecit-page-title">Manage Users</h1>
-            <p class="pecit-page-sub">Staff accounts are limited to one per window</p>
+            <p class="pecit-page-sub">Staff: one per window. Walk-in tickets use the kiosk PIN (no Guard login).</p>
         </div>
         <a href="{{ route('admin.users.create') }}" class="pecit-btn pecit-btn-primary">+ New User</a>
     </div>
 
     @if (session('status'))
         <div class="pecit-alert pecit-alert-success">{{ session('status') }}</div>
+    @endif
+
+    @if ($errors->any())
+        <div class="pecit-alert pecit-alert-danger">
+            <ul class="list-disc list-inside m-0">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
     @endif
 
     <div class="pecit-card">
@@ -37,6 +47,8 @@
                             <td>
                                 @if ($user->role === 'admin')
                                     <span class="pecit-badge pecit-badge-admin">Admin</span>
+                                @elseif ($user->role === 'guard')
+                                    <span class="pecit-badge pecit-badge-guard">Kiosk issuer</span>
                                 @else
                                     <span class="pecit-badge pecit-badge-staff">Staff</span>
                                 @endif
@@ -44,6 +56,7 @@
                             <td>{{ $user->window->window_name ?? '—' }}</td>
                             <td style="text-align:right;white-space:nowrap;">
                                 <a href="{{ route('admin.users.edit', $user) }}" class="pecit-link">Edit</a>
+                                @if ($user->role !== 'guard')
                                 <form method="POST" action="{{ route('admin.users.destroy', $user) }}"
                                       style="display:inline;margin-left:0.65rem;"
                                       onsubmit="return confirm('Delete this user?');">
@@ -51,6 +64,7 @@
                                     @method('DELETE')
                                     <button type="submit" class="pecit-link-danger" style="background:none;border:none;cursor:pointer;padding:0;font:inherit;">Delete</button>
                                 </form>
+                                @endif
                             </td>
                         </tr>
                     @empty

@@ -2,7 +2,7 @@
 
 Queue management system for **Philippine Electronics and Communication Institute of Technology Inc. (PECIT)** — capstone research project.
 
-Customers take a ticket from a public **kiosk** after entering a Student ID on confirm. Staff call numbers at service windows (and can Hold a ticket). A public **display** shows who is being served — numbers only, no names. **Admins** manage users, history, and reports.
+Customers take a ticket from a public **kiosk** after entering a Student ID on confirm. People who cannot use the kiosk (new enrollees, no record) get a **walk-in ticket** from the kiosk PIN (no Guard login). Staff call numbers at service windows (and can Hold a ticket). A public **display** shows who is being served — numbers only, no names. **Admins** manage users, the kiosk PIN, history, and reports.
 
 **Stack:** Laravel 12 · Blade · Vite/Tailwind · MySQL/MariaDB (typical **XAMPP** on Windows)
 
@@ -12,21 +12,23 @@ Customers take a ticket from a public **kiosk** after entering a Student ID on c
 
 | Module | Access | Purpose |
 |--------|--------|---------|
-| **Kiosk** | Public | 3-step ticket: service → priority → confirm (Student ID + live wait estimate) → 80mm print |
+| **Kiosk** | Public | 3-step ticket: service → priority → confirm (Student ID + live wait estimate) → 80mm print. Tiny corner button + PIN issues walk-ins. |
 | **Display** | Public | Now serving (by window group) + waiting list in call order + optional voice (no names, no held) |
 | **Staff window** | Staff login | Call Next (fair 2P→1R), Recall, Complete, Hold; per-counter service timer; student name while serving |
 | **Staff float** | Staff | Small always-on-top Windows panel for the same actions (incl. Hold) |
-| **Admin** | Admin login | Live dashboard, users, students (CSV), history, tickets, wait/service reports |
+| **Walk-in** | Kiosk PIN (admin can also issue) | No Student ID; for new enrollees / no record / other. Guard accounts cannot log in. |
+| **Admin** | Admin login | Live dashboard, users, kiosk PIN, students (CSV), walk-in issue, history, tickets, wait/service reports |
 
 - Tickets stay **anonymous on print and the public display** (no student name). The kiosk confirm step requires a **Student ID**.
 - One student may have only **one open ticket per day** (waiting, serving, or held), across all services.
+- **Walk-in tickets**: kiosk corner PIN (Admin → **Kiosk PIN**, stored in `settings`); no Student ID, many at once; staff sees “Walk-in”; print/display stay number-only. There is no Guard login.
 - Demo IDs in the dump: `2024-0001` Juan Dela Cruz, `2024-0002` Maria Santos, `2024-0003` Jose Rizal, `2024-0004` Ana Reyes, `2024-0005` Pedro Garcia.
 - Staff can **Hold** (set aside) the current ticket, then **Call** it later without waiting in the 2P→1R line.
 - Priority is **Regular** or **Priority** only.
 - Calling uses shared **2 Priority → 1 Regular** per service (Cashier 1 / 2 / 3 share one Cashier queue).
 - Each counter has its own **service timer**; Complete on one window never affects another.
 - Estimated wait uses active counters + history; the thermal ticket may add one line: `Estimated Time: N minutes`.
-- Kiosk UI is **finalized** — do not redesign it casually (print sizing / ETA line / confirm Student ID keypad are allowed exceptions).
+- Kiosk UI is **finalized** — do not redesign it casually (print sizing / ETA line / confirm Student ID keypad / tiny walk-in PIN button are allowed exceptions).
 - Login / staff / admin use the **PECIT** navy/gold theme (local fonts + SVG icons, no CDN).
 - Thermal tickets target **XP-58(XP-Q90EC)** (80mm).
 - Secret **About / capstone credits** page: press **Ctrl + Alt + Shift + A** (not in menus).
@@ -126,7 +128,7 @@ Then open `http://127.0.0.1:8000/kiosk` (and so on).
 
 ## Users (from `queuing_system.sql`)
 
-Roles: **`admin`** or **`staff`**. Staff must be assigned a **window**; only **one staff account per window**.
+Roles: **`admin`** or **`staff`**. Staff must be assigned a **window**; only **one staff account per window**. Walk-in tickets use the **kiosk PIN** (Admin → Kiosk PIN). There is no Guard login.
 
 | Name | Email | Role | Window | Notes |
 |------|-------|------|--------|--------|
@@ -134,7 +136,7 @@ Roles: **`admin`** or **`staff`**. Staff must be assigned a **window**; only **o
 | rhem | `rhem@gmail.com` | staff | Cashier 1 (`window_id` 1) | Bcrypt hash in dump — reset via Admin → Users if unknown |
 | omar | `omar@gmail.com` | staff | Cashier 2 (`window_id` 2) | Bcrypt hash in dump — reset via Admin → Users if unknown |
 
-Create or edit users under **Admin → Users**. Staff accounts require a window; a window cannot have two staff users.
+A `guard` issuer row may exist in the dump for `issued_by` on walk-in tickets. It **cannot log in**. Create or edit admin/staff under **Admin → Users**.
 
 Kiosk IDs are managed under **Admin → Students** (add one, delete, or bulk import a CSV with `student_id,name`). Existing IDs in a CSV are skipped. A student with an open ticket today cannot be deleted.
 
@@ -151,10 +153,11 @@ Kiosk IDs are managed under **Admin → Students** (add one, delete, or bulk imp
 |-------|---------|
 | `services` | Service types + ticket prefix (`C`, `P`, `D`, `R`, …) |
 | `windows` | Counters; `service_id`, `group_name` (display groups), `status` |
-| `users` | `role` = `admin` \| `staff`; staff have `window_id` (unique when migration applied) |
+| `users` | `role` = `admin` \| `staff` \| `guard` (issuer only, no login); staff have `window_id` |
+| `settings` | Key/value app settings (kiosk walk-in PIN) |
 | `daily_queue_counters` | Per-service daily serial for ticket numbers |
 | `students` | Allowlisted Student IDs + names for kiosk lookup |
-| `queues` | Tickets: number, service, optional `student_id`, priority (0/1), status (`waiting`/`serving`/`done`/`cancelled`/`held`), date |
+| `queues` | Tickets: number, service, optional `student_id`, optional `issued_by`/`issue_reason` (walk-in), priority (0/1), status (`waiting`/`serving`/`done`/`cancelled`/`held`), date |
 | `queue_calls` | Call history: queue ↔ window, called/finished times (service duration) |
 
 ### Seeded services & windows (dump)
@@ -221,12 +224,20 @@ Waiting list columns follow the same **call order** as Call Next (2 Priority →
 3. Watch the **Service Time** timer for the ticket on *this* counter only.
 4. Optional always-on-top panel: click **Open System Float**, or run `bats/start-staff-float.bat` (~260×270).
 
+### Walk-in tickets (kiosk PIN)
+
+On the kiosk, tap the **tiny square in the bottom-right corner**, enter the walk-in PIN, then issue a ticket (service, priority, reason). There is no Guard login.
+
+Change the PIN under **Admin → Kiosk PIN** (stored in the `settings` table, default `1981`). Admin can still issue walk-ins from **Walk-in Tickets**.
+
 ### Admin
 
 Log in as admin → `/admin`:
 
 - **Dashboard** — live totals (today / waiting / serving / completed), quick links, live waiting table
-- **Users** — staff/admin accounts and window assignment
+- **Users** — admin / staff accounts and window assignment
+- **Kiosk PIN** — edit the walk-in PIN (database `settings` table)
+- **Walk-in Tickets** — issue tickets for people who cannot use the kiosk
 - **Served History / All Tickets** — records
 - **Reports & Analytics** — overall and **per-window** average waiting time and average service time
 
@@ -254,6 +265,7 @@ erDiagram
     WINDOWS ||--o{ QUEUE_CALLS : "calls at"
     QUEUES ||--o{ QUEUE_CALLS : "served as"
     STUDENTS ||--o{ QUEUES : "optional id"
+    USERS ||--o{ QUEUES : "issued_by walk-in"
 
     SERVICES {
         bigint id PK
@@ -291,6 +303,8 @@ erDiagram
         varchar queue_number
         bigint service_id FK
         varchar student_id
+        bigint issued_by
+        varchar issue_reason
         tinyint priority
         enum status
         date queue_date
@@ -301,6 +315,12 @@ erDiagram
         bigint id PK
         varchar student_id UK
         varchar name
+    }
+
+    SETTINGS {
+        bigint id PK
+        varchar setting_key UK
+        varchar setting_value
     }
 
     QUEUE_CALLS {
@@ -317,8 +337,11 @@ erDiagram
 ```mermaid
 flowchart TD
     Start([Customer arrives]) --> Kiosk["Kiosk: service → priority → confirm ID + ETA"]
+    Start --> Walkin["Walk-in: kiosk corner PIN from settings"]
+    Walkin --> WalkIssue["POST /kiosk/walk-in: no student ID"]
     Kiosk --> Est["Show waiting counts + ETA; lookup student"]
     Est --> Issue["POST /kiosk: lock student + counter, insert queue"]
+    WalkIssue --> Print
     Issue --> Print["Print 80mm ticket (no name) + optional Estimated Time"]
     Print --> Wait([Customer waits])
 

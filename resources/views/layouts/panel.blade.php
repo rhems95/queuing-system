@@ -10,7 +10,7 @@
     @php
         $isLogin = request()->routeIs('login');
         $showChrome = ! $isLogin;
-        $showSidebar = $showChrome && (request()->routeIs('admin.*') || request()->routeIs('window.*'));
+        $showSidebar = $showChrome && (request()->routeIs('admin.*') || request()->routeIs('window.*') || request()->routeIs('guard.*'));
     @endphp
 
     @if ($isLogin)
@@ -48,8 +48,10 @@
         <div class="pecit-body">
             @if ($showSidebar)
                 <div id="sidebarBackdrop" class="pecit-backdrop" aria-hidden="true"></div>
-                @if (request()->routeIs('admin.*'))
+                @if (request()->routeIs('admin.*') || (request()->routeIs('guard.*') && auth()->user()?->role === 'admin'))
                     @include('partials.admin-sidebar')
+                @elseif (request()->routeIs('guard.*'))
+                    @include('partials.guard-sidebar')
                 @elseif (request()->routeIs('window.*'))
                     @include('partials.staff-sidebar')
                 @endif

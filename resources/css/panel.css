@@ -874,6 +874,11 @@
     color: #047857;
 }
 
+.pecit-badge-guard {
+    background: #fff7ed;
+    color: #c2410c;
+}
+
 /* Alerts */
 .pecit-alert {
     border-radius: 0.65rem;

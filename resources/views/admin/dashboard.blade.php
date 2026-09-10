@@ -57,6 +57,20 @@
                 <small>Add, delete, or import CSV</small>
             </span>
         </a>
+        <a href="{{ route('admin.settings.edit') }}" class="pecit-quick-card">
+            @include('partials.icon', ['name' => 'lock', 'class' => 'pecit-quick-icon'])
+            <span class="pecit-quick-copy">
+                <strong>Kiosk PIN</strong>
+                <small>Edit the walk-in PIN</small>
+            </span>
+        </a>
+        <a href="{{ route('guard.issue') }}" class="pecit-quick-card">
+            @include('partials.icon', ['name' => 'ticket', 'class' => 'pecit-quick-icon'])
+            <span class="pecit-quick-copy">
+                <strong>Walk-in Tickets</strong>
+                <small>Issue for new enrollees / no ID</small>
+            </span>
+        </a>
         <a href="{{ route('admin.history') }}" class="pecit-quick-card">
             @include('partials.icon', ['name' => 'history', 'class' => 'pecit-quick-icon'])
             <span class="pecit-quick-copy">

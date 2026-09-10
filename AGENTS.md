@@ -12,21 +12,22 @@ Read **[README.md](README.md)** for operator-oriented setup. This file is the **
 
 ```text
 Customer → Kiosk (student ID on confirm + ETA + 80mm print, no name on ticket)
+         ↘ Walk-in: corner PIN (`settings.walkin_pin`) — no Guard login
                 ↓
-         queues / daily_queue_counters / students
+         queues / daily_queue_counters / students / settings
                 ↓
 Staff windows (shared 2P→1R, Hold/set-aside, student name while serving) → queue_calls
                 ↓
          Public display (numbers only, no names, no held)
                 ↓
-Admin: live dashboard, users, history, wait/service reports (done only)
+Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done only)
 ```
 
 - **Student ID on confirm only** — name is never printed or shown on the public display.
 - **Print-only** kiosk (Eco Mode removed).
 - **One staff user per window** (app + DB unique when migration applied).
 - **Multi-cashier compatible:** Cashier 1–3 share one Cashier waiting queue; each has an independent open call + timer.
-- **One open ticket per student per day** (`waiting` \| `serving` \| `held`, any service).
+- **One open ticket per student per day** (`waiting` \| `serving` \| `held`, any service). Walk-in tickets (no student ID) are issued with the **kiosk PIN** (or admin `/guard`) and may be many at once. Guard role **cannot log in**.
 
 ---
 
@@ -41,17 +42,26 @@ Admin: live dashboard, users, history, wait/service reports (done only)
 - Thermal ticket may add **one** compact line when ETA is available: `Estimated Time: N minutes` (omit when history is insufficient).
 - Print sizing (current baseline): title/lines ~13px, number ~34px, footer ~12px — change only when asked.
 - Promissory Notes **hidden** from kiosk service list (filter in `KioskController@index`); may still exist for staff/display.
-- **Do not redesign/restyle/restructure** kiosk Blade/CSS/JS unless the user explicitly asks (print sizing / ETA line / confirm Student ID keypad are allowed exceptions when requested).
+- **Do not redesign/restyle/restructure** kiosk Blade/CSS/JS unless the user explicitly asks (print sizing / ETA line / confirm Student ID keypad / tiny walk-in PIN corner button are allowed exceptions when requested).
+- Tiny bottom-right hit target opens a PIN pad. PIN is stored in `settings.walkin_pin` (Admin → Kiosk PIN), not `.env`. Correct PIN shows a walk-in issue overlay (no Student ID). PIN is checked on the server only; unlock lasts a few minutes. Print still number-only; countdown returns to the kiosk. This is not a student multi-ticket ID.
 - Shell: `layouts/app.blade.php`. Views: `resources/views/kiosk/*`.
 - Thermal layout: **80mm** (XP-58(XP-Q90EC)), centered number — `kiosk/printing.blade.php`.
 - Silent print: not possible from a normal tab; use `bats/start-kiosk-chrome.bat` (`--kiosk --kiosk-printing`). Launcher matches printer **XP-Q90EC**, waits 10s, clears Chrome sticky printer; close all Chrome first.
 - New tickets should set `queues.created_at` when the column exists (used for average waiting time in reports).
 
+### Guard (kiosk PIN only — no login)
+
+- Guards **cannot log in**. Walk-ins are issued at the kiosk: tiny corner button → PIN → overlay.
+- PIN lives in `settings` (`walkin_pin`), edited at `GET/PUT /admin/settings`. Default seed `1981`.
+- Tickets have `student_id` null, `issued_by` = kiosk issuer user id (dump `guard@gmail.com`, no login), `issue_reason` set. Many open walk-in tickets are allowed.
+- Promissory Notes hidden from the issue list (same as kiosk).
+- Admin may still issue from `GET/POST /guard` (admin middleware). Staff serving label is **Walk-in** (not printed, not on the public display).
+
 ### Staff (auth, `staff` middleware)
 
 - Dashboard: `GET /window` — Call Next, Recall, Complete, Hold; waiting list (10, fair call order); held list with Call; poll `GET /window/state` (includes `serving_started_at`, `current_name`, `held_list`).
 - Per-window **service timer** from open `queue_calls.called_time` (independent across Cashier 1 / Cashier 2 / …).
-- Staff sees **student name** while serving (and on held rows). Public display does not.
+- Staff sees **student name** while serving (and on held rows), or **Walk-in** for guard-issued tickets. Public display does not.
 - **Hold** (`POST /window/hold`): finish the open call, set `queues.status = held`, free the window. Held tickets leave Now Serving and waiting lists.
 - **Call held** (`POST /window/call-held`): resume a held ticket at this window without 2P→1R; requires no open serving ticket.
 - Shortcuts: **Alt+N** → Call Next; **Alt+R** → Recall; **Alt+C** → Complete.
@@ -72,6 +82,7 @@ Admin: live dashboard, users, history, wait/service reports (done only)
 | `App\Services\WaitTimeEstimator` | Multi-counter ETA from history + waiting + serving |
 | `App\Services\QueueService` | Latest call helpers; serving-only now-serving; staff-only student name |
 | `App\Services\StudentQueueGuard` | Normalize ID; lookup; one open ticket today |
+| `App\Services\KioskWalkInGate` | Kiosk PIN unlock for walk-in issue (session, not a login) |
 
 ### Display (public)
 
@@ -96,6 +107,7 @@ Admin: live dashboard, users, history, wait/service reports (done only)
 
 - `auth/login.blade.php` extends `layouts.panel`.
 - Passwords: bcrypt (`$2y$…`) **or** legacy plain-text compare in `LoginController` (dump admin uses plain `admin`).
+- `guard` role **cannot log in**; walk-ins use the kiosk PIN.
 
 ### Secret About / capstone credits
 
@@ -134,9 +146,11 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | Float tools | `bats/start-staff-float.bat`, `tools/staff-float/Start-StaffFloat.ps1` |
 | Kiosk silent print | `bats/start-kiosk-chrome.bat`, `tools/kiosk/*.ps1` |
 | Launcher guide | `bats/GUIDE.txt` |
-| Admin | `AdminDashboardController`, `HistoryController`, `UserManagementController`, `StudentManagementController`, `views/admin/*` |
+| Walk-in | `KioskWalkInGate`, kiosk PIN overlay; admin `/guard` → `GuardIssueController`, `views/guard/issue.blade.php` |
+| Kiosk PIN | `SettingsController`, `views/admin/settings.blade.php`, `settings` table |
+| Admin | `AdminDashboardController`, `HistoryController`, `UserManagementController`, `StudentManagementController`, `SettingsController`, `views/admin/*` |
 | Panel theme | `layouts/panel.blade.php`, `css/panel.css`, `partials/admin-sidebar.blade.php`, `partials/staff-sidebar.blade.php`, `partials/icon.blade.php` |
-| Queue logic | `FairQueueScheduler`, `WaitTimeEstimator`, `QueueService`, `StudentQueueGuard` |
+| Queue logic | `FairQueueScheduler`, `WaitTimeEstimator`, `QueueService`, `StudentQueueGuard`, `TicketIssuer`, `KioskWalkInGate` |
 | Capstone About | `AboutController`, `config/about.php`, `views/about/*`, `storage/app/private/about/team/` |
 | Diagrams | `README.md` (Mermaid ERD + flowchart), `docs/erd.md`, `docs/erd/queuing_system.erd` (ERD Designer / MariaDB; do not hand-edit), `docs/system-flowchart.md`, Archify maps `docs/archify/pecit-runtime.architecture.html` and `docs/archify/pecit-erd.architecture.html` |
 | Security headers | `SetSecurityHeaders` middleware |
@@ -153,6 +167,9 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | GET/POST | `/kiosk` | Public ticket (`student_id` required on POST) |
 | GET | `/kiosk/estimate` | Waiting counts + ETA JSON |
 | GET | `/kiosk/student` | Confirm-step student ID lookup |
+| GET | `/kiosk/walk-in/status` | PIN session unlocked? |
+| POST | `/kiosk/walk-in/unlock` | Check walk-in PIN |
+| POST | `/kiosk/walk-in` | Issue walk-in after PIN unlock |
 | GET | `/about` | Secret capstone About (Ctrl+Alt+Shift+A) |
 | GET | `/about/photo/{file}` | Private team photo stream (allowlisted only) |
 | GET | `/display`, `/display/data` | Public display |
@@ -161,6 +178,8 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | resource | `/admin/users` | User CRUD |
 | GET/POST/DELETE | `/admin/students…` | Student allowlist (add, delete, CSV import) |
 | GET/PUT/DELETE | `/admin/history…` | History, tickets, reports, edit |
+| GET/PUT | `/admin/settings` | Kiosk walk-in PIN (database) |
+| GET/POST | `/guard` | Admin-only walk-in issue |
 | GET | `/window` | Staff dashboard |
 | GET | `/window/float` | Float UI |
 | POST | `/window/launch-float` | Start `.bat` on server PC |
@@ -189,6 +208,8 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | `2026_04_18_030000_reconfigure_window_layout.php` | Window layout reconfiguration |
 | `2026_09_09_000000_add_students_hold_and_queue_student_id.php` | `students` table, `queues.student_id`, status `held`, demo IDs |
 | `2026_09_09_010000_align_students_collation_with_queues.php` | Match `students` collation to dump (`utf8mb4_general_ci`) |
+| `2026_09_10_000000_add_guard_role_and_walk_in_tickets.php` | `users.role` + `guard`; `queues.issued_by` / `issue_reason`; demo `guard@gmail.com` |
+| `2026_09_10_010000_add_settings_walkin_pin.php` | `settings` table; seed `walkin_pin` = `1981` |
 
 Rebuild dump helper: `php database/sql/build_queuing_system_dump.php`.
 
@@ -198,10 +219,11 @@ Rebuild dump helper: `php database/sql/build_queuing_system_dump.php`.
 |-------|------|
 | `services` | `service_name`, `prefix` (ticket code) — also used as Call Next mutex via `lockForUpdate` |
 | `windows` | Counter; `service_id`, `group_name`, `status` |
-| `users` | `role` admin\|staff; staff `window_id` |
+| `users` | `role` admin\|staff\|guard; staff `window_id`; guard issuer cannot log in |
+| `settings` | Key/value (`walkin_pin` for kiosk walk-in) |
 | `daily_queue_counters` | Locked increment per service + date in kiosk store |
 | `students` | Allowlisted kiosk IDs (`student_id`, `name`) — dump seeds `2024-0001`…`2024-0005` |
-| `queues` | `queue_number`, `service_id`, optional `student_id`, `priority` 0/1, `status` waiting\|serving\|done\|cancelled\|held, `queue_date`, optional `created_at` for wait metrics — **name is never stored on the ticket** |
+| `queues` | `queue_number`, `service_id`, optional `student_id`, optional `issued_by` / `issue_reason` (walk-in), `priority` 0/1, `status` waiting\|serving\|done\|cancelled\|held, `queue_date`, optional `created_at` for wait metrics — **name is never stored on the ticket** |
 | `queue_calls` | `queue_id`, `window_id`, `called_time`, `finished_time` (null = open). Display recall token derived in app (`id` + `called_time`) |
 
 ### Seeded reference data (dump)
@@ -217,6 +239,7 @@ Rebuild dump helper: `php database/sql/build_queuing_system_dump.php`.
 | `admin@gmail.com` | admin | null | Plain `admin` in dump; `LoginController` accepts plain or bcrypt |
 | `rhem@gmail.com` | staff | 1 (Cashier 1) | Bcrypt in dump |
 | `omar@gmail.com` | staff | 2 (Cashier 2) | Bcrypt in dump |
+| `guard@gmail.com` | guard | null | Issuer row for `issued_by` only — **cannot log in**; PIN is in `settings` |
 
 Models: check `$timestamps` / `$fillable` per model — several domain models use `$timestamps = false`.
 
@@ -239,6 +262,7 @@ Models: check `$timestamps` / `$fillable` per model — several domain models us
 13. Do not put team photos under `public/`; keep `storage/app/private/about/team/` and allowlisted photo streaming.
 14. Do not add the About page to sidebars; keep Ctrl+Alt+Shift+A as the entry.
 15. One open ticket per student per day (`waiting`/`serving`/`held`). Hold is not Complete; reports count **done** only.
+16. Walk-in tickets: kiosk corner PIN (`settings.walkin_pin`, Admin → Kiosk PIN) or admin `/guard`. No Student ID; `issued_by` is the issuer user id. Guard role cannot log in. Do not add a multi-ticket student ID on the public kiosk. Print and display stay number-only.
 
 ---
 
@@ -309,6 +333,7 @@ Kiosk launchers wait **10 seconds** before opening the browser (gives Apache/pri
 - [ ] Offline: no CDN fonts/icons; `npm run build` assets load
 - [ ] Ctrl+Alt+Shift+A opens About; photos from private folder when present
 - [ ] Admin Students: add, delete, CSV import; kiosk lookup uses the list
+- [ ] Guard cannot log in; kiosk corner PIN from `settings.walkin_pin` (Admin editable): unlock → issue walk-in → print number-only → back to kiosk; wrong PIN rejected
 - [ ] Auth middleware: admin vs staff
 
 ---

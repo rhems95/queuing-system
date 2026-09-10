@@ -123,7 +123,7 @@
                     @forelse($heldTickets as $q)
                         <tr>
                             <td style="font-weight:700;">{{ $q->queue_number }}</td>
-                            <td>{{ $q->student->name ?? '—' }}</td>
+                            <td>{{ $q->student->name ?? ($q->issued_by ? 'Walk-in' : '—') }}</td>
                             <td>
                                 @if ($q->priority)
                                     <span class="pecit-badge pecit-badge-priority">Priority</span>

@@ -6,7 +6,7 @@
     <div class="pecit-page-header">
         <div>
             <h1 class="pecit-page-title">{{ $mode === 'create' ? 'Create User' : 'Edit User' }}</h1>
-            <p class="pecit-page-sub">Assign admin access or a staff window counter</p>
+            <p class="pecit-page-sub">Admin or staff window accounts. Walk-in tickets use the kiosk PIN.</p>
         </div>
     </div>
 
@@ -39,6 +39,7 @@
                     <input type="email" name="email" value="{{ old('email', $user->email) }}" required class="pecit-input">
                 </div>
 
+                @if ($user->role !== 'guard')
                 <div style="margin-bottom:1rem;">
                     <label class="pecit-label">
                         Password
@@ -48,16 +49,25 @@
                     </label>
                     <input type="password" name="password" class="pecit-input">
                 </div>
+                @endif
 
                 <div style="margin-bottom:1rem;">
                     <label class="pecit-label">Role</label>
-                    <select name="role" class="pecit-select" required>
+                    @if ($user->role === 'guard')
+                        <input type="text" value="Kiosk issuer (no login)" class="pecit-input" disabled>
+                        <p class="pecit-page-sub" style="margin-top:0.4rem;">
+                            This account cannot log in. Change the walk-in PIN under
+                            <a href="{{ route('admin.settings.edit') }}">Kiosk PIN</a>.
+                        </p>
+                    @else
+                    <select name="role" id="roleSelect" class="pecit-select" required>
                         <option value="admin" {{ old('role', $user->role) === 'admin' ? 'selected' : '' }}>Admin</option>
                         <option value="staff" {{ old('role', $user->role) === 'staff' ? 'selected' : '' }}>Staff</option>
                     </select>
+                    @endif
                 </div>
 
-                <div style="margin-bottom:1.25rem;">
+                <div id="windowField" style="margin-bottom:1.25rem;{{ $user->role === 'guard' ? 'display:none;' : '' }}">
                     <label class="pecit-label">Window (for staff)</label>
                     <select name="window_id" class="pecit-select">
                         <option value="">None</option>
@@ -80,3 +90,18 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var role = document.getElementById('roleSelect');
+            var wrap = document.getElementById('windowField');
+            if (!role || !wrap) return;
+            function sync() {
+                wrap.style.opacity = role.value === 'staff' ? '1' : '0.55';
+            }
+            role.addEventListener('change', sync);
+            sync();
+        });
+    </script>
+@endpush

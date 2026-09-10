@@ -165,6 +165,73 @@
                 </div>
             </div>
         </form>
+
+        <button type="button" id="walkinCornerBtn" class="kiosk-walkin-hit" aria-label="Walk-in"></button>
+
+        <div id="walkinPinOverlay" class="kiosk-walkin-overlay hidden" aria-hidden="true">
+            <div class="kiosk-walkin-card" role="dialog" aria-labelledby="walkinPinTitle">
+                <div class="kiosk-walkin-title" id="walkinPinTitle">Enter PIN</div>
+                <div id="walkinPinDots" class="kiosk-walkin-dots">••••</div>
+                <p id="walkinPinMsg" class="kiosk-walkin-msg"></p>
+                <div class="kiosk-walkin-pad">
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="1">1</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="2">2</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="3">3</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="4">4</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="5">5</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="6">6</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="7">7</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="8">8</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="9">9</button>
+                    <button type="button" class="kiosk-walkin-key is-action" data-pin-key="back">⌫</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="0">0</button>
+                    <button type="button" class="kiosk-walkin-key is-ok" data-pin-key="ok">OK</button>
+                </div>
+                <button type="button" id="walkinPinCancel" class="kiosk-walkin-cancel">Cancel</button>
+            </div>
+        </div>
+
+        <div id="walkinIssueOverlay" class="kiosk-walkin-overlay hidden" aria-hidden="true">
+            <div class="kiosk-walkin-card kiosk-walkin-card-issue" role="dialog" aria-labelledby="walkinIssueTitle">
+                <div class="kiosk-walkin-title" id="walkinIssueTitle">Walk-in ticket</div>
+                @if ($errors->any() && session('kiosk_walkin_open'))
+                    <div class="kiosk-walkin-msg is-error" style="margin-bottom:8px;">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
+                <form method="POST" action="{{ route('kiosk.walkin.store') }}" id="walkinIssueForm">
+                    @csrf
+                    <label class="kiosk-walkin-label">Service</label>
+                    <select name="service_id" class="kiosk-walkin-select" required>
+                        <option value="">Select service</option>
+                        @foreach ($services as $service)
+                            <option value="{{ $service->id }}" {{ (string) old('service_id') === (string) $service->id ? 'selected' : '' }}>
+                                {{ $service->service_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <label class="kiosk-walkin-label">Priority</label>
+                    <input type="hidden" name="priority" id="walkinPriorityInput" value="{{ old('priority', 'regular') }}">
+                    <div class="kiosk-walkin-priority">
+                        <button type="button" class="kiosk-walkin-choice{{ old('priority', 'regular') === 'regular' ? ' is-on' : '' }}" data-walkin-priority="regular">Regular</button>
+                        <button type="button" class="kiosk-walkin-choice{{ old('priority') === 'priority' ? ' is-on' : '' }}" data-walkin-priority="priority">Priority</button>
+                    </div>
+                    <label class="kiosk-walkin-label">Reason</label>
+                    <select name="issue_reason" class="kiosk-walkin-select" required>
+                        <option value="">Select reason</option>
+                        @foreach ($walkInReasons as $value => $label)
+                            <option value="{{ $value }}" {{ old('issue_reason') === $value ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <div class="kiosk-walkin-actions">
+                        <button type="button" id="walkinIssueCancel" class="kiosk-walkin-cancel">Cancel</button>
+                        <button type="submit" class="kiosk-walkin-submit">Issue &amp; Print</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -190,6 +257,194 @@
             var studentOk = false;
             var lookupTimer = null;
             var lookupSeq = 0;
+            var walkinUnlocked = @json($walkInUnlocked);
+            var walkinPinLength = {{ (int) $walkInPinLength }};
+            var walkinUnlockUrl = @json(route('kiosk.walkin.unlock'));
+            var walkinStatusUrl = @json(route('kiosk.walkin.status'));
+            var walkinCsrf = kioskForm ? (kioskForm.querySelector('input[name="_token"]') || {}).value : '';
+            var walkinPinOverlay = document.getElementById('walkinPinOverlay');
+            var walkinIssueOverlay = document.getElementById('walkinIssueOverlay');
+            var walkinPinDots = document.getElementById('walkinPinDots');
+            var walkinPinMsg = document.getElementById('walkinPinMsg');
+            var walkinPinValue = '';
+            var walkinBusy = false;
+            var openWalkInIssue = @json((bool) session('kiosk_walkin_open'));
+
+            function isWalkInOverlayOpen() {
+                return (walkinPinOverlay && !walkinPinOverlay.classList.contains('hidden'))
+                    || (walkinIssueOverlay && !walkinIssueOverlay.classList.contains('hidden'));
+            }
+
+            function setOverlay(el, open) {
+                if (!el) return;
+                el.classList.toggle('hidden', !open);
+                el.setAttribute('aria-hidden', open ? 'false' : 'true');
+            }
+
+            function renderWalkinPin() {
+                var shown = '';
+                for (var i = 0; i < walkinPinLength; i++) {
+                    shown += i < walkinPinValue.length ? '●' : '○';
+                }
+                if (walkinPinDots) walkinPinDots.textContent = shown;
+            }
+
+            function setWalkinPinMsg(text, isError) {
+                if (!walkinPinMsg) return;
+                walkinPinMsg.textContent = text || '';
+                walkinPinMsg.className = 'kiosk-walkin-msg' + (isError ? ' is-error' : '');
+            }
+
+            function openWalkinPin() {
+                walkinPinValue = '';
+                renderWalkinPin();
+                setWalkinPinMsg('', false);
+                setOverlay(walkinIssueOverlay, false);
+                setOverlay(walkinPinOverlay, true);
+            }
+
+            function openWalkinIssue() {
+                setOverlay(walkinPinOverlay, false);
+                setOverlay(walkinIssueOverlay, true);
+            }
+
+            function closeWalkinOverlays() {
+                setOverlay(walkinPinOverlay, false);
+                setOverlay(walkinIssueOverlay, false);
+                walkinPinValue = '';
+                renderWalkinPin();
+            }
+
+            function submitWalkinPin() {
+                if (walkinBusy) return;
+                if (walkinPinValue.length < walkinPinLength) {
+                    setWalkinPinMsg('Enter ' + walkinPinLength + ' digits.', true);
+                    return;
+                }
+                walkinBusy = true;
+                setWalkinPinMsg('Checking…', false);
+                fetch(walkinUnlockUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': walkinCsrf,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ pin: walkinPinValue, _token: walkinCsrf })
+                }).then(function (res) {
+                    return res.json().then(function (data) {
+                        return { okHttp: res.ok, data: data };
+                    });
+                }).then(function (result) {
+                    walkinBusy = false;
+                    if (result.data && result.data.ok) {
+                        walkinUnlocked = true;
+                        openWalkinIssue();
+                        return;
+                    }
+                    walkinPinValue = '';
+                    renderWalkinPin();
+                    setWalkinPinMsg((result.data && result.data.error) || 'Wrong PIN.', true);
+                }).catch(function () {
+                    walkinBusy = false;
+                    setWalkinPinMsg('Could not check PIN. Try again.', true);
+                });
+            }
+
+            function appendWalkinPin(key) {
+                if (key === 'back') {
+                    walkinPinValue = walkinPinValue.slice(0, -1);
+                    renderWalkinPin();
+                    return;
+                }
+                if (key === 'ok') {
+                    submitWalkinPin();
+                    return;
+                }
+                if (!/^[0-9]$/.test(key)) return;
+                if (walkinPinValue.length >= walkinPinLength) return;
+                walkinPinValue += key;
+                renderWalkinPin();
+                setWalkinPinMsg('', false);
+                if (walkinPinValue.length === walkinPinLength) {
+                    submitWalkinPin();
+                }
+            }
+
+            var walkinCornerBtn = document.getElementById('walkinCornerBtn');
+            if (walkinCornerBtn) {
+                walkinCornerBtn.addEventListener('click', function () {
+                    if (walkinUnlocked) {
+                        openWalkinIssue();
+                        return;
+                    }
+                    openWalkinPin();
+                });
+            }
+            document.querySelectorAll('[data-pin-key]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    appendWalkinPin(btn.getAttribute('data-pin-key') || '');
+                });
+            });
+            var walkinPinCancel = document.getElementById('walkinPinCancel');
+            if (walkinPinCancel) walkinPinCancel.addEventListener('click', closeWalkinOverlays);
+            var walkinIssueCancel = document.getElementById('walkinIssueCancel');
+            if (walkinIssueCancel) walkinIssueCancel.addEventListener('click', closeWalkinOverlays);
+            [walkinPinOverlay, walkinIssueOverlay].forEach(function (overlay) {
+                if (!overlay) return;
+                overlay.addEventListener('click', function (e) {
+                    if (e.target === overlay) closeWalkinOverlays();
+                });
+            });
+            document.querySelectorAll('[data-walkin-priority]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var value = btn.getAttribute('data-walkin-priority') || 'regular';
+                    var hidden = document.getElementById('walkinPriorityInput');
+                    if (hidden) hidden.value = value;
+                    document.querySelectorAll('[data-walkin-priority]').forEach(function (other) {
+                        other.classList.toggle('is-on', other === btn);
+                    });
+                });
+            });
+            document.addEventListener('keydown', function (e) {
+                if (walkinPinOverlay && !walkinPinOverlay.classList.contains('hidden')) {
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                        closeWalkinOverlays();
+                        return;
+                    }
+                    if (e.ctrlKey || e.metaKey || e.altKey) return;
+                    if (/^[0-9]$/.test(e.key)) {
+                        e.preventDefault();
+                        appendWalkinPin(e.key);
+                    } else if (e.key === 'Backspace') {
+                        e.preventDefault();
+                        appendWalkinPin('back');
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        appendWalkinPin('ok');
+                    }
+                    return;
+                }
+                if (walkinIssueOverlay && !walkinIssueOverlay.classList.contains('hidden') && e.key === 'Escape') {
+                    e.preventDefault();
+                    closeWalkinOverlays();
+                }
+            });
+            if (walkinStatusUrl) {
+                fetch(walkinStatusUrl, { headers: { 'Accept': 'application/json' } })
+                    .then(function (res) { return res.json(); })
+                    .then(function (data) {
+                        if (data && data.unlocked) walkinUnlocked = true;
+                    })
+                    .catch(function () {});
+            }
+            renderWalkinPin();
+            if (openWalkInIssue) {
+                walkinUnlocked = true;
+                openWalkinIssue();
+            }
 
             function showStep(stepNo) {
                 step1.classList.add('hidden');
@@ -415,6 +670,7 @@
             }
 
             document.addEventListener('keydown', function (e) {
+                if (isWalkInOverlayOpen()) return;
                 if (step3.classList.contains('hidden')) return;
                 if (e.ctrlKey || e.metaKey || e.altKey) return;
                 var tag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '';
@@ -1017,6 +1273,158 @@
             .step3-actions { flex-direction: column; }
             .step1-head-title { font-size: 22px; }
             .service-title { font-size: 20px; }
+        }
+
+        .kiosk-walkin-hit {
+            position: fixed;
+            right: 8px;
+            bottom: 8px;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border: 1px solid rgba(15, 23, 42, 0.18);
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.22);
+            cursor: pointer;
+            z-index: 80;
+        }
+        .kiosk-walkin-hit:focus {
+            outline: 2px solid #93c5fd;
+        }
+        .kiosk-walkin-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 12px;
+        }
+        .kiosk-walkin-overlay.hidden {
+            display: none !important;
+        }
+        .kiosk-walkin-card {
+            width: 100%;
+            max-width: 280px;
+            background: #fff;
+            border: 1px solid #d9dee7;
+            border-radius: 16px;
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.22);
+            padding: 14px 14px 12px;
+            text-align: center;
+        }
+        .kiosk-walkin-card-issue {
+            max-width: 340px;
+            text-align: left;
+        }
+        .kiosk-walkin-title {
+            font-size: 18px;
+            font-weight: 800;
+            color: #1e3a8a;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .kiosk-walkin-dots {
+            font-size: 22px;
+            letter-spacing: 0.35em;
+            color: #1e40af;
+            font-weight: 800;
+            margin: 4px 0 6px;
+        }
+        .kiosk-walkin-msg {
+            min-height: 1.2em;
+            font-size: 13px;
+            font-weight: 600;
+            color: #475569;
+            margin: 0 0 8px;
+            text-align: center;
+        }
+        .kiosk-walkin-msg.is-error { color: #b91c1c; }
+        .kiosk-walkin-pad {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .kiosk-walkin-key {
+            min-height: 42px;
+            border-radius: 10px;
+            border: 1px solid #93c5fd;
+            background: linear-gradient(180deg, #ffffff, #e8f1ff);
+            color: #1e3a8a;
+            font-size: 18px;
+            font-weight: 800;
+        }
+        .kiosk-walkin-key.is-action {
+            background: linear-gradient(180deg, #dbeafe, #bfdbfe);
+        }
+        .kiosk-walkin-key.is-ok {
+            background: linear-gradient(180deg, #1f6dd6, #1d4ed8);
+            border-color: #1d4ed8;
+            color: #fff;
+        }
+        .kiosk-walkin-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: #475569;
+            margin: 8px 0 4px;
+        }
+        .kiosk-walkin-select {
+            width: 100%;
+            border: 1px solid #93c5fd;
+            border-radius: 8px;
+            background: #eff6ff;
+            color: #1e3a8a;
+            font-size: 15px;
+            font-weight: 700;
+            padding: 8px 10px;
+        }
+        .kiosk-walkin-priority {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .kiosk-walkin-choice {
+            min-height: 40px;
+            border-radius: 10px;
+            border: 2px solid #cbd5e1;
+            background: #fff;
+            color: #0f172a;
+            font-weight: 800;
+        }
+        .kiosk-walkin-choice.is-on {
+            border-color: #2f7de6;
+            background: #edf4ff;
+            color: #1e40af;
+        }
+        .kiosk-walkin-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        .kiosk-walkin-cancel,
+        .kiosk-walkin-submit {
+            flex: 1;
+            min-height: 42px;
+            border-radius: 10px;
+            font-weight: 800;
+            font-size: 15px;
+        }
+        .kiosk-walkin-cancel {
+            background: #e2e8f0;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+        }
+        .kiosk-walkin-submit {
+            background: linear-gradient(90deg, #1f6dd6, #1d4ed8);
+            border: 1px solid #1d4ed8;
+            color: #fff;
+        }
+        @media (max-height: 650px) {
+            .kiosk-walkin-key { min-height: 34px; font-size: 16px; }
+            .kiosk-walkin-card { padding: 10px; }
         }
     </style>
 @endsection

@@ -25,7 +25,7 @@ flowchart TB
         D4[("D4 Master data")]
     end
 
-    EC -->|Service, priority, Student ID| P1
+    EC -->|Service, priority, Student ID or walk-in PIN| P1
     P1 -->|Queue number, ETA| EC
 
     ED -->|Poll /display, /display/data| P2
@@ -34,10 +34,10 @@ flowchart TB
     ES -->|Call next, recall, complete, hold| P3
     P3 -->|Current ticket, name, timer| ES
 
-    EA -->|Users, students, reports| P4
+    EA -->|Users, students, kiosk PIN, reports| P4
     P4 -->|Screens, CSV result| EA
 
-    D4 -->|Valid services + student allowlist| P1
+    D4 -->|Valid services + student allowlist + walk-in PIN| P1
     P1 -->|New ticket row| D1
     P1 -->|Increment serial| D2
 
@@ -51,7 +51,7 @@ flowchart TB
     P3 -->|Update ticket status| D1
     P3 -->|Insert or finish call| D3
 
-    D4 -->|Users, windows, students| P4
+    D4 -->|Users, windows, students, settings| P4
     D1 -->|Tickets, filters| P4
     D3 -->|Served history done only| P4
-    P4 -->|Update users, students| D4
+    P4 -->|Update users, students, walk-in PIN| D4

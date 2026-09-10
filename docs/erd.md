@@ -23,6 +23,7 @@ erDiagram
     WINDOWS ||--o{ QUEUE_CALLS : "calls at"
     QUEUES ||--o{ QUEUE_CALLS : "served as"
     STUDENTS ||--o{ QUEUES : "optional id"
+    USERS ||--o{ QUEUES : "issued_by walk-in"
 
     SERVICES {
         bigint id PK
@@ -60,6 +61,8 @@ erDiagram
         varchar queue_number
         bigint service_id FK
         varchar student_id
+        bigint issued_by
+        varchar issue_reason
         tinyint priority
         enum status
         date queue_date
@@ -70,6 +73,12 @@ erDiagram
         bigint id PK
         varchar student_id UK
         varchar name
+    }
+
+    SETTINGS {
+        bigint id PK
+        varchar setting_key UK
+        varchar setting_value
     }
 
     QUEUE_CALLS {
@@ -91,3 +100,5 @@ erDiagram
 | Queue → Queue calls | Call/recall/complete/hold sessions at a window |
 | Service → Daily counters | Locked daily ticket serial (`C001`, …) |
 | Student → Queues | Optional Student ID on a ticket; name is staff/admin only |
+| User → Queues | Optional `issued_by` for kiosk/admin walk-in tickets |
+| Settings | `walkin_pin` for the kiosk walk-in PIN (admin editable) |

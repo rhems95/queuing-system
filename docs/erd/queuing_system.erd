@@ -1,19 +1,19 @@
 {
     "documentName": "PECIT Queuing System",
-    "lastUpdatedAt": "2026-09-08T10:16:39.926Z",
+    "lastUpdatedAt": "2026-09-10T07:02:29.756Z",
     "tableViewModels": [
         {
             "tableModel": {
-                "tableModelId": "e5890cc1-3562-414d-bc96-6ce252b80939",
+                "tableModelId": "b278d7d6-22a6-49fe-99ff-26e4eeef76ab",
                 "physicalName": "services",
                 "logicalName": "Service",
                 "columnModelIds": [
-                    "c05e76eb-ef71-4722-82bc-b10b7a964f0a",
-                    "27b27c04-1847-40d0-8572-938cbd6fb16c",
-                    "c5ac4251-f0c8-40bf-bb29-e4c9e468fdab",
-                    "98308b28-b56e-4b7f-93f0-58e2ca566dcf",
-                    "7acccd3a-2c9e-49d8-8164-9a6f9489164f",
-                    "eebb9b76-003a-4ddf-a359-7c25ccb16a2c"
+                    "b8e77e31-94f2-45c0-9530-77143bfdc711",
+                    "390e7915-6909-4274-af2e-ca9ca0f60a12",
+                    "cdb0efab-f668-4b2f-ba8c-d3c93bcf0c90",
+                    "3d259edf-1d38-42d8-bf41-630b357cf63e",
+                    "b98c9c55-9b5b-4703-827f-196ebb6fd2ac",
+                    "ee2b4b62-94bc-4f71-972b-294ff9477831"
                 ],
                 "description": "Ticket types (Cashier, Registrar, DMO, Promissory Notes).",
                 "characterSet": "utf8mb4",
@@ -31,21 +31,21 @@
                 "green": 255,
                 "blue": 255
             },
-            "createdAt": "2026-09-08T10:16:37.122Z"
+            "createdAt": "2026-09-10T07:02:22.620Z"
         },
         {
             "tableModel": {
-                "tableModelId": "20958ac1-ef89-460d-b3da-58ed704d464d",
+                "tableModelId": "6900312a-80ef-4c26-ac5b-e16e530a3b76",
                 "physicalName": "windows",
                 "logicalName": "Window",
                 "columnModelIds": [
-                    "8b5963fc-33fa-4a60-bf21-3c0a9f83eac5",
-                    "5b8850df-aa83-430b-9aa2-e3e985557b5b",
-                    "e005f8cc-5b3f-41c1-a6d3-f33923ccd1c0",
-                    "6250f754-18bb-4585-abfc-131bb62bc9f0",
-                    "7074fdf6-d856-4b20-be2e-793f364fc7cc",
-                    "4c518073-346e-4595-b24a-e75c8c5f5358",
-                    "cf1a7d5a-31d2-44a8-a055-b601153cca04"
+                    "dd2db56b-79d8-4f0d-9c1c-246833416747",
+                    "aecf44ba-1df8-4486-8de7-8306ff7ec658",
+                    "faa40605-d5b7-43b1-852f-c055817c8179",
+                    "92d1e79a-d5fb-4cad-a368-cf84114d33cc",
+                    "66d9d62a-ce20-428f-a517-7c42de952453",
+                    "909790e6-c5b1-419b-848d-e442f414e0fc",
+                    "1b55cb64-98f4-4568-bfdb-606bae20034b"
                 ],
                 "description": "Staff counters. Cashier 1–3 share service_id.",
                 "characterSet": "utf8mb4",
@@ -63,24 +63,24 @@
                 "green": 255,
                 "blue": 255
             },
-            "createdAt": "2026-09-08T10:16:37.311Z"
+            "createdAt": "2026-09-10T07:02:22.944Z"
         },
         {
             "tableModel": {
-                "tableModelId": "1d65d9d8-891d-430a-b604-2ae2c9c4ab77",
+                "tableModelId": "47a5e951-b8f5-4176-99c7-3d0c0970510d",
                 "physicalName": "users",
                 "logicalName": "User",
                 "columnModelIds": [
-                    "ab3adeca-26e7-49b5-a832-cf5d554ba1a3",
-                    "96f77d91-8392-400f-b04c-e2e1217e4cca",
-                    "f3f6114e-e20c-46b6-a86c-f51bd7cd42e5",
-                    "9875bfb7-affc-4997-b3d0-33d2e211e267",
-                    "2d783e38-86c2-4633-aa86-6e6a1fe85359",
-                    "275b3bfd-6871-4023-b238-c2221d603dea",
-                    "b82ff827-6d20-4385-be9a-d77a8d5ea1a0",
-                    "61abc548-4750-4cf9-8e8e-96c3b31a9b77"
+                    "1a9ecc8b-8b24-41d0-ad56-eb6817a8b906",
+                    "68905f0b-ebfa-4146-9d57-c5d29f5e4b0b",
+                    "4480572d-73f0-4db0-886d-ab0a3aed70ff",
+                    "5dcde129-6758-4745-9c8f-7c1f371a2ce0",
+                    "d0e75086-f315-4eb8-9300-297377efd9a4",
+                    "beefdef4-7ece-4123-ad30-ab83a175c2aa",
+                    "5db3946f-d08e-4356-9b96-c2a482ebe584",
+                    "5c3e1dca-778c-48a1-9f78-30797aa71ea3"
                 ],
-                "description": "Admin or staff. Staff window_id is unique (one account per counter).",
+                "description": "Admin or staff login; guard is issuer-only (cannot log in). Staff window_id is unique (one account per counter).",
                 "characterSet": "utf8mb4",
                 "collate": "utf8mb4_general_ci"
             },
@@ -96,35 +96,68 @@
                 "green": 255,
                 "blue": 255
             },
-            "createdAt": "2026-09-08T10:16:37.455Z"
+            "createdAt": "2026-09-10T07:02:23.251Z"
         },
         {
             "tableModel": {
-                "tableModelId": "06ed444c-9b01-457f-a4c0-5c0ebd7c4d19",
+                "tableModelId": "c5c9709a-d657-4df2-841e-5cf0c42c289b",
+                "physicalName": "students",
+                "logicalName": "Student",
+                "columnModelIds": [
+                    "8471ebbf-485f-49b6-b17f-28d6c619eff8",
+                    "b1f45fa6-3b68-47ca-89bc-4398304acb89",
+                    "185f2816-3ed1-4532-92f5-f9e3eee972f7",
+                    "8d76c43b-db84-45b4-84e5-bea75d618d05",
+                    "44a2a7c2-81d2-4157-94b5-95e01aa3a7e3"
+                ],
+                "description": "Allowlisted kiosk IDs. Name is staff/admin only; never printed.",
+                "characterSet": "utf8mb4",
+                "collate": "utf8mb4_general_ci"
+            },
+            "top": 280,
+            "left": -480,
+            "headerBackgroundColor": {
+                "red": 15,
+                "green": 118,
+                "blue": 110
+            },
+            "headerForegroundColor": {
+                "red": 255,
+                "green": 255,
+                "blue": 255
+            },
+            "createdAt": "2026-09-10T07:02:23.513Z"
+        },
+        {
+            "tableModel": {
+                "tableModelId": "8482301c-e5cf-4115-9709-5936d54b4669",
                 "physicalName": "queues",
                 "logicalName": "Queue ticket",
                 "columnModelIds": [
-                    "ea9cb5c6-b160-4be7-80ff-406320754499",
-                    "d2091f33-5092-4a36-b8ef-324d6da77811",
-                    "f485959f-2eca-4885-b63d-12857ca7fe9a",
-                    "10db289e-5b70-402e-9466-8c8bfdcf8e49",
-                    "1df1a122-5ff0-4f27-9bae-ba64e22e87e0",
-                    "d6c80602-f08c-4eb0-a0ed-c3d12a779f3d",
-                    "29ca5945-6165-48a1-99d8-48b88bbe840b",
-                    "25963de8-e684-46f5-a6b9-e839ca7ce1a5"
+                    "4165ebbd-1a76-413d-ac7b-3f1e5cc6bd27",
+                    "edf09fba-562d-49f4-a8ac-2087ed471f39",
+                    "e2983cb8-6267-48da-9f5b-363d37a3d24f",
+                    "f020ddd4-9860-4677-90eb-197f4fdb02d5",
+                    "3dbd306a-2fa1-43e7-9e19-30c27ef04752",
+                    "f0ca728e-133a-4599-b0f0-2f1b7922dc3b",
+                    "ca14c8c8-2688-48fb-abeb-a1272da8380c",
+                    "6d3917b5-5b1b-49dc-83f9-367194ee8582",
+                    "dd161481-b510-49a0-8c11-7590ed013ac6",
+                    "86b4390c-6017-4c7d-a17d-f0659bd9a4ac",
+                    "7d1f0316-1b7a-406c-9ada-c0d3c86afa3a"
                 ],
                 "tableIndexModels": [
                     {
-                        "tableIndexModelId": "1cc23224-e6b9-4127-b9a1-a5b2a2ff6cf8",
+                        "tableIndexModelId": "940457b3-3f00-45f2-a413-3fd1abc0f653",
                         "physicalName": "idx_queue_date",
                         "indexColumnModels": [
                             {
-                                "columnModelId": "d6c80602-f08c-4eb0-a0ed-c3d12a779f3d"
+                                "columnModelId": "dd161481-b510-49a0-8c11-7590ed013ac6"
                             }
                         ]
                     }
                 ],
-                "description": "Anonymous tickets. No student name or ID.",
+                "description": "Number-only on print/display. Optional student_id; walk-ins use issued_by / issue_reason. Name is not stored on the ticket.",
                 "characterSet": "utf8mb4",
                 "collate": "utf8mb4_general_ci"
             },
@@ -140,21 +173,21 @@
                 "green": 255,
                 "blue": 255
             },
-            "createdAt": "2026-09-08T10:16:37.602Z"
+            "createdAt": "2026-09-10T07:02:23.823Z"
         },
         {
             "tableModel": {
-                "tableModelId": "3da0ce74-aa78-44ca-bcfc-299d17aa7ae4",
+                "tableModelId": "a34ff2be-579e-4abc-b3f4-7a70297724b4",
                 "physicalName": "queue_calls",
                 "logicalName": "Queue call",
                 "columnModelIds": [
-                    "e98852f4-f978-4e91-85bb-d3acce263a70",
-                    "7f8ea85f-ec0b-4697-a61a-bffe0edb1ddd",
-                    "8c5bab22-be0f-48cc-b2d3-2eedd1afd207",
-                    "c40edaab-9216-4201-a1ed-c894176ee28d",
-                    "4aa660bf-610f-44c0-85dd-7e34435a79fc",
-                    "1e7b7f3f-b6da-494a-bf0a-e9f0b0d2b7fb",
-                    "18ada5a4-9e74-4c9a-9755-f69e9223500f"
+                    "28da3a1a-4240-4416-bcf1-3e77b063b861",
+                    "134f35ed-efcb-4d07-a1ec-3729cde3bdfe",
+                    "b74b4e5f-aea5-4cff-ac1b-5c9be172b1d5",
+                    "a4560150-a679-4afc-8613-6e287cb146c3",
+                    "58cb6887-dcf9-4bc0-8c27-ab89e97abc31",
+                    "b49a1985-9798-42bb-a2f6-4d0782a1fcbc",
+                    "c8b1105b-d6f0-406a-b3d6-28ef2a72c457"
                 ],
                 "description": "Open row while serving (finished_time IS NULL). Recall reuses this record.",
                 "characterSet": "utf8mb4",
@@ -172,20 +205,20 @@
                 "green": 255,
                 "blue": 255
             },
-            "createdAt": "2026-09-08T10:16:37.762Z"
+            "createdAt": "2026-09-10T07:02:24.094Z"
         },
         {
             "tableModel": {
-                "tableModelId": "92f748fa-a79e-4e49-a08f-957b59c3eaab",
+                "tableModelId": "f7e73345-7f65-4e3a-a0d9-5e65b6e0e20f",
                 "physicalName": "daily_queue_counters",
                 "logicalName": "Daily queue counter",
                 "columnModelIds": [
-                    "793d738b-0a0f-4d77-8279-8bddce6a99d1",
-                    "e11b6469-19a9-4296-bb39-325e01577e94",
-                    "df7c0159-ec60-4ca8-9fc7-76445a5efc8c",
-                    "698c61ea-847a-4c8c-a832-fa744bcac3d8",
-                    "7bdbf28c-97d2-48dd-890d-aced68682a40",
-                    "198b7f81-50a3-4f2a-bed7-af4ba9048ea4"
+                    "4e81a1ba-dbe9-4a87-a377-b93a0cfff1a8",
+                    "c4e75a97-b76f-4758-b0d1-433480d182d6",
+                    "4154bde4-b15d-4d67-b01c-eaae35515576",
+                    "0f76033b-07b1-4d5c-b77a-7baff4ad55f6",
+                    "1b8df4c3-029a-4a36-8d41-1a07531bd3c7",
+                    "c0aa0555-81e9-4838-8194-d104f8f1ceb1"
                 ],
                 "description": "Locked increment per service and date for C001, R001, etc.",
                 "characterSet": "utf8mb4",
@@ -203,554 +236,739 @@
                 "green": 255,
                 "blue": 255
             },
-            "createdAt": "2026-09-08T10:16:37.918Z"
+            "createdAt": "2026-09-10T07:02:24.392Z"
+        },
+        {
+            "tableModel": {
+                "tableModelId": "cf4c043a-c68a-4ff5-9ecd-7e787dcc8a5a",
+                "physicalName": "settings",
+                "logicalName": "Setting",
+                "columnModelIds": [
+                    "631a906b-a1d4-44d2-b22d-f213ca7cae4d",
+                    "fd389ea6-d4bc-46c1-8263-2cd606b52a9b",
+                    "8126360d-95f9-4a43-b3d7-91b222f9c211",
+                    "162219d8-4e46-4479-af55-4faa12a75924"
+                ],
+                "description": "Key/value app settings. Seed walkin_pin = 1981; edited under Admin → Kiosk PIN.",
+                "characterSet": "utf8mb4",
+                "collate": "utf8mb4_general_ci"
+            },
+            "top": 280,
+            "left": 320,
+            "headerBackgroundColor": {
+                "red": 71,
+                "green": 85,
+                "blue": 105
+            },
+            "headerForegroundColor": {
+                "red": 255,
+                "green": 255,
+                "blue": 255
+            },
+            "createdAt": "2026-09-10T07:02:24.668Z"
         }
     ],
     "columnGroupModels": [],
     "columnModels": [
         {
-            "columnModelId": "10db289e-5b70-402e-9466-8c8bfdcf8e49",
-            "columnShareModelId": "76ba1404-12f5-4683-b535-5a255ea04352",
+            "columnModelId": "0f76033b-07b1-4d5c-b77a-7baff4ad55f6",
+            "columnShareModelId": "a34d716b-01a0-4b56-b9b3-4b1da5330050",
             "defaultValue": "0"
         },
         {
-            "columnModelId": "18ada5a4-9e74-4c9a-9755-f69e9223500f",
-            "columnShareModelId": "52f30937-1e36-4aba-86fa-dd351b791c98"
+            "columnModelId": "134f35ed-efcb-4d07-a1ec-3729cde3bdfe",
+            "columnShareModelId": "80fa7f35-da36-49ea-9ac4-bdac29814925",
+            "notNull": true
         },
         {
-            "columnModelId": "198b7f81-50a3-4f2a-bed7-af4ba9048ea4",
-            "columnShareModelId": "73348a2b-ac04-4bcb-bf24-71b67e682aae"
+            "columnModelId": "162219d8-4e46-4479-af55-4faa12a75924",
+            "columnShareModelId": "74bfb3c2-910c-4450-9477-8d73a837d41e"
         },
         {
-            "columnModelId": "1df1a122-5ff0-4f27-9bae-ba64e22e87e0",
-            "columnShareModelId": "7d03ea06-5149-44d4-830e-08c5dcb1f6cc",
-            "defaultValue": "'waiting'"
+            "columnModelId": "185f2816-3ed1-4532-92f5-f9e3eee972f7",
+            "columnShareModelId": "e55a7dc6-a149-48d0-a710-af9f8b1a27f0",
+            "notNull": true
         },
         {
-            "columnModelId": "1e7b7f3f-b6da-494a-bf0a-e9f0b0d2b7fb",
-            "columnShareModelId": "55cce09c-6efa-4df1-9edd-a799a8ded456"
+            "columnModelId": "1a9ecc8b-8b24-41d0-ad56-eb6817a8b906",
+            "columnShareModelId": "9e1335ae-04a9-4cae-9f7d-c3b8000888b9",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
         },
         {
-            "columnModelId": "25963de8-e684-46f5-a6b9-e839ca7ce1a5",
-            "columnShareModelId": "d515908c-a083-4701-8eb2-1a4f5356751b"
+            "columnModelId": "1b55cb64-98f4-4568-bfdb-606bae20034b",
+            "columnShareModelId": "5185dfe2-319c-4bca-91b0-d8c8815e0fa8"
         },
         {
-            "columnModelId": "275b3bfd-6871-4023-b238-c2221d603dea",
-            "columnShareModelId": "d969231d-0aef-443c-aadd-aca0d211b1ba",
+            "columnModelId": "1b8df4c3-029a-4a36-8d41-1a07531bd3c7",
+            "columnShareModelId": "2ee57b63-2c91-4c7d-8241-ce3b165f0b08"
+        },
+        {
+            "columnModelId": "28da3a1a-4240-4416-bcf1-3e77b063b861",
+            "columnShareModelId": "46dff7c7-74e0-4dce-aca7-d9be5bc9cee5",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
+        },
+        {
+            "columnModelId": "390e7915-6909-4274-af2e-ca9ca0f60a12",
+            "columnShareModelId": "90c4fd3a-480d-4cb3-bd28-6302fdf0b887",
+            "notNull": true
+        },
+        {
+            "columnModelId": "3d259edf-1d38-42d8-bf41-630b357cf63e",
+            "columnShareModelId": "52e93a05-8776-4ff2-89e2-8c898ba8dfac"
+        },
+        {
+            "columnModelId": "3dbd306a-2fa1-43e7-9e19-30c27ef04752",
+            "columnShareModelId": "0c903c96-8b3e-48dc-8ca1-546df9c40c39"
+        },
+        {
+            "columnModelId": "4154bde4-b15d-4d67-b01c-eaae35515576",
+            "columnShareModelId": "25994a15-8608-4196-b641-7190805c46ee",
+            "notNull": true
+        },
+        {
+            "columnModelId": "4165ebbd-1a76-413d-ac7b-3f1e5cc6bd27",
+            "columnShareModelId": "431102a5-b349-4186-a818-9374a8aed37e",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
+        },
+        {
+            "columnModelId": "4480572d-73f0-4db0-886d-ab0a3aed70ff",
+            "columnShareModelId": "50f07326-bc24-4a48-9705-7bec71063009",
+            "notNull": true,
             "unique": true
         },
         {
-            "columnModelId": "27b27c04-1847-40d0-8572-938cbd6fb16c",
-            "columnShareModelId": "5717438b-be1e-43e6-bd42-6c924a18d430",
+            "columnModelId": "44a2a7c2-81d2-4157-94b5-95e01aa3a7e3",
+            "columnShareModelId": "4f11f2ea-3cfc-44c4-8736-4d6b2d821fe9"
+        },
+        {
+            "columnModelId": "4e81a1ba-dbe9-4a87-a377-b93a0cfff1a8",
+            "columnShareModelId": "93b9c6b2-fb97-4c13-a1cd-ecef67d3e696",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
+        },
+        {
+            "columnModelId": "58cb6887-dcf9-4bc0-8c27-ab89e97abc31",
+            "columnShareModelId": "8fbc045e-c749-43b7-b31a-ef0fede8dd6a"
+        },
+        {
+            "columnModelId": "5c3e1dca-778c-48a1-9f78-30797aa71ea3",
+            "columnShareModelId": "0b935019-2784-453f-84aa-9b71b5b2dc6e"
+        },
+        {
+            "columnModelId": "5db3946f-d08e-4356-9b96-c2a482ebe584",
+            "columnShareModelId": "2cac4012-dbd9-4231-bf07-059c1388a6b3"
+        },
+        {
+            "columnModelId": "5dcde129-6758-4745-9c8f-7c1f371a2ce0",
+            "columnShareModelId": "6864a365-fbda-4ff5-b7dd-e427ffa9dd0b",
             "notNull": true
         },
         {
-            "columnModelId": "29ca5945-6165-48a1-99d8-48b88bbe840b",
-            "columnShareModelId": "4c4c8481-b456-48c4-aa10-2884761db8e4"
+            "columnModelId": "631a906b-a1d4-44d2-b22d-f213ca7cae4d",
+            "columnShareModelId": "945f3632-154f-44a1-8227-183dc56cf0e6",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
         },
         {
-            "columnModelId": "2d783e38-86c2-4633-aa86-6e6a1fe85359",
-            "columnShareModelId": "834ce057-519d-4c93-b39c-366f7a446196",
-            "notNull": true
-        },
-        {
-            "columnModelId": "4aa660bf-610f-44c0-85dd-7e34435a79fc",
-            "columnShareModelId": "cdd30955-50a2-4b13-bcd8-cd3539babb6f"
-        },
-        {
-            "columnModelId": "4c518073-346e-4595-b24a-e75c8c5f5358",
-            "columnShareModelId": "638ff0cf-d26a-4261-9b26-efb2b22313b2"
-        },
-        {
-            "columnModelId": "5b8850df-aa83-430b-9aa2-e3e985557b5b",
-            "columnShareModelId": "f1c5c0d4-c1ea-407c-8283-e5480e00986f",
-            "notNull": true
-        },
-        {
-            "columnModelId": "61abc548-4750-4cf9-8e8e-96c3b31a9b77",
-            "columnShareModelId": "938b98ac-4a72-4775-ad48-87d1bc3e657f"
-        },
-        {
-            "columnModelId": "6250f754-18bb-4585-abfc-131bb62bc9f0",
-            "columnShareModelId": "c11b753c-2720-473a-a3f8-a6ab16ab5a9b",
-            "notNull": true
-        },
-        {
-            "columnModelId": "698c61ea-847a-4c8c-a832-fa744bcac3d8",
-            "columnShareModelId": "bf4636a8-4116-4bf8-8121-5d6f0bff5bcd",
-            "defaultValue": "0"
-        },
-        {
-            "columnModelId": "7074fdf6-d856-4b20-be2e-793f364fc7cc",
-            "columnShareModelId": "b61d9d33-7c9b-404b-b5df-09261e933fae",
+            "columnModelId": "66d9d62a-ce20-428f-a517-7c42de952453",
+            "columnShareModelId": "767b986e-e080-47dd-91fa-f89a92f275c8",
             "defaultValue": "'active'"
         },
         {
-            "columnModelId": "793d738b-0a0f-4d77-8279-8bddce6a99d1",
-            "columnShareModelId": "3187002e-32c8-4a2a-94c0-e6229f7d86fe",
+            "columnModelId": "68905f0b-ebfa-4146-9d57-c5d29f5e4b0b",
+            "columnShareModelId": "4427f1d1-81af-4514-802f-d2033429a86b",
+            "notNull": true
+        },
+        {
+            "columnModelId": "6d3917b5-5b1b-49dc-83f9-367194ee8582",
+            "columnShareModelId": "ef256fbd-3bea-4302-97ea-96a9188146ea",
+            "defaultValue": "'waiting'"
+        },
+        {
+            "columnModelId": "7d1f0316-1b7a-406c-9ada-c0d3c86afa3a",
+            "columnShareModelId": "42977b3f-2f72-44c6-9c59-98bcd2820c6b"
+        },
+        {
+            "columnModelId": "8126360d-95f9-4a43-b3d7-91b222f9c211",
+            "columnShareModelId": "1a660b19-c240-4ff5-936b-f0902d637e93",
+            "notNull": true
+        },
+        {
+            "columnModelId": "8471ebbf-485f-49b6-b17f-28d6c619eff8",
+            "columnShareModelId": "ccf40b18-4646-4d7c-a9cc-cd1425910fe7",
             "primaryKey": true,
             "notNull": true,
             "autoIncrement": true
         },
         {
-            "columnModelId": "7acccd3a-2c9e-49d8-8164-9a6f9489164f",
-            "columnShareModelId": "0b384774-3a70-48e4-9f1f-1841c9c6f6d6"
+            "columnModelId": "86b4390c-6017-4c7d-a17d-f0659bd9a4ac",
+            "columnShareModelId": "389ba5ed-3126-471e-8741-0dfe2803da33"
         },
         {
-            "columnModelId": "7bdbf28c-97d2-48dd-890d-aced68682a40",
-            "columnShareModelId": "686d1fb1-bfe5-4a2c-8f5c-2de139579a40"
+            "columnModelId": "8d76c43b-db84-45b4-84e5-bea75d618d05",
+            "columnShareModelId": "a7ea8c71-7e24-4ad6-9c6f-1cfff0f219cd"
         },
         {
-            "columnModelId": "7f8ea85f-ec0b-4697-a61a-bffe0edb1ddd",
-            "columnShareModelId": "b23a4709-f52c-49b8-8eeb-06b1519a0b98",
+            "columnModelId": "909790e6-c5b1-419b-848d-e442f414e0fc",
+            "columnShareModelId": "933d8c68-0b87-426f-8c53-1ca8de6eaa0f"
+        },
+        {
+            "columnModelId": "92d1e79a-d5fb-4cad-a368-cf84114d33cc",
+            "columnShareModelId": "04c7bd98-4aeb-4024-aadb-258d5a1ed104",
             "notNull": true
         },
         {
-            "columnModelId": "8b5963fc-33fa-4a60-bf21-3c0a9f83eac5",
-            "columnShareModelId": "cd7334cb-2b42-456f-a164-237e47ba73c8",
-            "primaryKey": true,
-            "notNull": true,
-            "autoIncrement": true
+            "columnModelId": "a4560150-a679-4afc-8613-6e287cb146c3",
+            "columnShareModelId": "480d38d2-4e18-49fa-8a85-a15f9d2492f3"
         },
         {
-            "columnModelId": "8c5bab22-be0f-48cc-b2d3-2eedd1afd207",
-            "columnShareModelId": "04ab7524-362b-428a-a3a8-74152f7ac5e7",
+            "columnModelId": "aecf44ba-1df8-4486-8de7-8306ff7ec658",
+            "columnShareModelId": "03578697-d7c3-4f23-88e5-2ab524ee66ee",
             "notNull": true
         },
         {
-            "columnModelId": "96f77d91-8392-400f-b04c-e2e1217e4cca",
-            "columnShareModelId": "0227b75f-d419-4559-8b75-8497a636a20a",
-            "notNull": true
-        },
-        {
-            "columnModelId": "98308b28-b56e-4b7f-93f0-58e2ca566dcf",
-            "columnShareModelId": "1d44f334-75ce-4f19-a969-32480f569eab"
-        },
-        {
-            "columnModelId": "9875bfb7-affc-4997-b3d0-33d2e211e267",
-            "columnShareModelId": "04e3bb4c-a095-4c62-94f8-501190b5b9e8",
-            "notNull": true
-        },
-        {
-            "columnModelId": "ab3adeca-26e7-49b5-a832-cf5d554ba1a3",
-            "columnShareModelId": "21aa05ae-8bde-42a9-9d27-2dce58c4b7a3",
-            "primaryKey": true,
-            "notNull": true,
-            "autoIncrement": true
-        },
-        {
-            "columnModelId": "b82ff827-6d20-4385-be9a-d77a8d5ea1a0",
-            "columnShareModelId": "b1ea8737-3f54-48fc-b9d2-68069b8348c0"
-        },
-        {
-            "columnModelId": "c05e76eb-ef71-4722-82bc-b10b7a964f0a",
-            "columnShareModelId": "505c3c15-d412-405e-b9e1-f4aae0241540",
-            "primaryKey": true,
-            "notNull": true,
-            "autoIncrement": true
-        },
-        {
-            "columnModelId": "c40edaab-9216-4201-a1ed-c894176ee28d",
-            "columnShareModelId": "96965629-fc90-4efe-b965-c7928d62744b"
-        },
-        {
-            "columnModelId": "c5ac4251-f0c8-40bf-bb29-e4c9e468fdab",
-            "columnShareModelId": "e40d5140-8556-41f0-8ce2-50d2cfdf0caa",
-            "notNull": true
-        },
-        {
-            "columnModelId": "cf1a7d5a-31d2-44a8-a055-b601153cca04",
-            "columnShareModelId": "46212a81-2792-41b2-8b55-f4ea31ad0f3d"
-        },
-        {
-            "columnModelId": "d2091f33-5092-4a36-b8ef-324d6da77811",
-            "columnShareModelId": "cc932e65-2bb8-4ce3-8503-b523bf0194c0",
-            "notNull": true
-        },
-        {
-            "columnModelId": "d6c80602-f08c-4eb0-a0ed-c3d12a779f3d",
-            "columnShareModelId": "bb395b04-7f6b-482e-9149-cc3858ca0221",
-            "notNull": true
-        },
-        {
-            "columnModelId": "df7c0159-ec60-4ca8-9fc7-76445a5efc8c",
-            "columnShareModelId": "c8916506-7019-4e63-ae64-6c7187129e96",
-            "notNull": true
-        },
-        {
-            "columnModelId": "e005f8cc-5b3f-41c1-a6d3-f33923ccd1c0",
-            "columnShareModelId": "882bece1-c265-430d-acd5-798d017c54a8"
-        },
-        {
-            "columnModelId": "e11b6469-19a9-4296-bb39-325e01577e94",
-            "columnShareModelId": "233a5a3f-3cd5-46ab-b02c-4e4544384136",
-            "notNull": true
-        },
-        {
-            "columnModelId": "e98852f4-f978-4e91-85bb-d3acce263a70",
-            "columnShareModelId": "6d1c7114-ef4a-488b-adbb-13be30aa55ff",
-            "primaryKey": true,
-            "notNull": true,
-            "autoIncrement": true
-        },
-        {
-            "columnModelId": "ea9cb5c6-b160-4be7-80ff-406320754499",
-            "columnShareModelId": "4773bc85-8321-494f-88c0-456469deed32",
-            "primaryKey": true,
-            "notNull": true,
-            "autoIncrement": true
-        },
-        {
-            "columnModelId": "eebb9b76-003a-4ddf-a359-7c25ccb16a2c",
-            "columnShareModelId": "37854979-4ceb-49a2-977d-e21c75512282"
-        },
-        {
-            "columnModelId": "f3f6114e-e20c-46b6-a86c-f51bd7cd42e5",
-            "columnShareModelId": "50295a81-1da7-4ba0-b55a-421dffb50912",
+            "columnModelId": "b1f45fa6-3b68-47ca-89bc-4398304acb89",
+            "columnShareModelId": "08a3064d-97b1-4015-8dcc-52be5d562ea0",
             "notNull": true,
             "unique": true
         },
         {
-            "columnModelId": "f485959f-2eca-4885-b63d-12857ca7fe9a",
-            "columnShareModelId": "623d128a-efec-4419-a1de-8290d655a6d5",
+            "columnModelId": "b49a1985-9798-42bb-a2f6-4d0782a1fcbc",
+            "columnShareModelId": "412006d6-75f8-4ca1-a886-55fa4f9c7459"
+        },
+        {
+            "columnModelId": "b74b4e5f-aea5-4cff-ac1b-5c9be172b1d5",
+            "columnShareModelId": "68ad1faa-849a-4b75-a344-9bf90ec0de4c",
             "notNull": true
+        },
+        {
+            "columnModelId": "b8e77e31-94f2-45c0-9530-77143bfdc711",
+            "columnShareModelId": "c85ce7d8-f478-4237-ac3a-778a4f3ab3dd",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
+        },
+        {
+            "columnModelId": "b98c9c55-9b5b-4703-827f-196ebb6fd2ac",
+            "columnShareModelId": "63f58f41-4d76-4a3e-a760-0bbfdacc70bb"
+        },
+        {
+            "columnModelId": "beefdef4-7ece-4123-ad30-ab83a175c2aa",
+            "columnShareModelId": "ce69d950-f26a-4d7c-ac43-9ec621f22dd4",
+            "unique": true
+        },
+        {
+            "columnModelId": "c0aa0555-81e9-4838-8194-d104f8f1ceb1",
+            "columnShareModelId": "7c5aa158-c388-4ead-b03e-14627d111630"
+        },
+        {
+            "columnModelId": "c4e75a97-b76f-4758-b0d1-433480d182d6",
+            "columnShareModelId": "ea2aacdf-3921-4c3f-8150-4c5eb42def36",
+            "notNull": true
+        },
+        {
+            "columnModelId": "c8b1105b-d6f0-406a-b3d6-28ef2a72c457",
+            "columnShareModelId": "e6ca957f-7ed2-4b54-a2e4-1fae02d14622"
+        },
+        {
+            "columnModelId": "ca14c8c8-2688-48fb-abeb-a1272da8380c",
+            "columnShareModelId": "b8652850-35c9-4d9e-8bbd-7e1a2413ce8f",
+            "defaultValue": "0"
+        },
+        {
+            "columnModelId": "cdb0efab-f668-4b2f-ba8c-d3c93bcf0c90",
+            "columnShareModelId": "53d6aec7-2edf-4a6c-ac70-c5d762b346c9",
+            "notNull": true
+        },
+        {
+            "columnModelId": "d0e75086-f315-4eb8-9300-297377efd9a4",
+            "columnShareModelId": "ca3ebe1b-ec88-44f4-832a-4339ae3177d4",
+            "notNull": true
+        },
+        {
+            "columnModelId": "dd161481-b510-49a0-8c11-7590ed013ac6",
+            "columnShareModelId": "a9c73c81-92dd-460b-a464-ad4da575abce",
+            "notNull": true
+        },
+        {
+            "columnModelId": "dd2db56b-79d8-4f0d-9c1c-246833416747",
+            "columnShareModelId": "8706a164-dcef-44fd-881a-32e584872555",
+            "primaryKey": true,
+            "notNull": true,
+            "autoIncrement": true
+        },
+        {
+            "columnModelId": "e2983cb8-6267-48da-9f5b-363d37a3d24f",
+            "columnShareModelId": "6aa56910-da28-48a6-9f25-49d5a09e9ac9",
+            "notNull": true
+        },
+        {
+            "columnModelId": "edf09fba-562d-49f4-a8ac-2087ed471f39",
+            "columnShareModelId": "6dc2960c-c41c-40c9-a8bf-701d2a750861",
+            "notNull": true
+        },
+        {
+            "columnModelId": "ee2b4b62-94bc-4f71-972b-294ff9477831",
+            "columnShareModelId": "ae59e96d-01e1-46c5-97f5-bb92ef5156bf"
+        },
+        {
+            "columnModelId": "f020ddd4-9860-4677-90eb-197f4fdb02d5",
+            "columnShareModelId": "5b04b7a1-2a9c-4bf4-ab1e-b7d37ea7349b"
+        },
+        {
+            "columnModelId": "f0ca728e-133a-4599-b0f0-2f1b7922dc3b",
+            "columnShareModelId": "a8d26949-15a1-46d7-badd-6e37ee35f5b6"
+        },
+        {
+            "columnModelId": "faa40605-d5b7-43b1-852f-c055817c8179",
+            "columnShareModelId": "d8abe91f-2390-47dd-b810-6aa01c94e47e"
+        },
+        {
+            "columnModelId": "fd389ea6-d4bc-46c1-8263-2cd606b52a9b",
+            "columnShareModelId": "fd045566-2a9d-4fec-a715-c99b1ca38e58",
+            "notNull": true,
+            "unique": true
         }
     ],
     "columnShareModels": [
         {
-            "columnShareModelId": "96965629-fc90-4efe-b965-c7928d62744b",
+            "columnShareModelId": "480d38d2-4e18-49fa-8a85-a15f9d2492f3",
             "physicalName": "called_time",
             "logicalName": "Called time",
             "columnTypeId": 112,
-            "createdAt": "2026-09-08T10:16:37.761Z"
+            "createdAt": "2026-09-10T07:02:24.093Z"
         },
         {
-            "columnShareModelId": "0b384774-3a70-48e4-9f1f-1841c9c6f6d6",
+            "columnShareModelId": "2cac4012-dbd9-4231-bf07-059c1388a6b3",
             "physicalName": "created_at",
             "logicalName": "Created at",
             "columnTypeId": 115,
-            "createdAt": "2026-09-08T10:16:37.121Z"
+            "createdAt": "2026-09-10T07:02:23.251Z"
         },
         {
-            "columnShareModelId": "4c4c8481-b456-48c4-aa10-2884761db8e4",
+            "columnShareModelId": "2ee57b63-2c91-4c7d-8241-ce3b165f0b08",
+            "physicalName": "created_at",
+            "logicalName": "Created at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-10T07:02:24.392Z"
+        },
+        {
+            "columnShareModelId": "389ba5ed-3126-471e-8741-0dfe2803da33",
             "physicalName": "created_at",
             "logicalName": "Created at",
             "columnTypeId": 115,
             "description": "Used for average wait time",
-            "createdAt": "2026-09-08T10:16:37.601Z"
+            "createdAt": "2026-09-10T07:02:23.822Z"
         },
         {
-            "columnShareModelId": "55cce09c-6efa-4df1-9edd-a799a8ded456",
+            "columnShareModelId": "412006d6-75f8-4ca1-a886-55fa4f9c7459",
             "physicalName": "created_at",
             "logicalName": "Created at",
             "columnTypeId": 115,
-            "createdAt": "2026-09-08T10:16:37.761Z"
+            "createdAt": "2026-09-10T07:02:24.094Z"
         },
         {
-            "columnShareModelId": "638ff0cf-d26a-4261-9b26-efb2b22313b2",
+            "columnShareModelId": "63f58f41-4d76-4a3e-a760-0bbfdacc70bb",
             "physicalName": "created_at",
             "logicalName": "Created at",
             "columnTypeId": 115,
-            "createdAt": "2026-09-08T10:16:37.311Z"
+            "createdAt": "2026-09-10T07:02:22.620Z"
         },
         {
-            "columnShareModelId": "686d1fb1-bfe5-4a2c-8f5c-2de139579a40",
+            "columnShareModelId": "933d8c68-0b87-426f-8c53-1ca8de6eaa0f",
             "physicalName": "created_at",
             "logicalName": "Created at",
             "columnTypeId": 115,
-            "createdAt": "2026-09-08T10:16:37.918Z"
+            "createdAt": "2026-09-10T07:02:22.944Z"
         },
         {
-            "columnShareModelId": "b1ea8737-3f54-48fc-b9d2-68069b8348c0",
+            "columnShareModelId": "a7ea8c71-7e24-4ad6-9c6f-1cfff0f219cd",
             "physicalName": "created_at",
             "logicalName": "Created at",
             "columnTypeId": 115,
-            "createdAt": "2026-09-08T10:16:37.454Z"
+            "createdAt": "2026-09-10T07:02:23.512Z"
         },
         {
-            "columnShareModelId": "1d44f334-75ce-4f19-a969-32480f569eab",
+            "columnShareModelId": "52e93a05-8776-4ff2-89e2-8c898ba8dfac",
             "physicalName": "description",
             "logicalName": "Description",
             "columnTypeId": 322,
-            "createdAt": "2026-09-08T10:16:37.121Z"
+            "createdAt": "2026-09-10T07:02:22.620Z"
         },
         {
-            "columnShareModelId": "50295a81-1da7-4ba0-b55a-421dffb50912",
+            "columnShareModelId": "50f07326-bc24-4a48-9705-7bec71063009",
             "physicalName": "email",
             "logicalName": "Email",
             "columnTypeId": 312,
             "precision": "100",
-            "createdAt": "2026-09-08T10:16:37.454Z"
+            "createdAt": "2026-09-10T07:02:23.250Z"
         },
         {
-            "columnShareModelId": "cdd30955-50a2-4b13-bcd8-cd3539babb6f",
+            "columnShareModelId": "8fbc045e-c749-43b7-b31a-ef0fede8dd6a",
             "physicalName": "finished_time",
             "logicalName": "Finished time",
             "columnTypeId": 112,
-            "createdAt": "2026-09-08T10:16:37.761Z"
+            "createdAt": "2026-09-10T07:02:24.093Z"
         },
         {
-            "columnShareModelId": "882bece1-c265-430d-acd5-798d017c54a8",
+            "columnShareModelId": "d8abe91f-2390-47dd-b810-6aa01c94e47e",
             "physicalName": "group_name",
             "logicalName": "Display group",
             "columnTypeId": 312,
             "precision": "50",
-            "createdAt": "2026-09-08T10:16:37.311Z"
+            "createdAt": "2026-09-10T07:02:22.944Z"
         },
         {
-            "columnShareModelId": "21aa05ae-8bde-42a9-9d27-2dce58c4b7a3",
+            "columnShareModelId": "431102a5-b349-4186-a818-9374a8aed37e",
             "physicalName": "id",
             "logicalName": "ID",
             "columnTypeId": 17,
             "unsigned": true,
-            "createdAt": "2026-09-08T10:16:37.454Z"
+            "createdAt": "2026-09-10T07:02:23.822Z"
         },
         {
-            "columnShareModelId": "3187002e-32c8-4a2a-94c0-e6229f7d86fe",
+            "columnShareModelId": "46dff7c7-74e0-4dce-aca7-d9be5bc9cee5",
             "physicalName": "id",
             "logicalName": "ID",
             "columnTypeId": 17,
             "unsigned": true,
-            "createdAt": "2026-09-08T10:16:37.918Z"
+            "createdAt": "2026-09-10T07:02:24.093Z"
         },
         {
-            "columnShareModelId": "4773bc85-8321-494f-88c0-456469deed32",
+            "columnShareModelId": "8706a164-dcef-44fd-881a-32e584872555",
             "physicalName": "id",
             "logicalName": "ID",
             "columnTypeId": 17,
             "unsigned": true,
-            "createdAt": "2026-09-08T10:16:37.601Z"
+            "createdAt": "2026-09-10T07:02:22.943Z"
         },
         {
-            "columnShareModelId": "505c3c15-d412-405e-b9e1-f4aae0241540",
+            "columnShareModelId": "93b9c6b2-fb97-4c13-a1cd-ecef67d3e696",
             "physicalName": "id",
             "logicalName": "ID",
             "columnTypeId": 17,
             "unsigned": true,
-            "createdAt": "2026-09-08T10:16:37.121Z"
+            "createdAt": "2026-09-10T07:02:24.392Z"
         },
         {
-            "columnShareModelId": "6d1c7114-ef4a-488b-adbb-13be30aa55ff",
+            "columnShareModelId": "945f3632-154f-44a1-8227-183dc56cf0e6",
             "physicalName": "id",
             "logicalName": "ID",
             "columnTypeId": 17,
             "unsigned": true,
-            "createdAt": "2026-09-08T10:16:37.761Z"
+            "createdAt": "2026-09-10T07:02:24.668Z"
         },
         {
-            "columnShareModelId": "cd7334cb-2b42-456f-a164-237e47ba73c8",
+            "columnShareModelId": "9e1335ae-04a9-4cae-9f7d-c3b8000888b9",
             "physicalName": "id",
             "logicalName": "ID",
             "columnTypeId": 17,
             "unsigned": true,
-            "createdAt": "2026-09-08T10:16:37.311Z"
+            "createdAt": "2026-09-10T07:02:23.250Z"
         },
         {
-            "columnShareModelId": "bf4636a8-4116-4bf8-8121-5d6f0bff5bcd",
+            "columnShareModelId": "c85ce7d8-f478-4237-ac3a-778a4f3ab3dd",
+            "physicalName": "id",
+            "logicalName": "ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-10T07:02:22.619Z"
+        },
+        {
+            "columnShareModelId": "ccf40b18-4646-4d7c-a9cc-cd1425910fe7",
+            "physicalName": "id",
+            "logicalName": "ID",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "createdAt": "2026-09-10T07:02:23.512Z"
+        },
+        {
+            "columnShareModelId": "a8d26949-15a1-46d7-badd-6e37ee35f5b6",
+            "physicalName": "issue_reason",
+            "logicalName": "Issue reason",
+            "columnTypeId": 312,
+            "precision": "32",
+            "description": "Walk-in reason; null for student tickets",
+            "createdAt": "2026-09-10T07:02:23.822Z"
+        },
+        {
+            "columnShareModelId": "0c903c96-8b3e-48dc-8ca1-546df9c40c39",
+            "physicalName": "issued_by",
+            "logicalName": "Issued by",
+            "columnTypeId": 17,
+            "unsigned": true,
+            "description": "Kiosk/admin walk-in issuer user id",
+            "createdAt": "2026-09-10T07:02:23.822Z"
+        },
+        {
+            "columnShareModelId": "a34d716b-01a0-4b56-b9b3-4b1da5330050",
             "physicalName": "last_number",
             "logicalName": "Last number",
             "columnTypeId": 15,
-            "createdAt": "2026-09-08T10:16:37.918Z"
+            "createdAt": "2026-09-10T07:02:24.392Z"
         },
         {
-            "columnShareModelId": "0227b75f-d419-4559-8b75-8497a636a20a",
+            "columnShareModelId": "4427f1d1-81af-4514-802f-d2033429a86b",
             "physicalName": "name",
             "logicalName": "Name",
             "columnTypeId": 312,
             "precision": "100",
-            "createdAt": "2026-09-08T10:16:37.454Z"
+            "createdAt": "2026-09-10T07:02:23.250Z"
         },
         {
-            "columnShareModelId": "04e3bb4c-a095-4c62-94f8-501190b5b9e8",
+            "columnShareModelId": "e55a7dc6-a149-48d0-a710-af9f8b1a27f0",
+            "physicalName": "name",
+            "logicalName": "Name",
+            "columnTypeId": 312,
+            "precision": "150",
+            "createdAt": "2026-09-10T07:02:23.512Z"
+        },
+        {
+            "columnShareModelId": "6864a365-fbda-4ff5-b7dd-e427ffa9dd0b",
             "physicalName": "password",
             "logicalName": "Password",
             "columnTypeId": 312,
             "precision": "255",
-            "createdAt": "2026-09-08T10:16:37.454Z"
+            "createdAt": "2026-09-10T07:02:23.250Z"
         },
         {
-            "columnShareModelId": "e40d5140-8556-41f0-8ce2-50d2cfdf0caa",
+            "columnShareModelId": "53d6aec7-2edf-4a6c-ac70-c5d762b346c9",
             "physicalName": "prefix",
             "logicalName": "Prefix",
             "columnTypeId": 312,
             "precision": "5",
             "description": "Ticket code letter, e.g. C",
-            "createdAt": "2026-09-08T10:16:37.121Z"
+            "createdAt": "2026-09-10T07:02:22.620Z"
         },
         {
-            "columnShareModelId": "76ba1404-12f5-4683-b535-5a255ea04352",
+            "columnShareModelId": "b8652850-35c9-4d9e-8bbd-7e1a2413ce8f",
             "physicalName": "priority",
             "logicalName": "Priority",
             "columnTypeId": 10,
             "description": "0 = regular, 1 = priority",
-            "createdAt": "2026-09-08T10:16:37.601Z"
+            "createdAt": "2026-09-10T07:02:23.822Z"
         },
         {
-            "columnShareModelId": "bb395b04-7f6b-482e-9149-cc3858ca0221",
+            "columnShareModelId": "25994a15-8608-4196-b641-7190805c46ee",
             "physicalName": "queue_date",
             "logicalName": "Queue date",
             "columnTypeId": 101,
-            "createdAt": "2026-09-08T10:16:37.601Z"
+            "createdAt": "2026-09-10T07:02:24.392Z"
         },
         {
-            "columnShareModelId": "c8916506-7019-4e63-ae64-6c7187129e96",
+            "columnShareModelId": "a9c73c81-92dd-460b-a464-ad4da575abce",
             "physicalName": "queue_date",
             "logicalName": "Queue date",
             "columnTypeId": 101,
-            "createdAt": "2026-09-08T10:16:37.918Z"
+            "createdAt": "2026-09-10T07:02:23.822Z"
         },
         {
-            "columnShareModelId": "b23a4709-f52c-49b8-8eeb-06b1519a0b98",
+            "columnShareModelId": "80fa7f35-da36-49ea-9ac4-bdac29814925",
             "physicalName": "queue_id",
             "logicalName": "Queue ID",
             "columnTypeId": 17,
             "unsigned": true,
-            "createdAt": "2026-09-08T10:16:37.761Z"
+            "createdAt": "2026-09-10T07:02:24.093Z"
         },
         {
-            "columnShareModelId": "cc932e65-2bb8-4ce3-8503-b523bf0194c0",
+            "columnShareModelId": "6dc2960c-c41c-40c9-a8bf-701d2a750861",
             "physicalName": "queue_number",
             "logicalName": "Queue number",
             "columnTypeId": 312,
             "precision": "20",
-            "createdAt": "2026-09-08T10:16:37.601Z"
+            "createdAt": "2026-09-10T07:02:23.822Z"
         },
         {
-            "columnShareModelId": "834ce057-519d-4c93-b39c-366f7a446196",
+            "columnShareModelId": "ca3ebe1b-ec88-44f4-832a-4339ae3177d4",
             "physicalName": "role",
             "logicalName": "Role",
             "columnTypeId": 2101,
-            "optionExpression": "('admin','staff')",
-            "createdAt": "2026-09-08T10:16:37.454Z"
+            "optionExpression": "('admin','staff','guard')",
+            "createdAt": "2026-09-10T07:02:23.250Z"
         },
         {
-            "columnShareModelId": "233a5a3f-3cd5-46ab-b02c-4e4544384136",
+            "columnShareModelId": "04c7bd98-4aeb-4024-aadb-258d5a1ed104",
             "physicalName": "service_id",
             "logicalName": "Service ID",
             "columnTypeId": 17,
             "unsigned": true,
-            "createdAt": "2026-09-08T10:16:37.918Z"
+            "createdAt": "2026-09-10T07:02:22.944Z"
         },
         {
-            "columnShareModelId": "623d128a-efec-4419-a1de-8290d655a6d5",
+            "columnShareModelId": "6aa56910-da28-48a6-9f25-49d5a09e9ac9",
             "physicalName": "service_id",
             "logicalName": "Service ID",
             "columnTypeId": 17,
             "unsigned": true,
-            "createdAt": "2026-09-08T10:16:37.601Z"
+            "createdAt": "2026-09-10T07:02:23.822Z"
         },
         {
-            "columnShareModelId": "c11b753c-2720-473a-a3f8-a6ab16ab5a9b",
+            "columnShareModelId": "ea2aacdf-3921-4c3f-8150-4c5eb42def36",
             "physicalName": "service_id",
             "logicalName": "Service ID",
             "columnTypeId": 17,
             "unsigned": true,
-            "createdAt": "2026-09-08T10:16:37.311Z"
+            "createdAt": "2026-09-10T07:02:24.392Z"
         },
         {
-            "columnShareModelId": "5717438b-be1e-43e6-bd42-6c924a18d430",
+            "columnShareModelId": "90c4fd3a-480d-4cb3-bd28-6302fdf0b887",
             "physicalName": "service_name",
             "logicalName": "Name",
             "columnTypeId": 312,
             "precision": "50",
-            "createdAt": "2026-09-08T10:16:37.121Z"
+            "createdAt": "2026-09-10T07:02:22.620Z"
         },
         {
-            "columnShareModelId": "7d03ea06-5149-44d4-830e-08c5dcb1f6cc",
-            "physicalName": "status",
-            "logicalName": "Status",
-            "columnTypeId": 2101,
-            "optionExpression": "('waiting','serving','done','cancelled')",
-            "createdAt": "2026-09-08T10:16:37.601Z"
+            "columnShareModelId": "fd045566-2a9d-4fec-a715-c99b1ca38e58",
+            "physicalName": "setting_key",
+            "logicalName": "Key",
+            "columnTypeId": 312,
+            "precision": "64",
+            "createdAt": "2026-09-10T07:02:24.668Z"
         },
         {
-            "columnShareModelId": "b61d9d33-7c9b-404b-b5df-09261e933fae",
+            "columnShareModelId": "1a660b19-c240-4ff5-936b-f0902d637e93",
+            "physicalName": "setting_value",
+            "logicalName": "Value",
+            "columnTypeId": 312,
+            "precision": "255",
+            "createdAt": "2026-09-10T07:02:24.668Z"
+        },
+        {
+            "columnShareModelId": "767b986e-e080-47dd-91fa-f89a92f275c8",
             "physicalName": "status",
             "logicalName": "Status",
             "columnTypeId": 2101,
             "optionExpression": "('active','inactive')",
-            "createdAt": "2026-09-08T10:16:37.311Z"
+            "createdAt": "2026-09-10T07:02:22.944Z"
         },
         {
-            "columnShareModelId": "37854979-4ceb-49a2-977d-e21c75512282",
+            "columnShareModelId": "ef256fbd-3bea-4302-97ea-96a9188146ea",
+            "physicalName": "status",
+            "logicalName": "Status",
+            "columnTypeId": 2101,
+            "optionExpression": "('waiting','serving','done','cancelled','held')",
+            "createdAt": "2026-09-10T07:02:23.822Z"
+        },
+        {
+            "columnShareModelId": "08a3064d-97b1-4015-8dcc-52be5d562ea0",
+            "physicalName": "student_id",
+            "logicalName": "Student ID",
+            "columnTypeId": 312,
+            "precision": "32",
+            "createdAt": "2026-09-10T07:02:23.512Z"
+        },
+        {
+            "columnShareModelId": "5b04b7a1-2a9c-4bf4-ab1e-b7d37ea7349b",
+            "physicalName": "student_id",
+            "logicalName": "Student ID",
+            "columnTypeId": 312,
+            "precision": "32",
+            "description": "Allowlisted ID; name lives on students",
+            "createdAt": "2026-09-10T07:02:23.822Z"
+        },
+        {
+            "columnShareModelId": "0b935019-2784-453f-84aa-9b71b5b2dc6e",
             "physicalName": "updated_at",
             "logicalName": "Updated at",
             "columnTypeId": 115,
-            "createdAt": "2026-09-08T10:16:37.121Z"
+            "createdAt": "2026-09-10T07:02:23.251Z"
         },
         {
-            "columnShareModelId": "46212a81-2792-41b2-8b55-f4ea31ad0f3d",
+            "columnShareModelId": "42977b3f-2f72-44c6-9c59-98bcd2820c6b",
             "physicalName": "updated_at",
             "logicalName": "Updated at",
             "columnTypeId": 115,
-            "createdAt": "2026-09-08T10:16:37.311Z"
+            "createdAt": "2026-09-10T07:02:23.822Z"
         },
         {
-            "columnShareModelId": "52f30937-1e36-4aba-86fa-dd351b791c98",
+            "columnShareModelId": "4f11f2ea-3cfc-44c4-8736-4d6b2d821fe9",
             "physicalName": "updated_at",
             "logicalName": "Updated at",
             "columnTypeId": 115,
-            "createdAt": "2026-09-08T10:16:37.761Z"
+            "createdAt": "2026-09-10T07:02:23.512Z"
         },
         {
-            "columnShareModelId": "73348a2b-ac04-4bcb-bf24-71b67e682aae",
+            "columnShareModelId": "5185dfe2-319c-4bca-91b0-d8c8815e0fa8",
             "physicalName": "updated_at",
             "logicalName": "Updated at",
             "columnTypeId": 115,
-            "createdAt": "2026-09-08T10:16:37.918Z"
+            "createdAt": "2026-09-10T07:02:22.944Z"
         },
         {
-            "columnShareModelId": "938b98ac-4a72-4775-ad48-87d1bc3e657f",
+            "columnShareModelId": "74bfb3c2-910c-4450-9477-8d73a837d41e",
             "physicalName": "updated_at",
             "logicalName": "Updated at",
             "columnTypeId": 115,
-            "createdAt": "2026-09-08T10:16:37.454Z"
+            "createdAt": "2026-09-10T07:02:24.668Z"
         },
         {
-            "columnShareModelId": "d515908c-a083-4701-8eb2-1a4f5356751b",
+            "columnShareModelId": "7c5aa158-c388-4ead-b03e-14627d111630",
             "physicalName": "updated_at",
             "logicalName": "Updated at",
             "columnTypeId": 115,
-            "createdAt": "2026-09-08T10:16:37.601Z"
+            "createdAt": "2026-09-10T07:02:24.392Z"
         },
         {
-            "columnShareModelId": "04ab7524-362b-428a-a3a8-74152f7ac5e7",
+            "columnShareModelId": "ae59e96d-01e1-46c5-97f5-bb92ef5156bf",
+            "physicalName": "updated_at",
+            "logicalName": "Updated at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-10T07:02:22.620Z"
+        },
+        {
+            "columnShareModelId": "e6ca957f-7ed2-4b54-a2e4-1fae02d14622",
+            "physicalName": "updated_at",
+            "logicalName": "Updated at",
+            "columnTypeId": 115,
+            "createdAt": "2026-09-10T07:02:24.094Z"
+        },
+        {
+            "columnShareModelId": "68ad1faa-849a-4b75-a344-9bf90ec0de4c",
             "physicalName": "window_id",
             "logicalName": "Window ID",
             "columnTypeId": 17,
             "unsigned": true,
-            "createdAt": "2026-09-08T10:16:37.761Z"
+            "createdAt": "2026-09-10T07:02:24.093Z"
         },
         {
-            "columnShareModelId": "d969231d-0aef-443c-aadd-aca0d211b1ba",
+            "columnShareModelId": "ce69d950-f26a-4d7c-ac43-9ec621f22dd4",
             "physicalName": "window_id",
             "logicalName": "Window ID",
             "columnTypeId": 17,
             "unsigned": true,
-            "createdAt": "2026-09-08T10:16:37.454Z"
+            "createdAt": "2026-09-10T07:02:23.251Z"
         },
         {
-            "columnShareModelId": "f1c5c0d4-c1ea-407c-8283-e5480e00986f",
+            "columnShareModelId": "03578697-d7c3-4f23-88e5-2ab524ee66ee",
             "physicalName": "window_name",
             "logicalName": "Name",
             "columnTypeId": 312,
             "precision": "50",
-            "createdAt": "2026-09-08T10:16:37.311Z"
+            "createdAt": "2026-09-10T07:02:22.944Z"
         }
     ],
     "relationViewModels": [
         {
             "relationModel": {
-                "relationModelId": "0640dc2a-abdd-486d-b704-eb082b8ec7c2",
+                "relationModelId": "384c3733-dab3-4ae4-964b-8b986ffb7511",
                 "relationName": "services_daily_queue_counters",
-                "parentTableModelId": "e5890cc1-3562-414d-bc96-6ce252b80939",
+                "parentTableModelId": "b278d7d6-22a6-49fe-99ff-26e4eeef76ab",
                 "parentCardinality": "1",
-                "childTableModelId": "92f748fa-a79e-4e49-a08f-957b59c3eaab",
+                "childTableModelId": "f7e73345-7f65-4e3a-a0d9-5e65b6e0e20f",
                 "childCardinality": "0..N",
                 "relationPairs": [
                     {
-                        "parentColumnModelId": "c05e76eb-ef71-4722-82bc-b10b7a964f0a",
-                        "childColumnModelId": "e11b6469-19a9-4296-bb39-325e01577e94"
+                        "parentColumnModelId": "b8e77e31-94f2-45c0-9530-77143bfdc711",
+                        "childColumnModelId": "c4e75a97-b76f-4758-b0d1-433480d182d6"
                     }
                 ],
                 "onUpdateAction": "RESTRICT",
@@ -786,20 +1004,118 @@
                     "fontSize": 10
                 }
             },
-            "createdAt": "2026-09-08T10:16:39.159Z"
+            "createdAt": "2026-09-10T07:02:27.695Z"
         },
         {
             "relationModel": {
-                "relationModelId": "1bf9c5fb-435e-47d2-9801-ed4ab307073c",
-                "relationName": "windows_queue_calls",
-                "parentTableModelId": "20958ac1-ef89-460d-b3da-58ed704d464d",
+                "relationModelId": "3f637536-206a-4ca2-b4a2-58818e619c59",
+                "relationName": "students_queues",
+                "parentTableModelId": "c5c9709a-d657-4df2-841e-5cf0c42c289b",
                 "parentCardinality": "1",
-                "childTableModelId": "3da0ce74-aa78-44ca-bcfc-299d17aa7ae4",
+                "childTableModelId": "8482301c-e5cf-4115-9709-5936d54b4669",
                 "childCardinality": "0..N",
                 "relationPairs": [
                     {
-                        "parentColumnModelId": "8b5963fc-33fa-4a60-bf21-3c0a9f83eac5",
-                        "childColumnModelId": "8c5bab22-be0f-48cc-b2d3-2eedd1afd207"
+                        "parentColumnModelId": "b1f45fa6-3b68-47ca-89bc-4398304acb89",
+                        "childColumnModelId": "f020ddd4-9860-4677-90eb-197f4fdb02d5"
+                    }
+                ],
+                "onUpdateAction": "RESTRICT",
+                "onDeleteAction": "RESTRICT"
+            },
+            "lineViewModel": {
+                "strokeWidth": 1,
+                "edges": [],
+                "orthogonalLines": [],
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "labelViewModel": {
+                "label": "students_queues",
+                "position": {
+                    "segment": -1,
+                    "fraction": 0,
+                    "offsetX": 0,
+                    "offsetY": 0
+                },
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "style": {
+                    "bold": false,
+                    "italic": false,
+                    "strikethrough": false,
+                    "fontSize": 10
+                }
+            },
+            "createdAt": "2026-09-10T07:02:28.870Z"
+        },
+        {
+            "relationModel": {
+                "relationModelId": "74d41e94-0480-4fb0-b2eb-1103e2728673",
+                "relationName": "users_queues",
+                "parentTableModelId": "47a5e951-b8f5-4176-99c7-3d0c0970510d",
+                "parentCardinality": "1",
+                "childTableModelId": "8482301c-e5cf-4115-9709-5936d54b4669",
+                "childCardinality": "0..N",
+                "relationPairs": [
+                    {
+                        "parentColumnModelId": "1a9ecc8b-8b24-41d0-ad56-eb6817a8b906",
+                        "childColumnModelId": "3dbd306a-2fa1-43e7-9e19-30c27ef04752"
+                    }
+                ],
+                "onUpdateAction": "RESTRICT",
+                "onDeleteAction": "RESTRICT"
+            },
+            "lineViewModel": {
+                "strokeWidth": 1,
+                "edges": [],
+                "orthogonalLines": [],
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "labelViewModel": {
+                "label": "users_queues",
+                "position": {
+                    "segment": -1,
+                    "fraction": 0,
+                    "offsetX": 0,
+                    "offsetY": 0
+                },
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "style": {
+                    "bold": false,
+                    "italic": false,
+                    "strikethrough": false,
+                    "fontSize": 10
+                }
+            },
+            "createdAt": "2026-09-10T07:02:29.171Z"
+        },
+        {
+            "relationModel": {
+                "relationModelId": "a23187ae-a14d-431c-b652-d14d7160e282",
+                "relationName": "windows_queue_calls",
+                "parentTableModelId": "6900312a-80ef-4c26-ac5b-e16e530a3b76",
+                "parentCardinality": "1",
+                "childTableModelId": "a34ff2be-579e-4abc-b3f4-7a70297724b4",
+                "childCardinality": "0..N",
+                "relationPairs": [
+                    {
+                        "parentColumnModelId": "dd2db56b-79d8-4f0d-9c1c-246833416747",
+                        "childColumnModelId": "b74b4e5f-aea5-4cff-ac1b-5c9be172b1d5"
                     }
                 ],
                 "onUpdateAction": "RESTRICT",
@@ -835,118 +1151,20 @@
                     "fontSize": 10
                 }
             },
-            "createdAt": "2026-09-08T10:16:39.460Z"
+            "createdAt": "2026-09-10T07:02:28.311Z"
         },
         {
             "relationModel": {
-                "relationModelId": "67b66ee3-46c1-4138-803d-d1242ca70c99",
-                "relationName": "services_windows",
-                "parentTableModelId": "e5890cc1-3562-414d-bc96-6ce252b80939",
-                "parentCardinality": "1",
-                "childTableModelId": "20958ac1-ef89-460d-b3da-58ed704d464d",
-                "childCardinality": "0..N",
-                "relationPairs": [
-                    {
-                        "parentColumnModelId": "c05e76eb-ef71-4722-82bc-b10b7a964f0a",
-                        "childColumnModelId": "6250f754-18bb-4585-abfc-131bb62bc9f0"
-                    }
-                ],
-                "onUpdateAction": "RESTRICT",
-                "onDeleteAction": "RESTRICT"
-            },
-            "lineViewModel": {
-                "strokeWidth": 1,
-                "edges": [],
-                "orthogonalLines": [],
-                "color": {
-                    "red": 0,
-                    "green": 0,
-                    "blue": 0
-                }
-            },
-            "labelViewModel": {
-                "label": "services_windows",
-                "position": {
-                    "segment": -1,
-                    "fraction": 0,
-                    "offsetX": 0,
-                    "offsetY": 0
-                },
-                "color": {
-                    "red": 0,
-                    "green": 0,
-                    "blue": 0
-                },
-                "style": {
-                    "bold": false,
-                    "italic": false,
-                    "strikethrough": false,
-                    "fontSize": 10
-                }
-            },
-            "createdAt": "2026-09-08T10:16:38.858Z"
-        },
-        {
-            "relationModel": {
-                "relationModelId": "a9599b7c-8b62-49b5-a943-daf6dcd38f4b",
-                "relationName": "windows_users",
-                "parentTableModelId": "20958ac1-ef89-460d-b3da-58ed704d464d",
-                "parentCardinality": "1",
-                "childTableModelId": "1d65d9d8-891d-430a-b604-2ae2c9c4ab77",
-                "childCardinality": "0..1",
-                "relationPairs": [
-                    {
-                        "parentColumnModelId": "8b5963fc-33fa-4a60-bf21-3c0a9f83eac5",
-                        "childColumnModelId": "275b3bfd-6871-4023-b238-c2221d603dea"
-                    }
-                ],
-                "onUpdateAction": "RESTRICT",
-                "onDeleteAction": "RESTRICT"
-            },
-            "lineViewModel": {
-                "strokeWidth": 1,
-                "edges": [],
-                "orthogonalLines": [],
-                "color": {
-                    "red": 0,
-                    "green": 0,
-                    "blue": 0
-                }
-            },
-            "labelViewModel": {
-                "label": "windows_users",
-                "position": {
-                    "segment": -1,
-                    "fraction": 0,
-                    "offsetX": 0,
-                    "offsetY": 0
-                },
-                "color": {
-                    "red": 0,
-                    "green": 0,
-                    "blue": 0
-                },
-                "style": {
-                    "bold": false,
-                    "italic": false,
-                    "strikethrough": false,
-                    "fontSize": 10
-                }
-            },
-            "createdAt": "2026-09-08T10:16:39.312Z"
-        },
-        {
-            "relationModel": {
-                "relationModelId": "aa65c306-528e-4c12-a485-602059d384c0",
+                "relationModelId": "c240966e-8851-42eb-8830-c2ef4d16d1a4",
                 "relationName": "queues_queue_calls",
-                "parentTableModelId": "06ed444c-9b01-457f-a4c0-5c0ebd7c4d19",
+                "parentTableModelId": "8482301c-e5cf-4115-9709-5936d54b4669",
                 "parentCardinality": "1",
-                "childTableModelId": "3da0ce74-aa78-44ca-bcfc-299d17aa7ae4",
+                "childTableModelId": "a34ff2be-579e-4abc-b3f4-7a70297724b4",
                 "childCardinality": "0..N",
                 "relationPairs": [
                     {
-                        "parentColumnModelId": "ea9cb5c6-b160-4be7-80ff-406320754499",
-                        "childColumnModelId": "7f8ea85f-ec0b-4697-a61a-bffe0edb1ddd"
+                        "parentColumnModelId": "4165ebbd-1a76-413d-ac7b-3f1e5cc6bd27",
+                        "childColumnModelId": "134f35ed-efcb-4d07-a1ec-3729cde3bdfe"
                     }
                 ],
                 "onUpdateAction": "RESTRICT",
@@ -982,20 +1200,69 @@
                     "fontSize": 10
                 }
             },
-            "createdAt": "2026-09-08T10:16:39.609Z"
+            "createdAt": "2026-09-10T07:02:28.583Z"
         },
         {
             "relationModel": {
-                "relationModelId": "eec1b12a-19fe-4c45-9683-bb3a39f48102",
-                "relationName": "services_queues",
-                "parentTableModelId": "e5890cc1-3562-414d-bc96-6ce252b80939",
+                "relationModelId": "d9eb2ca7-6b04-40c5-b1ea-ca54c4ef29a6",
+                "relationName": "services_windows",
+                "parentTableModelId": "b278d7d6-22a6-49fe-99ff-26e4eeef76ab",
                 "parentCardinality": "1",
-                "childTableModelId": "06ed444c-9b01-457f-a4c0-5c0ebd7c4d19",
+                "childTableModelId": "6900312a-80ef-4c26-ac5b-e16e530a3b76",
                 "childCardinality": "0..N",
                 "relationPairs": [
                     {
-                        "parentColumnModelId": "c05e76eb-ef71-4722-82bc-b10b7a964f0a",
-                        "childColumnModelId": "f485959f-2eca-4885-b63d-12857ca7fe9a"
+                        "parentColumnModelId": "b8e77e31-94f2-45c0-9530-77143bfdc711",
+                        "childColumnModelId": "92d1e79a-d5fb-4cad-a368-cf84114d33cc"
+                    }
+                ],
+                "onUpdateAction": "RESTRICT",
+                "onDeleteAction": "RESTRICT"
+            },
+            "lineViewModel": {
+                "strokeWidth": 1,
+                "edges": [],
+                "orthogonalLines": [],
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "labelViewModel": {
+                "label": "services_windows",
+                "position": {
+                    "segment": -1,
+                    "fraction": 0,
+                    "offsetX": 0,
+                    "offsetY": 0
+                },
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "style": {
+                    "bold": false,
+                    "italic": false,
+                    "strikethrough": false,
+                    "fontSize": 10
+                }
+            },
+            "createdAt": "2026-09-10T07:02:27.095Z"
+        },
+        {
+            "relationModel": {
+                "relationModelId": "dc130d83-27d7-43fd-b649-f64621ebb7db",
+                "relationName": "services_queues",
+                "parentTableModelId": "b278d7d6-22a6-49fe-99ff-26e4eeef76ab",
+                "parentCardinality": "1",
+                "childTableModelId": "8482301c-e5cf-4115-9709-5936d54b4669",
+                "childCardinality": "0..N",
+                "relationPairs": [
+                    {
+                        "parentColumnModelId": "b8e77e31-94f2-45c0-9530-77143bfdc711",
+                        "childColumnModelId": "e2983cb8-6267-48da-9f5b-363d37a3d24f"
                     }
                 ],
                 "onUpdateAction": "RESTRICT",
@@ -1031,18 +1298,67 @@
                     "fontSize": 10
                 }
             },
-            "createdAt": "2026-09-08T10:16:39.003Z"
+            "createdAt": "2026-09-10T07:02:27.392Z"
+        },
+        {
+            "relationModel": {
+                "relationModelId": "ff2f806c-3ddc-47ea-8cab-68fbf9ddf17a",
+                "relationName": "windows_users",
+                "parentTableModelId": "6900312a-80ef-4c26-ac5b-e16e530a3b76",
+                "parentCardinality": "1",
+                "childTableModelId": "47a5e951-b8f5-4176-99c7-3d0c0970510d",
+                "childCardinality": "0..1",
+                "relationPairs": [
+                    {
+                        "parentColumnModelId": "dd2db56b-79d8-4f0d-9c1c-246833416747",
+                        "childColumnModelId": "beefdef4-7ece-4123-ad30-ab83a175c2aa"
+                    }
+                ],
+                "onUpdateAction": "RESTRICT",
+                "onDeleteAction": "RESTRICT"
+            },
+            "lineViewModel": {
+                "strokeWidth": 1,
+                "edges": [],
+                "orthogonalLines": [],
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                }
+            },
+            "labelViewModel": {
+                "label": "windows_users",
+                "position": {
+                    "segment": -1,
+                    "fraction": 0,
+                    "offsetX": 0,
+                    "offsetY": 0
+                },
+                "color": {
+                    "red": 0,
+                    "green": 0,
+                    "blue": 0
+                },
+                "style": {
+                    "bold": false,
+                    "italic": false,
+                    "strikethrough": false,
+                    "fontSize": 10
+                }
+            },
+            "createdAt": "2026-09-10T07:02:27.988Z"
         }
     ],
     "foregroundMemos": [
         {
-            "memoId": "538e2c13-a0ca-47cb-81ff-b88db187be8f",
-            "memo": "Anonymous kiosk: queues has no student name/ID.\nWait = created_at → called_time.\nService = called_time → finished_time.",
+            "memoId": "92a90333-8d8b-4ba8-97b1-febf995ca3b6",
+            "memo": "Kiosk confirm collects Student ID; print and display stay number-only.\nWalk-in: kiosk PIN in settings.walkin_pin (no Guard login). Hold is not done.\nWait = created_at → called_time. Service = called_time → finished_time (done only).",
             "rectangleViewModel": {
                 "positionX": -480,
                 "positionY": 420,
                 "width": 420,
-                "height": 120
+                "height": 140
             },
             "backgroundColor": {
                 "red": 255,
@@ -1057,7 +1373,7 @@
             "verticalAlign": "center",
             "horizontalAlign": "center",
             "fontSize": 9,
-            "createdAt": "2026-09-08T10:16:39.926Z"
+            "createdAt": "2026-09-10T07:02:29.756Z"
         }
     ],
     "backgroundMemos": [],

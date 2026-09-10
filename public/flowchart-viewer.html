@@ -20,12 +20,14 @@
 
     <section id="s0">
         <h2>0. Master system overview (compact — print on bond paper)</h2>
-        <p class="hint" style="margin-top:-0.5rem;">Student ID on confirm; print/display stay number-only. Print <strong>Landscape</strong> or <strong>Fit to page</strong> for Letter/A4. Mermaid is loaded from local <code>vendor/mermaid/</code> (offline-safe).</p>
+        <p class="hint" style="margin-top:-0.5rem;">Student ID on confirm, or walk-in PIN; print/display stay number-only. Print <strong>Landscape</strong> or <strong>Fit to page</strong> for Letter/A4. Mermaid is loaded from local <code>vendor/mermaid/</code> (offline-safe).</p>
         <div class="mermaid">
 %%{init: {'flowchart': {'nodeSpacing': 28, 'rankSpacing': 36, 'padding': 6, 'useMaxWidth': true}, 'themeVariables': { 'fontSize': '11px'}}}%%
 flowchart TD
     St([Start]) --> K["Kiosk: service → Regular/Priority → confirm ID + ETA"]
+    St --> W["Walk-in: kiosk corner PIN from settings"]
     K --> DB[("DB: new queue + daily counter")]
+    W --> DB
     DB --> PA["Customer: ticket #, print, countdown, then wait"]
     DB --> PB["TV: now serving + waiting 2P→1R + voice"]
     PA --> SW["Staff: next / recall / complete / hold + timer"]
@@ -46,10 +48,11 @@ flowchart TD
 flowchart TB
     subgraph Public["Public — no login"]
         K["/kiosk — KioskController"]
+        KW["/kiosk/walk-in — PIN unlock + issue"]
         D["/display — DisplayController"]
     end
     subgraph AuthLogin["Login /logout"]
-        LG["/login — LoginController"]
+        LG["/login — LoginController<br/>admin/staff only; guard blocked"]
         LO["POST /logout"]
     end
     subgraph Staff["Staff — auth + staff middleware"]
@@ -58,14 +61,21 @@ flowchart TB
     subgraph Admin["Admin — auth + admin middleware"]
         AD["/admin — AdminDashboardController"]
         UM["/admin/users — UserManagementController"]
+        STU["/admin/students — StudentManagementController"]
+        SET["/admin/settings — SettingsController"]
+        GI["/guard — GuardIssueController"]
         HI["/admin/history* — HistoryController"]
     end
     DB[(MySQL)]
     K --> DB
+    KW --> DB
     D --> DB
     SW --> DB
     AD --> DB
     UM --> DB
+    STU --> DB
+    SET --> DB
+    GI --> DB
     HI --> DB
     LG --> DB
         </div>
@@ -75,19 +85,27 @@ flowchart TB
         <h2>2. Kiosk — ticket issuance</h2>
         <div class="mermaid">
 flowchart TD
-    Start([Visitor: /kiosk]) --> S1["Step 1: Select service<br/>services excluding Promissory in KioskController@index"]
+    Start([Visitor: /kiosk]) --> Path{Ticket type}
+    Path -->|Student| S1["Step 1: Select service<br/>services excluding Promissory in KioskController@index"]
     S1 --> S2["Step 2: Regular or Priority<br/>hidden input priority"]
     S2 --> S3["Step 3: Confirm — Student ID keypad + ETA"]
     S3 --> POST["POST /kiosk — KioskController@store"]
     POST --> V{"Validate service_id, priority, student_id"}
     V -->|Fail| E["Show validation errors on step 3"]
     V -->|OK| Txn["DB transaction"]
-    subgraph Trn["Transaction"]
+    subgraph Trn["Transaction — student ticket"]
         T0["Lock student; reject unknown / already queued"]
         T1["Lock/update daily_queue_counters<br/>per service + today"]
         T2["Insert queues row<br/>student_id, priority 0|1, status waiting"]
     end
-    Txn --> Print["View kiosk.printing<br/>issuedAt, priorityLabel"]
+    Path -->|Walk-in| PinBtn["Tiny corner button → PIN pad"]
+    PinBtn --> Unlock["POST /kiosk/walk-in/unlock<br/>KioskWalkInGate vs settings.walkin_pin"]
+    Unlock -->|Wrong PIN| PinFail["Reject; lockout after repeated fails"]
+    Unlock -->|OK| Overlay["Walk-in overlay: service, priority, reason<br/>no Student ID"]
+    Overlay --> WPOST["POST /kiosk/walk-in"]
+    WPOST --> WTxn["Insert queues: student_id null,<br/>issued_by, issue_reason"]
+    Txn --> Print
+    WTxn --> Print["View kiosk.printing<br/>issuedAt, priorityLabel, number only"]
     Print --> AP["window.print + countdown"]
     AP --> Home([Back to /kiosk])
         </div>
@@ -254,12 +272,23 @@ flowchart TD
         U2["unique window: one staff per window"]
         U3["admin → window_id null"]
         U4["password hashed"]
+        U5["guard role cannot log in; issuer row only"]
     end
 
     subgraph Students["/admin/students — StudentManagementController"]
         S1["Add / delete allowlisted Student IDs"]
         S2["CSV import student_id,name"]
         S3["Cannot delete if open ticket today"]
+    end
+
+    subgraph Settings["GET/PUT /admin/settings — SettingsController"]
+        P1["Edit walkin_pin in settings table"]
+        P2["4–6 digits; not stored in .env"]
+    end
+
+    subgraph WalkInAdmin["GET/POST /guard — GuardIssueController"]
+        G1["Admin-only walk-in issue"]
+        G2["Same TicketIssuer as kiosk PIN path"]
     end
 
     subgraph History["HistoryController — admin only"]
@@ -272,8 +301,8 @@ flowchart TD
     subgraph AdminFlow["Typical flow"]
         A1["Login /login as admin"]
         A2["Dashboard overview"]
-        A3["Manage users, windows, students"]
-        A4["Audit history / tickets / reports"]
+        A3["Manage users, students, kiosk PIN"]
+        A4["Audit history / tickets / reports; optional /guard issue"]
     end
     A1 --> A2 --> A3 --> A4
         </div>
@@ -289,6 +318,8 @@ flowchart LR
         SV[services]
         WIN[windows]
         US[users]
+        STU[students]
+        SET[settings]
     end
     HI["admin/history"] --> QC
     HI --> Q
@@ -297,6 +328,8 @@ flowchart LR
     HI --> US
     TK["admin/history/tickets"] --> Q
     TK --> SV
+    STUL["admin/students"] --> STU
+    PIN["admin/settings"] --> SET
     RP["admin/history/reports"] --> QC
     RP --> Q
     RP --> SV
@@ -307,7 +340,7 @@ flowchart LR
         <h2>6. Queue lifecycle</h2>
         <div class="mermaid">
 stateDiagram-v2
-    [*] --> waiting: Kiosk creates ticket
+    [*] --> waiting: Kiosk or walk-in creates ticket
     waiting --> serving: Staff Call Next
     serving --> done: Staff Complete<br/>or Call Next auto-completes previous
     serving --> held: Staff Hold
@@ -322,7 +355,7 @@ stateDiagram-v2
         <div class="mermaid">
 flowchart LR
     subgraph Writes["Writes"]
-        K["kiosk.store"] --> Q[(queues)]
+        K["kiosk.store / kiosk.walkInStore"] --> Q[(queues)]
         K --> D[(daily_queue_counters)]
         CN["call-next"] --> Q
         CN --> QC[(queue_calls)]
@@ -347,6 +380,7 @@ flowchart TD
     Auth --> R1{"role?"}
     R1 -->|admin| ADM["prefix /admin/*"]
     R1 -->|staff| STF["prefix /window/*"]
+    R1 -->|guard| BLOCK["No login — use kiosk PIN"]
     R1 -->|wrong| DENY["Redirect /login"]
     LO["POST /logout"] --> OUT["Session cleared"]
         </div>
@@ -382,7 +416,7 @@ flowchart TB
         D4[("D4 Master data")]
     end
 
-    EC -->|Service, priority, Student ID| P1
+    EC -->|Service, priority, Student ID or walk-in PIN| P1
     P1 -->|Queue number, ETA| EC
 
     ED -->|Poll /display, /display/data| P2
@@ -391,10 +425,10 @@ flowchart TB
     ES -->|Call next, recall, complete, hold| P3
     P3 -->|Current ticket, name, timer| ES
 
-    EA -->|Users, students, reports| P4
+    EA -->|Users, students, kiosk PIN, reports| P4
     P4 -->|Screens, CSV result| EA
 
-    D4 -->|Valid services + student allowlist| P1
+    D4 -->|Valid services + student allowlist + walk-in PIN| P1
     P1 -->|New ticket row| D1
     P1 -->|Increment serial| D2
 
@@ -408,10 +442,10 @@ flowchart TB
     P3 -->|Update ticket status| D1
     P3 -->|Insert or finish call| D3
 
-    D4 -->|Users, windows, students| P4
+    D4 -->|Users, windows, students, settings| P4
     D1 -->|Tickets, filters| P4
     D3 -->|Served history done only| P4
-    P4 -->|Update users, students| D4
+    P4 -->|Update users, students, walk-in PIN| D4
         </div>
     </section>
 

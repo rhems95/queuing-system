@@ -18,7 +18,7 @@
         "id": "ticket-issue",
         "label": "Ticket issue",
         "focus": ["services", "daily_counters", "queues", "students"],
-        "note": "Kiosk locks the daily serial, then inserts a queues row with student_id."
+        "note": "Kiosk locks the daily serial, then inserts a queues row (student_id, or issued_by for walk-in)."
       },
       {
         "id": "serve-ticket",
@@ -38,13 +38,14 @@
     { "id": "services", "type": "database", "label": "services", "sublabel": "id PK · prefix", "pos": [48, 240], "size": [160, 68], "tag": "1:N hub" },
     { "id": "windows", "type": "database", "label": "windows", "sublabel": "service_id FK", "pos": [300, 80], "size": [160, 68] },
     { "id": "users", "type": "database", "label": "users", "sublabel": "window_id FK unique", "pos": [560, 80], "size": [170, 68] },
-    { "id": "queues", "type": "database", "label": "queues", "sublabel": "service_id · student_id", "pos": [300, 240], "size": [170, 68] },
+    { "id": "queues", "type": "database", "label": "queues", "sublabel": "student_id · issued_by", "pos": [300, 240], "size": [170, 68] },
     { "id": "queue_calls", "type": "database", "label": "queue_calls", "sublabel": "queue_id · window_id", "pos": [560, 240], "size": [170, 68] },
     { "id": "daily_counters", "type": "database", "label": "daily_queue_counters", "sublabel": "service_id + date", "pos": [300, 400], "size": [190, 68] },
-    { "id": "students", "type": "database", "label": "students", "sublabel": "student_id UK · name", "pos": [790, 400], "size": [160, 68] }
+    { "id": "students", "type": "database", "label": "students", "sublabel": "student_id UK · name", "pos": [790, 400], "size": [160, 68] },
+    { "id": "settings", "type": "database", "label": "settings", "sublabel": "walkin_pin", "pos": [790, 80], "size": [160, 68] }
   ],
   "boundaries": [
-    { "kind": "region", "label": "queuing_system", "wraps": ["services", "windows", "users", "queues", "queue_calls", "daily_counters", "students"] }
+    { "kind": "region", "label": "queuing_system", "wraps": ["services", "windows", "users", "queues", "queue_calls", "daily_counters", "students", "settings"] }
   ],
   "connections": [
     { "id": "services-to-queues", "from": "services", "to": "queues", "label": "1:N tickets", "variant": "emphasis" },
@@ -59,7 +60,7 @@
     {
       "dot": "cyan",
       "title": "Ticket identity",
-      "items": ["queues.student_id is optional; name lives on students and is never printed"]
+      "items": ["student_id is optional; walk-ins use issued_by. Name is never printed. PIN lives in settings.walkin_pin"]
     },
     {
       "dot": "emerald",

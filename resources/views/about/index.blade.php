@@ -104,9 +104,9 @@
         }
         .about-hero .desc {
             margin: 0;
-            max-width: 48rem;
-            line-height: 1.5;
-            font-size: 0.95rem;
+            max-width: 52rem;
+            line-height: 1.65;
+            font-size: 0.98rem;
             color: rgba(255, 255, 255, 0.92);
         }
         .about-section-title {
