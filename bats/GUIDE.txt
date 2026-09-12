@@ -78,13 +78,22 @@ start-display-edge.bat
   When to use: On the display PC/TV computer.
 
 start-staff-float.bat
-  Purpose: Small always-on-top staff control window (Chrome app mode).
-  What it does: Runs tools\staff-float\Start-StaffFloat.ps1 with Chrome (~260x270, TopMost).
-  When to use: Staff desk; also launched from staff panel "Open System Float".
+  Purpose: Small always-on-top staff control window (Chrome app mode, no address bar).
+  What it does: Starts tools\staff-float\Start-StaffFloat.ps1 hidden and closes the command prompt.
+  URL: reads bats\staff-float-url.txt (example http://192.168.2.100/queue-system/public/window/float).
+       Fallback is http://localhost/queue-system/public/window/float (kiosk/server only).
+  When to use: Each staff PC that has this project folder. Also used by Open System Float
+               after install-staff-float-protocol.bat.
 
 start-staff-float-edge.bat
   Purpose: Same staff float window, but uses Microsoft Edge.
   When to use: Prefer Edge instead of Chrome for the float panel.
+  URL: same staff-float-url.txt as start-staff-float.bat.
+
+install-staff-float-protocol.bat
+  Purpose: One-time per staff PC. Registers pecit-float: so the dashboard button can
+           start THIS computer's start-staff-float.bat (not the server's).
+  When to use: Once on every staff PC (including other LAN PCs). No admin required.
 
 
 RELATED HELPERS (not in this folder)
@@ -103,6 +112,7 @@ COMMON SETTINGS TO EDIT
 -----------------------
 Inside the .bat files you may change:
   KIOSK_URL / DISPLAY_URL   if your XAMPP path or virtual host differs
+  staff-float-url.txt       staff float page (LAN IP on other PCs, e.g. 192.168.2.100)
   PRINTER_EXACT / PRINTER_MATCH   default Exact=XP-58(XP-Q90EC), Match=XP-Q90EC
   XAMPP_DIR                 default C:\xampp
   START_DISPLAY=1           in start-pecit-on-windows.bat to also open display
@@ -115,8 +125,9 @@ TROUBLESHOOTING
 - Silent print still asks for a printer: close ALL Chrome/Edge windows, run the kiosk .bat only.
 - Printer error in Chrome: run start-kiosk-chrome.bat (it clears sticky printer settings).
 - Site not loading: start Apache/MySQL in XAMPP, or run start-pecit-on-windows.bat.
-- Float button in staff UI fails: confirm bats\start-staff-float.bat exists; Apache must run
-  as the logged-in Windows desktop user.
+- Float button: Open System Float runs THIS PC's bats\start-staff-float.bat. On each staff PC run
+  install-staff-float-protocol.bat once. Other PCs: put the server LAN URL in staff-float-url.txt
+  (not localhost). You can also double-click start-staff-float.bat.
 - Backup times out: start MySQL first (XAMPP or start-pecit-on-windows.bat), then re-run
   backup-mysql-on-startup.bat. Check C:\xampp\mysql\backups\pecit-mysql-backup.log.
 

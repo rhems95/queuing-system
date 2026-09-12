@@ -39,6 +39,21 @@ class TicketIssuer
     }
 
     /**
+     * Compact staff-only label, e.g. "Walk-in (New enrollee)".
+     */
+    public static function walkInServingLabel(?string $reason): string
+    {
+        $short = match ($reason) {
+            self::REASON_NEW_ENROLLEE => 'New enrollee',
+            self::REASON_NO_RECORD => 'No record',
+            self::REASON_OTHER => 'Other',
+            default => self::reasonLabel($reason),
+        };
+
+        return $short ? 'Walk-in ('.$short.')' : 'Walk-in';
+    }
+
+    /**
      * Next waiting ticket for a service today. Caller should hold any
      * student-row lock before calling when issuing a student ticket.
      */

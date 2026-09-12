@@ -5,7 +5,16 @@
 @section('content')
     <div class="kiosk-shell max-w-6xl mx-auto">
         <div class="text-center kiosk-title-block">
-            <h1 class="kiosk-title font-extrabold tracking-wide text-blue-950">KIOSK QUEUE TICKET SYSTEM</h1>
+            <div class="kiosk-brand-row">
+                <img
+                    src="{{ asset('logo/logo.png') }}"
+                    alt="PECIT Logo"
+                    class="kiosk-brand-logo"
+                    width="40"
+                    height="40"
+                >
+                <h1 class="kiosk-title font-extrabold tracking-wide text-blue-950">KIOSK QUEUE TICKET SYSTEM</h1>
+            </div>
             <p id="stepIndicator" class="kiosk-step-indicator text-gray-600 tracking-widest">STEP 1 OF 3 - SELECT SERVICE</p>
         </div>
 
@@ -257,10 +266,9 @@
             var studentOk = false;
             var lookupTimer = null;
             var lookupSeq = 0;
-            var walkinUnlocked = @json($walkInUnlocked);
             var walkinPinLength = {{ (int) $walkInPinLength }};
             var walkinUnlockUrl = @json(route('kiosk.walkin.unlock'));
-            var walkinStatusUrl = @json(route('kiosk.walkin.status'));
+            var walkinLockUrl = @json(route('kiosk.walkin.lock'));
             var walkinCsrf = kioskForm ? (kioskForm.querySelector('input[name="_token"]') || {}).value : '';
             var walkinPinOverlay = document.getElementById('walkinPinOverlay');
             var walkinIssueOverlay = document.getElementById('walkinIssueOverlay');
@@ -308,11 +316,25 @@
                 setOverlay(walkinIssueOverlay, true);
             }
 
+            function lockWalkinSession() {
+                fetch(walkinLockUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': walkinCsrf,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ _token: walkinCsrf })
+                }).catch(function () {});
+            }
+
             function closeWalkinOverlays() {
                 setOverlay(walkinPinOverlay, false);
                 setOverlay(walkinIssueOverlay, false);
                 walkinPinValue = '';
                 renderWalkinPin();
+                lockWalkinSession();
             }
 
             function submitWalkinPin() {
@@ -339,7 +361,6 @@
                 }).then(function (result) {
                     walkinBusy = false;
                     if (result.data && result.data.ok) {
-                        walkinUnlocked = true;
                         openWalkinIssue();
                         return;
                     }
@@ -375,10 +396,6 @@
             var walkinCornerBtn = document.getElementById('walkinCornerBtn');
             if (walkinCornerBtn) {
                 walkinCornerBtn.addEventListener('click', function () {
-                    if (walkinUnlocked) {
-                        openWalkinIssue();
-                        return;
-                    }
                     openWalkinPin();
                 });
             }
@@ -432,17 +449,8 @@
                     closeWalkinOverlays();
                 }
             });
-            if (walkinStatusUrl) {
-                fetch(walkinStatusUrl, { headers: { 'Accept': 'application/json' } })
-                    .then(function (res) { return res.json(); })
-                    .then(function (data) {
-                        if (data && data.unlocked) walkinUnlocked = true;
-                    })
-                    .catch(function () {});
-            }
             renderWalkinPin();
             if (openWalkInIssue) {
-                walkinUnlocked = true;
                 openWalkinIssue();
             }
 
@@ -712,9 +720,24 @@
         .kiosk-shell {
             padding-top: 4px;
         }
+        .kiosk-brand-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .kiosk-brand-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: 50%;
+            background: #fff;
+            flex-shrink: 0;
+        }
         .kiosk-title {
             font-size: 1.75rem;
             line-height: 1.15;
+            margin: 0;
         }
         .kiosk-step-indicator {
             font-size: 0.7rem;
@@ -725,6 +748,10 @@
         }
         .kiosk-form {
             padding-top: 14px;
+        }
+        .kiosk-shell.is-step3 .kiosk-brand-logo {
+            width: 32px;
+            height: 32px;
         }
         .kiosk-shell.is-step3 .kiosk-title {
             font-size: 1.35rem;
@@ -1235,6 +1262,7 @@
         }
 
         @media (max-height: 650px) {
+            .kiosk-brand-logo { width: 36px; height: 36px; }
             .kiosk-title { font-size: 1.45rem; }
             .service-card { min-height: 180px; padding: 10px 10px 8px; }
             .service-icon { width: 46px; height: 46px; font-size: 22px; }
@@ -1253,6 +1281,7 @@
             .step3-id-input { font-size: 20px; }
             .step3-key { min-height: 32px; font-size: 16px; }
             .step3-body { padding: 6px 10px 8px; }
+            .kiosk-shell.is-step3 .kiosk-brand-logo { width: 28px; height: 28px; }
             .kiosk-shell.is-step3 .kiosk-title { font-size: 1.2rem; }
         }
 
@@ -1306,54 +1335,54 @@
         }
         .kiosk-walkin-card {
             width: 100%;
-            max-width: 280px;
+            max-width: 340px;
             background: #fff;
             border: 1px solid #d9dee7;
             border-radius: 16px;
             box-shadow: 0 16px 32px rgba(15, 23, 42, 0.22);
-            padding: 14px 14px 12px;
+            padding: 18px 18px 14px;
             text-align: center;
         }
         .kiosk-walkin-card-issue {
-            max-width: 340px;
+            max-width: 440px;
             text-align: left;
         }
         .kiosk-walkin-title {
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 800;
             color: #1e3a8a;
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             text-align: center;
         }
         .kiosk-walkin-dots {
-            font-size: 22px;
+            font-size: 26px;
             letter-spacing: 0.35em;
             color: #1e40af;
             font-weight: 800;
-            margin: 4px 0 6px;
+            margin: 4px 0 8px;
         }
         .kiosk-walkin-msg {
             min-height: 1.2em;
-            font-size: 13px;
+            font-size: 15px;
             font-weight: 600;
             color: #475569;
-            margin: 0 0 8px;
+            margin: 0 0 10px;
             text-align: center;
         }
         .kiosk-walkin-msg.is-error { color: #b91c1c; }
         .kiosk-walkin-pad {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 6px;
-            margin-bottom: 8px;
+            gap: 8px;
+            margin-bottom: 10px;
         }
         .kiosk-walkin-key {
-            min-height: 42px;
-            border-radius: 10px;
+            min-height: 52px;
+            border-radius: 12px;
             border: 1px solid #93c5fd;
             background: linear-gradient(180deg, #ffffff, #e8f1ff);
             color: #1e3a8a;
-            font-size: 18px;
+            font-size: 22px;
             font-weight: 800;
         }
         .kiosk-walkin-key.is-action {
@@ -1366,32 +1395,34 @@
         }
         .kiosk-walkin-label {
             display: block;
-            font-size: 12px;
+            font-size: 14px;
             font-weight: 700;
             color: #475569;
-            margin: 8px 0 4px;
+            margin: 10px 0 6px;
         }
         .kiosk-walkin-select {
             width: 100%;
             border: 1px solid #93c5fd;
-            border-radius: 8px;
+            border-radius: 10px;
             background: #eff6ff;
             color: #1e3a8a;
-            font-size: 15px;
+            font-size: 18px;
             font-weight: 700;
-            padding: 8px 10px;
+            padding: 12px 14px;
+            min-height: 52px;
         }
         .kiosk-walkin-priority {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 8px;
+            gap: 10px;
         }
         .kiosk-walkin-choice {
-            min-height: 40px;
-            border-radius: 10px;
+            min-height: 52px;
+            border-radius: 12px;
             border: 2px solid #cbd5e1;
             background: #fff;
             color: #0f172a;
+            font-size: 18px;
             font-weight: 800;
         }
         .kiosk-walkin-choice.is-on {
@@ -1401,16 +1432,16 @@
         }
         .kiosk-walkin-actions {
             display: flex;
-            gap: 8px;
-            margin-top: 12px;
+            gap: 10px;
+            margin-top: 16px;
         }
         .kiosk-walkin-cancel,
         .kiosk-walkin-submit {
             flex: 1;
-            min-height: 42px;
-            border-radius: 10px;
+            min-height: 52px;
+            border-radius: 12px;
             font-weight: 800;
-            font-size: 15px;
+            font-size: 17px;
         }
         .kiosk-walkin-cancel {
             background: #e2e8f0;
@@ -1423,8 +1454,12 @@
             color: #fff;
         }
         @media (max-height: 650px) {
-            .kiosk-walkin-key { min-height: 34px; font-size: 16px; }
-            .kiosk-walkin-card { padding: 10px; }
+            .kiosk-walkin-key { min-height: 42px; font-size: 18px; }
+            .kiosk-walkin-select,
+            .kiosk-walkin-choice,
+            .kiosk-walkin-cancel,
+            .kiosk-walkin-submit { min-height: 44px; font-size: 16px; }
+            .kiosk-walkin-card { padding: 12px; }
         }
     </style>
 @endsection

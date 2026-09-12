@@ -42,8 +42,8 @@ Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done onl
 - Thermal ticket may add **one** compact line when ETA is available: `Estimated Time: N minutes` (omit when history is insufficient).
 - Print sizing (current baseline): title/lines ~13px, number ~34px, footer ~12px — change only when asked.
 - Promissory Notes **hidden** from kiosk service list (filter in `KioskController@index`); may still exist for staff/display.
-- **Do not redesign/restyle/restructure** kiosk Blade/CSS/JS unless the user explicitly asks (print sizing / ETA line / confirm Student ID keypad / tiny walk-in PIN corner button are allowed exceptions when requested).
-- Tiny bottom-right hit target opens a PIN pad. PIN is stored in `settings.walkin_pin` (Admin → Kiosk PIN), not `.env`. Correct PIN shows a walk-in issue overlay (no Student ID). PIN is checked on the server only; unlock lasts a few minutes. Print still number-only; countdown returns to the kiosk. This is not a student multi-ticket ID.
+- **Do not redesign/restyle/restructure** kiosk Blade/CSS/JS unless the user explicitly asks (print sizing / ETA line / confirm Student ID keypad / tiny walk-in PIN corner button / small PECIT seal in the title row are allowed exceptions when requested).
+- Tiny bottom-right hit target always opens a PIN pad (every click). PIN is stored in `settings.walkin_pin` (Admin → Kiosk PIN), not `.env`. Correct PIN shows a walk-in issue overlay (no Student ID). PIN is checked on the server only. After print or cancel, the next corner click asks for the PIN again. Print still number-only; countdown returns to the kiosk. This is not a student multi-ticket ID.
 - Shell: `layouts/app.blade.php`. Views: `resources/views/kiosk/*`.
 - Thermal layout: **80mm** (XP-58(XP-Q90EC)), centered number — `kiosk/printing.blade.php`.
 - Silent print: not possible from a normal tab; use `bats/start-kiosk-chrome.bat` (`--kiosk --kiosk-printing`). Launcher matches printer **XP-Q90EC**, waits 10s, clears Chrome sticky printer; close all Chrome first.
@@ -55,13 +55,13 @@ Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done onl
 - PIN lives in `settings` (`walkin_pin`), edited at `GET/PUT /admin/settings`. Default seed `1981`.
 - Tickets have `student_id` null, `issued_by` = kiosk issuer user id (dump `guard@gmail.com`, no login), `issue_reason` set. Many open walk-in tickets are allowed.
 - Promissory Notes hidden from the issue list (same as kiosk).
-- Admin may still issue from `GET/POST /guard` (admin middleware). Staff serving label is **Walk-in** (not printed, not on the public display).
+- Admin may still issue from `GET/POST /guard` (admin middleware). Staff serving label is **Walk-in (reason)** (not printed, not on the public display).
 
 ### Staff (auth, `staff` middleware)
 
 - Dashboard: `GET /window` — Call Next, Recall, Complete, Hold; waiting list (10, fair call order); held list with Call; poll `GET /window/state` (includes `serving_started_at`, `current_name`, `held_list`).
 - Per-window **service timer** from open `queue_calls.called_time` (independent across Cashier 1 / Cashier 2 / …).
-- Staff sees **student name** while serving (and on held rows), or **Walk-in** for guard-issued tickets. Public display does not.
+- Staff sees **student name** while serving (and on held rows), or **Walk-in (reason)** for kiosk/admin walk-in tickets. Public display does not.
 - **Hold** (`POST /window/hold`): finish the open call, set `queues.status = held`, free the window. Held tickets leave Now Serving and waiting lists.
 - **Call held** (`POST /window/call-held`): resume a held ticket at this window without 2P→1R; requires no open serving ticket.
 - Shortcuts: **Alt+N** → Call Next; **Alt+R** → Recall; **Alt+C** → Complete.
@@ -69,10 +69,10 @@ Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done onl
 - **Fair scheduling (service-wide):** 2 Priority → 1 Regular across all windows sharing a `service_id`. `callNext` locks the `services` row then claims via `FairQueueScheduler` (atomic status update; no duplicate ticket assignment).
 - **System float (Windows always-on-top):**
   - UI: `GET /window/float` → `staff/float.blade.php` (also shows compact timer)
-  - Launch: `POST /window/launch-float` (from **Open System Float**) or `bats/start-staff-float.bat` → `tools/staff-float/Start-StaffFloat.ps1`
-  - Chrome `--app` window sized ~**260×270**, TopMost, launcher exits after pin
-  - **No in-browser float mode** (removed on purpose)
-  - `launchFloat` uses Windows `cmd start` on the `.bat`; works best when Apache runs as the interactive desktop user
+  - **Open System Float** starts this PC’s `bats/start-staff-float.bat` via the `pecit-float:` protocol (Chrome `--app`, no address bar). Run `bats/install-staff-float-protocol.bat` once on each staff PC.
+  - URL lives in `bats/staff-float-url.txt`. Kiosk/server may use `http://localhost/queue-system/public/window/float`. Other staff PCs must use the server LAN IP, e.g. `http://192.168.2.100/queue-system/public/window/float`.
+  - Same Windows PC as Apache: `launchFloat` also starts `Start-StaffFloat.ps1` hidden and keeps TopMost.
+  - Helper: `tools/staff-float/Start-StaffFloat.ps1` — Chrome `--app`; re-applies TopMost until closed. Launchers start PowerShell hidden and close the console immediately. Float UI has a compact **Log out** control.
 
 ### Queue intelligence services
 
@@ -149,7 +149,7 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | Walk-in | `KioskWalkInGate`, kiosk PIN overlay; admin `/guard` → `GuardIssueController`, `views/guard/issue.blade.php` |
 | Kiosk PIN | `SettingsController`, `views/admin/settings.blade.php`, `settings` table |
 | Admin | `AdminDashboardController`, `HistoryController`, `UserManagementController`, `StudentManagementController`, `SettingsController`, `views/admin/*` |
-| Panel theme | `layouts/panel.blade.php`, `css/panel.css`, `partials/admin-sidebar.blade.php`, `partials/staff-sidebar.blade.php`, `partials/icon.blade.php` |
+| Panel theme | `layouts/panel.blade.php`, `css/panel.css`, sidebars; header moon/sun toggles dark mode (`localStorage pecit-theme`, kiosk/display unchanged) |
 | Queue logic | `FairQueueScheduler`, `WaitTimeEstimator`, `QueueService`, `StudentQueueGuard`, `TicketIssuer`, `KioskWalkInGate` |
 | Capstone About | `AboutController`, `config/about.php`, `views/about/*`, `storage/app/private/about/team/` |
 | Diagrams | `README.md` (Mermaid ERD + flowchart), `docs/erd.md`, `docs/erd/queuing_system.erd` (ERD Designer / MariaDB; do not hand-edit), `docs/system-flowchart.md`, Archify maps `docs/archify/pecit-runtime.architecture.html` and `docs/archify/pecit-erd.architecture.html` |
@@ -169,6 +169,7 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | GET | `/kiosk/student` | Confirm-step student ID lookup |
 | GET | `/kiosk/walk-in/status` | PIN session unlocked? |
 | POST | `/kiosk/walk-in/unlock` | Check walk-in PIN |
+| POST | `/kiosk/walk-in/lock` | Clear PIN session after cancel/print |
 | POST | `/kiosk/walk-in` | Issue walk-in after PIN unlock |
 | GET | `/about` | Secret capstone About (Ctrl+Alt+Shift+A) |
 | GET | `/about/photo/{file}` | Private team photo stream (allowlisted only) |
@@ -182,7 +183,7 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | GET/POST | `/guard` | Admin-only walk-in issue |
 | GET | `/window` | Staff dashboard |
 | GET | `/window/float` | Float UI |
-| POST | `/window/launch-float` | Start `.bat` on server PC |
+| POST | `/window/launch-float` | Pin helper on localhost; other PCs use local `start-staff-float.bat` |
 | GET | `/window/state` | Staff poll JSON (`serving_started_at`, `current_name`, `held_list`) |
 | POST | `/window/call-next`, `/recall`, `/complete`, `/hold`, `/call-held` | Actions (`back()`) |
 | GET | `/window/history` | Staff history |
@@ -256,7 +257,7 @@ Models: check `$timestamps` / `$fillable` per model — several domain models us
 7. Avoid Laravel `Cache` for kiosk/display unless cache store is known-good.
 8. **Kiosk design lock** — theme work → login/staff/admin (`panel`), not kiosk. Confirm ETA block, Student ID keypad, and single thermal ETA line are intentional exceptions.
 9. Don’t change DB schema / queue generation logic for pure UI tasks unless asked.
-10. System float — keep Windows launcher path; don’t revive browser-only float unless asked.
+10. System float — open on the connecting device; keep the Windows TopMost helper. Do not launch the server `.bat` for remote staff PCs.
 11. Multi-counter ETA — divide by active cashiers/windows for the service; omit print ETA when historical completes are insufficient (< 3). Hold sessions are not used as completed-service samples.
 12. `callNext` / `complete` / `hold` must stay window-scoped for timers and must not complete another counter’s open call.
 13. Do not put team photos under `public/`; keep `storage/app/private/about/team/` and allowlisted photo streaming.
@@ -328,12 +329,12 @@ Kiosk launchers wait **10 seconds** before opening the browser (gives Apache/pri
 - [ ] Display + `/display/data`; waiting list = fair call order; 10 rows no scroll; voice if enabled; no names; held absent
 - [ ] Staff call-next / recall / complete / hold / call-held; name while serving; fair 2P→1R; independent service timers
 - [ ] Concurrent Call Next on Cashier 1 + Cashier 2 never duplicates a ticket
-- [ ] Open System Float / bat → always-on-top ~260×270; launcher exits; compact name + Hold
+- [ ] Open System Float → this PC’s `bats\start-staff-float.bat` (install protocol once); other PCs use `staff-float-url.txt` LAN IP, not localhost
 - [ ] Admin dashboard live counts; reports show overall + per-window avg wait/service (**done** only)
 - [ ] Offline: no CDN fonts/icons; `npm run build` assets load
 - [ ] Ctrl+Alt+Shift+A opens About; photos from private folder when present
 - [ ] Admin Students: add, delete, CSV import; kiosk lookup uses the list
-- [ ] Guard cannot log in; kiosk corner PIN from `settings.walkin_pin` (Admin editable): unlock → issue walk-in → print number-only → back to kiosk; wrong PIN rejected
+- [ ] Guard cannot log in; kiosk corner PIN from `settings.walkin_pin` (Admin editable): every corner click asks for PIN → issue walk-in → print number-only → back to kiosk; wrong PIN rejected
 - [ ] Auth middleware: admin vs staff
 
 ---

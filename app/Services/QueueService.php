@@ -86,7 +86,7 @@ class QueueService
         }
 
         if ($queue && $queue->issued_by) {
-            return 'Walk-in';
+            return TicketIssuer::walkInServingLabel($queue->issue_reason);
         }
 
         return null;

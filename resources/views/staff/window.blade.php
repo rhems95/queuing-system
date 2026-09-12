@@ -12,12 +12,12 @@
                 {{ $window->service->service_name ?? 'Window' }} · Alt+N Next · Alt+R Recall · Alt+C Complete
             </p>
         </div>
-        <form method="POST" action="{{ route('window.launchFloat') }}" id="launchFloatForm">
-            @csrf
-            <button type="submit" id="launchFloatBtn" class="pecit-btn pecit-btn-primary">
-                Open System Float
-            </button>
-        </form>
+            <form method="POST" action="{{ rtrim(request()->getBasePath(), '/') }}/window/launch-float" id="launchFloatForm">
+                @csrf
+                <button type="submit" id="launchFloatBtn" class="pecit-btn pecit-btn-primary">
+                    Open System Float
+                </button>
+            </form>
     </div>
 
     <div id="launchFloatMsg" class="pecit-alert pecit-alert-info" style="display:none;"></div>
@@ -123,7 +123,7 @@
                     @forelse($heldTickets as $q)
                         <tr>
                             <td style="font-weight:700;">{{ $q->queue_number }}</td>
-                            <td>{{ $q->student->name ?? ($q->issued_by ? 'Walk-in' : '—') }}</td>
+                            <td>{{ $q->student->name ?? ($q->issued_by ? \App\Services\TicketIssuer::walkInServingLabel($q->issue_reason) : '—') }}</td>
                             <td>
                                 @if ($q->priority)
                                     <span class="pecit-badge pecit-badge-priority">Priority</span>
@@ -180,11 +180,20 @@
             var launchBtn = document.getElementById('launchFloatBtn');
             var launchMsg = document.getElementById('launchFloatMsg');
 
+            function startLocalFloatBat() {
+                var link = document.createElement('a');
+                link.href = 'pecit-float:open';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+            }
+
             if (launchForm && launchBtn) {
                 launchForm.addEventListener('submit', function (e) {
                     e.preventDefault();
+                    startLocalFloatBat();
                     launchBtn.disabled = true;
-                    launchBtn.textContent = 'Launching...';
+                    launchBtn.textContent = 'Opening...';
 
                     var tokenInput = launchForm.querySelector('input[name="_token"]');
                     var body = new URLSearchParams();
@@ -203,19 +212,17 @@
                         .then(function (res) {
                             if (launchMsg) {
                                 launchMsg.style.display = 'block';
+                                launchMsg.className = 'pecit-alert pecit-alert-info';
                                 launchMsg.textContent = (res.data && res.data.message)
                                     ? res.data.message
-                                    : (res.ok ? 'System float launched.' : 'Could not launch system float.');
-                                launchMsg.className = res.ok
-                                    ? 'pecit-alert pecit-alert-success'
-                                    : 'pecit-alert pecit-alert-danger';
+                                    : 'If the float did not open, run bats\\install-staff-float-protocol.bat once on this PC, then try again.';
                             }
                         })
                         .catch(function () {
                             if (launchMsg) {
                                 launchMsg.style.display = 'block';
-                                launchMsg.className = 'pecit-alert pecit-alert-danger';
-                                launchMsg.textContent = 'Could not launch system float. Try bats\\start-staff-float.bat manually.';
+                                launchMsg.className = 'pecit-alert pecit-alert-info';
+                                launchMsg.textContent = 'If the float did not open, run bats\\install-staff-float-protocol.bat once on this PC (or double-click bats\\start-staff-float.bat). Set bats\\staff-float-url.txt to the server IP, e.g. http://192.168.2.100/queue-system/public/window/float';
                             }
                         })
                         .finally(function () {

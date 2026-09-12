@@ -21,14 +21,14 @@ Customers take a ticket from a public **kiosk** after entering a Student ID on c
 
 - Tickets stay **anonymous on print and the public display** (no student name). The kiosk confirm step requires a **Student ID**.
 - One student may have only **one open ticket per day** (waiting, serving, or held), across all services.
-- **Walk-in tickets**: kiosk corner PIN (Admin → **Kiosk PIN**, stored in `settings`); no Student ID, many at once; staff sees “Walk-in”; print/display stay number-only. There is no Guard login.
+- **Walk-in tickets**: kiosk corner PIN (Admin → **Kiosk PIN**, stored in `settings`); no Student ID, many at once; staff sees “Walk-in (reason)”; print/display stay number-only. There is no Guard login.
 - Demo IDs in the dump: `2024-0001` Juan Dela Cruz, `2024-0002` Maria Santos, `2024-0003` Jose Rizal, `2024-0004` Ana Reyes, `2024-0005` Pedro Garcia.
 - Staff can **Hold** (set aside) the current ticket, then **Call** it later without waiting in the 2P→1R line.
 - Priority is **Regular** or **Priority** only.
 - Calling uses shared **2 Priority → 1 Regular** per service (Cashier 1 / 2 / 3 share one Cashier queue).
 - Each counter has its own **service timer**; Complete on one window never affects another.
 - Estimated wait uses active counters + history; the thermal ticket may add one line: `Estimated Time: N minutes`.
-- Kiosk UI is **finalized** — do not redesign it casually (print sizing / ETA line / confirm Student ID keypad / tiny walk-in PIN button are allowed exceptions).
+- Kiosk UI is **finalized** — do not redesign it casually (print sizing / ETA line / confirm Student ID keypad / tiny walk-in PIN button / small PECIT seal in the title row are allowed exceptions).
 - Login / staff / admin use the **PECIT** navy/gold theme (local fonts + SVG icons, no CDN).
 - Thermal tickets target **XP-58(XP-Q90EC)** (80mm).
 - Secret **About / capstone credits** page: press **Ctrl + Alt + Shift + A** (not in menus).
@@ -222,11 +222,11 @@ Waiting list columns follow the same **call order** as Call Next (2 Priority →
 1. Log in with a staff account → `/window`.
 2. Use **Call Next**, **Recall**, **Complete**, **Hold** (or **Alt+N** Next, **Alt+R** Recall, **Alt+C** Complete). Hold sets the ticket aside so you can call someone else; **Call** on the held list brings them back without the 2P→1R wait.
 3. Watch the **Service Time** timer for the ticket on *this* counter only.
-4. Optional always-on-top panel: click **Open System Float**, or run `bats/start-staff-float.bat` (~260×270).
+4. Optional always-on-top panel: click **Open System Float** (runs `bats\start-staff-float.bat` on **this** PC). On each staff PC run `bats\install-staff-float-protocol.bat` once. Other PCs: set `bats\staff-float-url.txt` to the server LAN address, e.g. `http://192.168.2.100/queue-system/public/window/float` (not localhost). Header **moon/sun** toggles dark mode.
 
 ### Walk-in tickets (kiosk PIN)
 
-On the kiosk, tap the **tiny square in the bottom-right corner**, enter the walk-in PIN, then issue a ticket (service, priority, reason). There is no Guard login.
+On the kiosk, tap the **tiny square in the bottom-right corner**, enter the walk-in PIN, then issue a ticket (service, priority, reason). Each tap of that button asks for the PIN again (after print or cancel too). There is no Guard login.
 
 Change the PIN under **Admin → Kiosk PIN** (stored in the `settings` table, default `1981`). Admin can still issue walk-ins from **Walk-in Tickets**.
 
@@ -234,7 +234,7 @@ Change the PIN under **Admin → Kiosk PIN** (stored in the `settings` table, de
 
 Log in as admin → `/admin`:
 
-- **Dashboard** — live totals (today / waiting / serving / completed), quick links, live waiting table
+- **Dashboard** — live totals (today / waiting / serving / completed), quick links, live waiting table; moon/sun in the header toggles dark mode
 - **Users** — admin / staff accounts and window assignment
 - **Kiosk PIN** — edit the walk-in PIN (database `settings` table)
 - **Walk-in Tickets** — issue tickets for people who cannot use the kiosk

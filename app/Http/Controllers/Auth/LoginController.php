@@ -75,6 +75,13 @@ class LoginController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
+        $fromFloat = $request->boolean('float_logout')
+            || str_contains((string) $request->headers->get('referer'), '/window/float');
+
+        if ($fromFloat) {
+            return redirect()->route('login', ['float' => 1]);
+        }
+
         return redirect()->route('login');
     }
 

@@ -34,6 +34,7 @@ Route::get('/kiosk/estimate', [KioskController::class, 'estimate'])->name('kiosk
 Route::get('/kiosk/student', [KioskController::class, 'lookupStudent'])->name('kiosk.student');
 Route::get('/kiosk/walk-in/status', [KioskController::class, 'walkInStatus'])->name('kiosk.walkin.status');
 Route::post('/kiosk/walk-in/unlock', [KioskController::class, 'walkInUnlock'])->name('kiosk.walkin.unlock');
+Route::post('/kiosk/walk-in/lock', [KioskController::class, 'walkInLock'])->name('kiosk.walkin.lock');
 Route::post('/kiosk/walk-in', [KioskController::class, 'walkInStore'])->name('kiosk.walkin.store');
 Route::post('/kiosk', [KioskController::class, 'store'])->name('kiosk.store');
 
@@ -70,6 +71,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [WindowController::class, 'index'])->name('dashboard');
         Route::get('/float', [WindowController::class, 'floatPanel'])->name('float');
         Route::post('/launch-float', [WindowController::class, 'launchFloat'])->name('launchFloat');
+        Route::get('/float-launcher', [WindowController::class, 'floatLauncher'])->name('floatLauncher');
         Route::get('/state', [WindowController::class, 'state'])->name('state');
         Route::post('/call-next', [WindowController::class, 'callNext'])->name('callNext');
         Route::post('/recall', [WindowController::class, 'recall'])->name('recall');

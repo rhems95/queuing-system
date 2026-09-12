@@ -35,7 +35,6 @@ class KioskController extends Controller
         return view('kiosk.index', [
             'services' => $services,
             'walkInReasons' => TicketIssuer::walkInReasons(),
-            'walkInUnlocked' => $this->walkInGate->isUnlocked($request),
             'walkInPinLength' => $this->walkInGate->pinLength(),
         ]);
     }
@@ -60,6 +59,13 @@ class KioskController extends Controller
 
             return response()->json($result, $status);
         }
+
+        return response()->json(['ok' => true]);
+    }
+
+    public function walkInLock(Request $request): JsonResponse
+    {
+        $this->walkInGate->lock($request);
 
         return response()->json(['ok' => true]);
     }
@@ -115,6 +121,7 @@ class KioskController extends Controller
         $estimate = $this->estimator->snapshot((int) $service->id, $isPriority, $queue);
         $estimatedMinutes = $estimate['estimated_minutes'];
         $printHomeUrl = route('kiosk');
+        $this->walkInGate->lock($request);
 
         return view('kiosk.printing', compact(
             'queue',

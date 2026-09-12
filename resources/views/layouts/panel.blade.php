@@ -4,6 +4,17 @@
     <meta charset="UTF-8">
     <title>@yield('title', 'PECIT Queuing System')</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script>
+        (function () {
+            try {
+                var stored = localStorage.getItem('pecit-theme');
+                var theme = stored === 'dark' || stored === 'light' ? stored : 'light';
+                document.documentElement.setAttribute('data-theme', theme);
+            } catch (e) {
+                document.documentElement.setAttribute('data-theme', 'light');
+            }
+        })();
+    </script>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 <body class="pecit-shell">
@@ -32,6 +43,16 @@
                 </div>
             </div>
             <div class="pecit-header-actions">
+                <button type="button" id="pecitThemeToggle" class="pecit-theme-toggle" aria-label="Switch to dark mode" title="Dark mode">
+                    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/>
+                    </svg>
+                    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                        <circle cx="12" cy="12" r="4"/>
+                        <path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/>
+                        <path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/>
+                    </svg>
+                </button>
                 @auth
                     <div class="pecit-user-chip">
                         <span>{{ auth()->user()->name }}</span>
@@ -95,6 +116,35 @@
             </script>
         @endif
     @endif
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var root = document.documentElement;
+            var btn = document.getElementById('pecitThemeToggle');
+
+            function currentTheme() {
+                return root.getAttribute('data-theme') === 'dark' ? 'dark' : 'light';
+            }
+
+            function applyTheme(theme) {
+                var next = theme === 'dark' ? 'dark' : 'light';
+                root.setAttribute('data-theme', next);
+                try { localStorage.setItem('pecit-theme', next); } catch (e) {}
+                if (btn) {
+                    var dark = next === 'dark';
+                    btn.setAttribute('aria-label', dark ? 'Switch to light mode' : 'Switch to dark mode');
+                    btn.setAttribute('title', dark ? 'Light mode' : 'Dark mode');
+                }
+            }
+
+            applyTheme(currentTheme());
+            if (btn) {
+                btn.addEventListener('click', function () {
+                    applyTheme(currentTheme() === 'dark' ? 'light' : 'dark');
+                });
+            }
+        });
+    </script>
 
     @stack('scripts')
     @include('partials.secret-about-hotkey')
