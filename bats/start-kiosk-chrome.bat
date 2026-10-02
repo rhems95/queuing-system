@@ -61,6 +61,24 @@ if exist "%CLEAR_PRINT%" (
     powershell -NoProfile -ExecutionPolicy Bypass -File "%CLEAR_PRINT%" -ProfileDir "%PROFILE%" -PreferredPrinter "%PRINTER_MATCH%"
 )
 
+set "ACR_LAUNCH=%ROOT_DIR%\tools\kiosk\Start-Acr122-Hidden.vbs"
+if exist "%ACR_LAUNCH%" (
+    echo Starting ACR122U card watcher...
+    wscript.exe //nologo "%ACR_LAUNCH%"
+)
+
+set "PAPER_LAUNCH=%ROOT_DIR%\tools\kiosk\Start-PrinterPaper-Hidden.vbs"
+if exist "%PAPER_LAUNCH%" (
+    echo Starting printer paper watcher...
+    wscript.exe //nologo "%PAPER_LAUNCH%"
+)
+
+set "GSM_LAUNCH=%ROOT_DIR%\tools\kiosk\Start-GsmSms-Hidden.vbs"
+if exist "%GSM_LAUNCH%" (
+    echo Starting GSM SMS watcher...
+    wscript.exe //nologo "%GSM_LAUNCH%"
+)
+
 echo Starting kiosk...
 echo URL: %KIOSK_URL%
 echo.

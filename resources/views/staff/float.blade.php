@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>PECIT Staff Float</title>
+    @include('partials.favicon')
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
@@ -166,6 +167,16 @@
             padding: 4px 6px;
             font-size: 10px;
         }
+        .sf-paper {
+            background: #fef3c7;
+            color: #92400e;
+            border: 1px solid #f59e0b;
+            border-radius: 6px;
+            padding: 4px 6px;
+            font-size: 11px;
+            font-weight: 700;
+            text-align: center;
+        }
     </style>
 </head>
 <body>
@@ -188,6 +199,9 @@
         @if (session('status'))
             <div class="sf-toast" id="statusToast">{{ session('status') }}</div>
         @endif
+        <div id="paperOutAlert" class="sf-paper" role="status" @unless($paperOut) style="display:none;" @endunless>
+            Printer is out of paper. Load a new roll.
+        </div>
 
         <div class="sf-meta">
             <div>
@@ -289,6 +303,8 @@
                         if (currentNameEl) currentNameEl.textContent = data.current_name || '';
                         if (nextEl) nextEl.textContent = data.next || '—';
                         servingStartedAt = data.serving_started_at || null;
+                        var paperEl = document.getElementById('paperOutAlert');
+                        if (paperEl) paperEl.style.display = data.paper_out ? 'block' : 'none';
                         paintTimer();
                     })
                     .catch(function () {});

@@ -98,7 +98,7 @@
         <div class="pecit-card-head">
             <div>
                 <h2>Waiting Queues (Live)</h2>
-                <p>Updates every 3 seconds · Priority tickets listed first</p>
+                <p>Updates every 3 seconds · Same 2 Priority → 1 Regular call order as staff (per service)</p>
             </div>
             <span class="pecit-live-pill" id="livePill">Live</span>
         </div>

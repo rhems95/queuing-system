@@ -32,6 +32,7 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/kiosk', [KioskController::class, 'index'])->name('kiosk');
 Route::get('/kiosk/estimate', [KioskController::class, 'estimate'])->name('kiosk.estimate');
 Route::get('/kiosk/student', [KioskController::class, 'lookupStudent'])->name('kiosk.student');
+Route::get('/kiosk/card', [KioskController::class, 'lastCardTap'])->name('kiosk.card');
 Route::get('/kiosk/walk-in/status', [KioskController::class, 'walkInStatus'])->name('kiosk.walkin.status');
 Route::post('/kiosk/walk-in/unlock', [KioskController::class, 'walkInUnlock'])->name('kiosk.walkin.unlock');
 Route::post('/kiosk/walk-in/lock', [KioskController::class, 'walkInLock'])->name('kiosk.walkin.lock');
@@ -55,6 +56,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/students', [StudentManagementController::class, 'store'])->name('students.store');
         Route::get('/students/sample', [StudentManagementController::class, 'sample'])->name('students.sample');
         Route::post('/students/import', [StudentManagementController::class, 'import'])->name('students.import');
+        Route::get('/students/{student}/edit', [StudentManagementController::class, 'edit'])->name('students.edit');
+        Route::put('/students/{student}', [StudentManagementController::class, 'update'])->name('students.update');
         Route::delete('/students/{student}', [StudentManagementController::class, 'destroy'])->name('students.destroy');
         Route::get('/history', [HistoryController::class, 'index'])->name('history');
         Route::get('/history/tickets', [HistoryController::class, 'tickets'])->name('history.tickets');

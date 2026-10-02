@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Your Ticket</title>
+    @include('partials.favicon')
     <meta name="viewport" content="width=device-width, initial-scale=1">
     @php
         $serviceNameLower = strtolower((string) $service->service_name);
@@ -107,12 +108,12 @@
 
         @media print {
             @page {
-                size: 80mm auto;
+                size: 58mm auto;
                 margin: 0 !important;
             }
 
             html, body {
-                width: 80mm !important;
+                width: 58mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #fff !important;
@@ -125,15 +126,15 @@
 
             #thermalTicket {
                 display: block !important;
-                width: 80mm !important;
+                width: 58mm !important;
                 margin: 0 !important;
-                padding: 1mm 0 0 0 !important;
+                padding: 0 !important;
                 transform: translate(var(--thermal-nudge-x), var(--thermal-nudge-y)) !important;
                 color: #000 !important;
             }
 
             #thermalTicket .thermal-sheet {
-                width: 80mm !important;
+                width: 58mm !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 border-collapse: collapse !important;
@@ -141,7 +142,7 @@
             }
 
             #thermalTicket .thermal-cell {
-                width: 80mm !important;
+                width: 58mm !important;
                 padding: 0 !important;
                 margin: 0 !important;
                 text-align: center !important;
@@ -166,28 +167,29 @@
             }
 
             #thermalTicket .thermal-title {
-                font-size: 13px !important;
+                font-size: 15px !important;
                 font-weight: 700 !important;
-                line-height: 1.2 !important;
+                line-height: 1.05 !important;
             }
             #thermalTicket .thermal-number {
-                font-size: 34px !important;
+                font-size: 28px !important;
                 font-weight: 700 !important;
-                line-height: 1.25 !important;
-                min-height: 34px !important;
+                line-height: 1.05 !important;
                 overflow: visible !important;
             }
             #thermalTicket .thermal-line {
-                font-size: 13px !important;
-                line-height: 1.25 !important;
+                font-size: 11px !important;
+                font-weight: 700 !important;
+                line-height: 1.1 !important;
                 white-space: nowrap !important;
             }
             #thermalTicket .thermal-footer {
-                font-size: 12px !important;
-                line-height: 1.25 !important;
+                font-size: 10px !important;
+                font-weight: 700 !important;
+                line-height: 1.1 !important;
                 border-top: 1px dashed #000 !important;
                 padding-top: 1px !important;
-                margin-top: 1px !important;
+                margin-top: 0 !important;
             }
         }
     </style>

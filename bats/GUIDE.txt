@@ -61,10 +61,21 @@ start-kiosk-chrome.bat
   What it does:
     - Waits 10 seconds (gives Apache/printer time after boot)
     - Sets XP-58(XP-Q90EC) as the Windows default printer
+    - Starts the ACR122U card watcher (hidden)
+    - Starts the printer paper watcher (hidden). Staff see an alert when the roll is empty.
     - Clears Chrome sticky printer settings
     - Opens fullscreen kiosk + --kiosk-printing
   URL: http://localhost/queue-system/public/kiosk
   Notes: Close all Chrome windows first. Use only this launcher for silent print.
+
+start-acr122-reader.bat
+  Purpose: Watch the ACS ACR122U RFID/NFC reader on this PC.
+  What it does: Starts tools\kiosk\Start-Acr122-Hidden.vbs (no PowerShell window)
+               and closes the command prompt. Writes the last tapped card UID to
+               storage\app\kiosk-card.json. Re-running this .bat closes any old
+               visible watcher first.
+  When to use: Automatically from start-kiosk-chrome.bat, or manually while
+               testing confirm-step tap. The helper keeps running in the background.
 
 start-kiosk-edge.bat
   Purpose: Same as Chrome kiosk, but uses Microsoft Edge.

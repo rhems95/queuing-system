@@ -21,6 +21,9 @@
     </div>
 
     <div id="launchFloatMsg" class="pecit-alert pecit-alert-info" style="display:none;"></div>
+    <div id="paperOutAlert" class="pecit-alert pecit-alert-danger" role="status" @unless($paperOut) style="display:none;" @endunless>
+        Kiosk printer is out of paper. Load a new roll. Tickets already issued stay valid.
+    </div>
     @if (session('status'))
         <div id="statusToast" class="pecit-alert pecit-alert-info">
             {{ session('status') }}
@@ -330,6 +333,8 @@
                 if (data.waiting_list) renderWaitingList(data.waiting_list);
                 if (data.held_list) renderHeldList(data.held_list);
                 setServingStartedAt(data.serving_started_at || null);
+                var paperEl = document.getElementById('paperOutAlert');
+                if (paperEl) paperEl.style.display = data.paper_out ? 'block' : 'none';
             }
 
             function fetchState() {

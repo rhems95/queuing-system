@@ -77,6 +77,8 @@ CREATE TABLE `students` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `student_id` varchar(50) NOT NULL,
   `name` varchar(100) NOT NULL,
+  `card_uid` varchar(32) DEFAULT NULL,
+  `mobile` varchar(20) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -85,12 +87,21 @@ CREATE TABLE `students` (
 -- Dumping data for table `students`
 --
 
-INSERT INTO `students` (`id`, `student_id`, `name`, `created_at`, `updated_at`) VALUES
-(1, '2024-0001', 'Juan Dela Cruz', NULL, NULL),
-(2, '2024-0002', 'Maria Santos', NULL, NULL),
-(3, '2024-0003', 'Jose Rizal', NULL, NULL),
-(4, '2024-0004', 'Ana Reyes', NULL, NULL),
-(5, '2024-0005', 'Pedro Garcia', NULL, NULL);
+INSERT INTO `students` (`id`, `student_id`, `name`, `card_uid`, `mobile`, `created_at`, `updated_at`) VALUES
+(1, '2024-0001', 'Juan Dela Cruz', NULL, NULL, NULL, NULL),
+(2, '2024-0002', 'Maria Santos', NULL, NULL, NULL, NULL),
+(3, '2024-0003', 'Jose Rizal', NULL, NULL, NULL, NULL),
+(4, '2024-0004', 'Ana Reyes', NULL, NULL, NULL, NULL),
+(5, '2024-0005', 'Pedro Garcia', NULL, NULL, NULL, NULL),
+(6, '20231-00276', 'Rhem Sumodlayon', 'FB1855F5', '+639120369311', NULL, NULL),
+(7, '20231-00216', 'Mike Bedrona', '35FAAC55', '+639635678292', NULL, NULL),
+(8, '20231-00832', 'Jerry Quarteros', 'B59EAC55', '+639709677093', NULL, NULL),
+(9, '20231-00386', 'James Carl Mora', 'E3EFC532', '+639911738898', NULL, NULL),
+(10, '20231-00737', 'Robert Encio', 'B50E7355', '+639366077523', NULL, NULL),
+(11, '201844120885', 'Vea Julia Villaver', '23DCC632', '+639945392242', NULL, NULL),
+(12, '2022100616', 'Janna Kong', '835AE032', '+639302508609', NULL, NULL),
+(13, '20231-00027', 'Mary Joy Tienes', 'C74DCA24', '+639603717935', NULL, NULL),
+(14, '20261-00813', 'Carl John Maca', '05FFAC55', '+639917417191', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -105,6 +116,9 @@ CREATE TABLE `queues` (
   `student_id` varchar(50) DEFAULT NULL,
   `issued_by` bigint(20) UNSIGNED DEFAULT NULL,
   `issue_reason` varchar(32) DEFAULT NULL,
+  `sms_mobile` varchar(20) DEFAULT NULL,
+  `sms_issued` tinyint(1) NOT NULL DEFAULT 0,
+  `sms_near` tinyint(1) NOT NULL DEFAULT 0,
   `priority` tinyint(1) DEFAULT 0,
   `status` enum('waiting','serving','done','cancelled','held') DEFAULT 'waiting',
   `queue_date` date NOT NULL,
@@ -435,7 +449,8 @@ ALTER TABLE `migrations`
 --
 ALTER TABLE `students`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `students_student_id_unique` (`student_id`);
+  ADD UNIQUE KEY `students_student_id_unique` (`student_id`),
+  ADD UNIQUE KEY `students_card_uid_unique` (`card_uid`);
 
 --
 -- Indexes for table `queues`
@@ -503,7 +518,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `queues`

@@ -17,6 +17,9 @@ class Queue extends Model
         'queue_date',
         'issued_by',
         'issue_reason',
+        'sms_mobile',
+        'sms_issued',
+        'sms_near',
     ];
 
     public $timestamps = false;

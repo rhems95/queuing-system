@@ -1,6 +1,6 @@
 # Queue system — detailed system flowcharts
 
-Mermaid diagrams for the **print-only** PECIT queue system (Laravel 12, Blade, MySQL). Student ID is collected on kiosk confirm; names are staff-only. Walk-ins use the kiosk corner PIN (`settings.walkin_pin`); Guard accounts cannot log in.
+Mermaid diagrams for the **print-only** PECIT queue system (Laravel 12, Blade, MySQL). Student ID is collected on kiosk confirm by keypad or ACR122U tap; names are staff-only. Walk-ins use the kiosk corner PIN (`settings.walkin_pin`) and may add a Philippine mobile. Optional SIM7600 SMS is number-only. Guard accounts cannot log in.
 
 Interactive Archify architecture map (open in a browser): [docs/archify/pecit-runtime.architecture.html](archify/pecit-runtime.architecture.html).
 
@@ -34,18 +34,21 @@ Single end-to-end picture aligned with **this** codebase: **Student ID on confir
 ```mermaid
 %%{init: {'flowchart': {'nodeSpacing': 28, 'rankSpacing': 36, 'padding': 6, 'useMaxWidth': true}, 'themeVariables': { 'fontSize': '11px'}}}%%
 flowchart TD
-    St([Start]) --> K["Kiosk: service → Regular/Priority → confirm ID + ETA"]
-    St --> W["Walk-in: kiosk corner PIN from settings"]
+    St([Start]) --> K["Kiosk: service → priority → ID or card tap + ETA"]
+    St --> W["Walk-in: corner PIN, optional PH mobile"]
     K --> DB[("DB: new queue + daily counter")]
     W --> DB
-    DB --> PA["Customer: ticket #, print, countdown, then wait"]
+    DB --> PA["58mm ticket, countdown, then wait"]
+    DB --> SMS["Opt-in text: ticket number"]
     DB --> PB["TV: now serving + waiting 2P→1R + voice"]
-    PA --> SW["Staff: next / recall / complete / hold + timer"]
+    PA --> SW["Staff: next / recall / complete / hold"]
     PB --> SW
     SW --> Fair["FairQueueScheduler shared per service"]
     Fair --> DB
+    SW --> Note["Text window name; text tickets now within 10"]
+    Note --> DB
     SW --> Q{Done?}
-    Q -->|Recall / same ticket| SW
+    Q -->|Recall| SW
     Q -->|Complete| H["Save queue_calls + done"]
     H --> En([End])
 ```
@@ -97,27 +100,28 @@ flowchart TB
 ```mermaid
 flowchart TD
     Start([Visitor: /kiosk]) --> Path{Ticket type}
-    Path -->|Student| S1["Step 1: Select service<br/>services excluding Promissory in KioskController@index"]
-    S1 --> S2["Step 2: Regular or Priority<br/>hidden input priority"]
-    S2 --> S3["Step 3: Confirm — Student ID keypad + ETA"]
-    S3 --> POST["POST /kiosk — KioskController@store"]
-    POST --> V{"Validate service_id, priority, student_id"}
-    V -->|Fail| E["Show validation errors on step 3"]
-    V -->|OK| Txn["DB transaction"]
-    subgraph Trn["Transaction — student ticket"]
-        T0["Lock student; reject unknown / already queued"]
-        T1["Lock/update daily_queue_counters<br/>per service + today"]
-        T2["Insert queues row<br/>student_id, priority 0|1, status waiting"]
-    end
-    Path -->|Walk-in| PinBtn["Tiny corner button → PIN pad"]
-    PinBtn --> Unlock["POST /kiosk/walk-in/unlock<br/>KioskWalkInGate vs settings.walkin_pin"]
-    Unlock -->|Wrong PIN| PinFail["Reject; lockout after repeated fails"]
-    Unlock -->|OK| Overlay["Walk-in overlay: service, priority, reason<br/>no Student ID"]
-    Overlay --> WPOST["POST /kiosk/walk-in"]
-    WPOST --> WTxn["Insert queues: student_id null,<br/>issued_by, issue_reason"]
+    Path -->|Student| S1["Step 1: Select service<br/>Promissory hidden"]
+    S1 --> S2["Step 2: Regular or Priority"]
+    S2 --> S3["Step 3: keypad or ACR122U tap + ETA"]
+    S3 --> Look{"GET /kiosk/student"}
+    Look -->|Unknown or already queued| E["Confirm stays disabled"]
+    Look -->|Found| Opt{"Notify me by SMS checked?"}
+    Opt --> POST["POST /kiosk"]
+    POST --> Txn["Lock student; insert waiting ticket<br/>copy stored mobile only if checked"]
+    Path -->|Walk-in| PinBtn["Corner button → PIN pad"]
+    PinBtn --> Unlock{"PIN matches settings.walkin_pin"}
+    Unlock -->|No| PinFail["Reject"]
+    Unlock -->|Yes| Overlay["Service, priority, reason<br/>optional mobile pad"]
+    Overlay --> Mob{"Blank or 09 + 9 digits?"}
+    Mob -->|No| Block["Issue and Print disabled"]
+    Mob -->|Yes| WPOST["POST /kiosk/walk-in"]
+    WPOST --> WTxn["Insert ticket: student_id null,<br/>issued_by, issue_reason, sms_mobile"]
     Txn --> Print
-    WTxn --> Print["View kiosk.printing<br/>issuedAt, priorityLabel, number only"]
-    Print --> AP["window.print + countdown"]
+    WTxn --> Print["58mm number-only ticket"]
+    Print --> Text{"sms_mobile set?"}
+    Text -->|Yes| Out["Enqueue ticket-number text<br/>mark near if already within 10"]
+    Text -->|No| AP
+    Out --> AP["window.print + countdown"]
     AP --> Home([Back to /kiosk])
 ```
 
@@ -258,6 +262,7 @@ sequenceDiagram
     Laravel->>DB: Select next waiting queue FOR UPDATE
     Laravel->>DB: Update queue serving, insert queue_calls
     Laravel->>DB: Commit
+    Laravel->>Laravel: Enqueue called text and 10-away texts
     Laravel-->>Browser: Redirect back + flash
     Browser->>Laravel: Poll GET /window/state
     Laravel-->>Browser: current, next, waiting_list
@@ -289,7 +294,7 @@ flowchart TD
 
     subgraph Students["/admin/students — StudentManagementController"]
         S1["Add / delete allowlisted Student IDs"]
-        S2["CSV import student_id,name"]
+        S2["CSV import student_id,name,card_uid,mobile"]
         S3["Cannot delete if open ticket today"]
     end
 

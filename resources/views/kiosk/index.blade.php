@@ -160,11 +160,16 @@
                                 <button type="button" class="step3-key step3-key-action" data-key="clear">C</button>
                                 <button type="button" class="step3-key step3-key-zero" data-key="0">0</button>
                             </div>
-                            <p id="studentLookupMsg" class="step3-id-msg" aria-live="polite">Enter your student ID.</p>
+                            <p id="studentLookupMsg" class="step3-id-msg" aria-live="polite">Enter your student ID or tap your ID card.</p>
                         </div>
                     </div>
 
                     <div class="step3-footer">
+                        <label class="step3-sms" id="smsOffer">
+                            <input type="checkbox" name="notify_sms" id="notifySms" value="1" disabled>
+                            <span>Notify me by SMS</span>
+                        </label>
+                        <p id="smsHint" class="step3-sms-hint">No SMS number on file.</p>
                         <p class="step3-question">Do you want to print your ticket?</p>
                         <div class="step3-actions">
                             <button type="button" id="backToStep2" class="step3-back-btn">Back</button>
@@ -174,6 +179,8 @@
                 </div>
             </div>
         </form>
+
+        <p id="earlyCardToast" class="kiosk-early-card hidden" role="status" aria-live="polite">Please select service and priority first.</p>
 
         <button type="button" id="walkinCornerBtn" class="kiosk-walkin-hit" aria-label="Walk-in"></button>
 
@@ -234,9 +241,27 @@
                             </option>
                         @endforeach
                     </select>
+                    <label class="kiosk-walkin-label" id="walkinSmsLabel">Mobile for SMS (optional)</label>
+                    <div id="walkinSmsDisplay" class="kiosk-walkin-select kiosk-walkin-sms-display is-empty" aria-labelledby="walkinSmsLabel">09XXXXXXXXX</div>
+                    <input type="hidden" name="sms_mobile" id="walkinSmsInput" value="{{ old('sms_mobile') }}">
+                    <p id="walkinSmsMsg" class="kiosk-walkin-sms-msg" aria-live="polite"></p>
+                    <div class="kiosk-walkin-pad kiosk-walkin-sms-pad" role="group" aria-label="Mobile number">
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="1">1</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="2">2</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="3">3</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="4">4</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="5">5</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="6">6</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="7">7</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="8">8</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="9">9</button>
+                        <button type="button" class="kiosk-walkin-key is-action" data-sms-key="back">⌫</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="0">0</button>
+                        <button type="button" class="kiosk-walkin-key is-action" data-sms-key="clear">C</button>
+                    </div>
                     <div class="kiosk-walkin-actions">
                         <button type="button" id="walkinIssueCancel" class="kiosk-walkin-cancel">Cancel</button>
-                        <button type="submit" class="kiosk-walkin-submit">Issue &amp; Print</button>
+                        <button type="submit" class="kiosk-walkin-submit" id="walkinIssueSubmit">Issue &amp; Print</button>
                     </div>
                 </form>
             </div>
@@ -256,16 +281,24 @@
             var studentIdInput = document.getElementById('studentIdInput');
             var studentLookupMsg = document.getElementById('studentLookupMsg');
             var confirmPrintBtn = document.getElementById('confirmPrintBtn');
+            var notifySms = document.getElementById('notifySms');
+            var smsHint = document.getElementById('smsHint');
             var kioskForm = document.getElementById('kioskForm');
             var kioskShell = document.querySelector('.kiosk-shell');
             var selectedServiceName = '---';
             var estimateUrl = @json(route('kiosk.estimate'));
             var studentLookupUrl = @json(route('kiosk.student'));
+            var cardTapUrl = @json(route('kiosk.card'));
             var servicesById = @json($services->mapWithKeys(fn ($s) => [(string) $s->id => strtoupper($s->service_name)]));
             var hasKioskErrors = @json($errors->any());
             var studentOk = false;
             var lookupTimer = null;
             var lookupSeq = 0;
+            var cardPollTimer = null;
+            var lastCardSeenAt = '';
+            var currentKioskStep = 1;
+            var earlyCardTimer = null;
+            var earlyCardToast = document.getElementById('earlyCardToast');
             var walkinPinLength = {{ (int) $walkInPinLength }};
             var walkinUnlockUrl = @json(route('kiosk.walkin.unlock'));
             var walkinLockUrl = @json(route('kiosk.walkin.lock'));
@@ -424,6 +457,47 @@
                     });
                 });
             });
+            var walkinSmsInput = document.getElementById('walkinSmsInput');
+            var walkinSmsDisplay = document.getElementById('walkinSmsDisplay');
+            var walkinSmsMsg = document.getElementById('walkinSmsMsg');
+            var walkinIssueSubmit = document.getElementById('walkinIssueSubmit');
+            function walkinSmsIsValid(value) {
+                return value === '' || /^09\d{9}$/.test(value);
+            }
+            function renderWalkinSms() {
+                if (!walkinSmsInput || !walkinSmsDisplay) return true;
+                var value = String(walkinSmsInput.value || '');
+                var ok = walkinSmsIsValid(value);
+                walkinSmsDisplay.textContent = value || '09XXXXXXXXX';
+                walkinSmsDisplay.classList.toggle('is-empty', value === '');
+                walkinSmsDisplay.classList.toggle('is-invalid', !ok);
+                if (walkinSmsMsg) {
+                    walkinSmsMsg.textContent = ok ? '' : 'Not a Philippine mobile number. Use 09 and 9 more digits.';
+                }
+                if (walkinIssueSubmit) walkinIssueSubmit.disabled = !ok;
+                return ok;
+            }
+            function appendWalkinSms(key) {
+                if (!walkinSmsInput) return;
+                var current = String(walkinSmsInput.value || '').replace(/\D+/g, '');
+                if (key === 'back') current = current.slice(0, -1);
+                else if (key === 'clear') current = '';
+                else if (/^[0-9]$/.test(key) && current.length < 11) current += key;
+                walkinSmsInput.value = current;
+                renderWalkinSms();
+            }
+            document.querySelectorAll('[data-sms-key]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    appendWalkinSms(btn.getAttribute('data-sms-key') || '');
+                });
+            });
+            renderWalkinSms();
+            var walkinIssueForm = document.getElementById('walkinIssueForm');
+            if (walkinIssueForm) {
+                walkinIssueForm.addEventListener('submit', function (e) {
+                    if (!renderWalkinSms()) e.preventDefault();
+                });
+            }
             document.addEventListener('keydown', function (e) {
                 if (walkinPinOverlay && !walkinPinOverlay.classList.contains('hidden')) {
                     if (e.key === 'Escape') {
@@ -454,7 +528,26 @@
                 openWalkinIssue();
             }
 
+            function hideEarlyCardToast() {
+                if (earlyCardTimer) {
+                    clearTimeout(earlyCardTimer);
+                    earlyCardTimer = null;
+                }
+                if (earlyCardToast) earlyCardToast.classList.add('hidden');
+            }
+
+            function showEarlyCardToast() {
+                if (!earlyCardToast) return;
+                if (earlyCardTimer) {
+                    clearTimeout(earlyCardTimer);
+                    earlyCardTimer = null;
+                }
+                earlyCardToast.classList.remove('hidden');
+            }
+
             function showStep(stepNo) {
+                currentKioskStep = stepNo;
+                hideEarlyCardToast();
                 step1.classList.add('hidden');
                 step2.classList.add('hidden');
                 step3.classList.add('hidden');
@@ -476,6 +569,18 @@
                 if (!studentLookupMsg) return;
                 studentLookupMsg.textContent = text;
                 studentLookupMsg.className = 'step3-id-msg' + (kind ? ' is-' + kind : '');
+            }
+
+            function setSmsOffer(last4) {
+                if (!notifySms || !smsHint) return;
+                notifySms.checked = false;
+                if (last4) {
+                    notifySms.disabled = false;
+                    smsHint.textContent = 'Texts go to the number ending in ' + last4 + '.';
+                    return;
+                }
+                notifySms.disabled = true;
+                smsHint.textContent = 'No SMS number on file.';
             }
 
             function setStudentOk(ok) {
@@ -501,10 +606,11 @@
                 }
                 lookupSeq += 1;
                 setStudentOk(false);
+                setSmsOffer(null);
                 if (!keepValue) setStudentIdValue('');
                 var id = currentStudentId();
                 if (!id) {
-                    setStudentMessage('Enter your student ID.');
+                    setStudentMessage('Enter your student ID or tap your ID card.');
                     return;
                 }
                 setStudentMessage('Checking…');
@@ -516,20 +622,25 @@
                 lookupTimer = setTimeout(lookupStudent, 350);
             }
 
-            function lookupStudent() {
+            function lookupStudent(opts) {
+                opts = opts || {};
+                var cardUid = String(opts.cardUid || '').replace(/[^A-Fa-f0-9]/g, '').toUpperCase();
                 var id = currentStudentId();
-                if (id.length < 4) {
+                if (!cardUid && id.length < 4) {
                     setStudentOk(false);
-                    setStudentMessage(id ? 'Keep entering your student ID.' : 'Enter your student ID.');
+                    setSmsOffer(null);
+                    setStudentMessage(id ? 'Keep entering your student ID.' : 'Enter your student ID or tap your ID card.');
                     return;
                 }
 
                 var seq = ++lookupSeq;
                 setStudentOk(false);
+                setSmsOffer(null);
                 setStudentMessage('Checking…');
 
                 var params = new URLSearchParams();
-                params.set('student_id', id);
+                if (cardUid) params.set('card_uid', cardUid);
+                else params.set('student_id', id);
 
                 fetch(studentLookupUrl + '?' + params.toString(), {
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
@@ -540,17 +651,53 @@
                         if (res.data && res.data.ok) {
                             if (res.data.student_id) setStudentIdValue(res.data.student_id);
                             setStudentOk(true);
+                            setSmsOffer(res.data.mobile_last4 || null);
                             setStudentMessage('Welcome, ' + (res.data.name || 'student') + '.', 'ok');
                             return;
                         }
                         setStudentOk(false);
+                        setSmsOffer(null);
                         setStudentMessage((res.data && res.data.error) ? res.data.error : 'Student ID was not found.', 'error');
                     })
                     .catch(function () {
                         if (seq !== lookupSeq) return;
                         setStudentOk(false);
+                        setSmsOffer(null);
                         setStudentMessage('Could not check student ID. Try again.', 'error');
                     });
+            }
+
+            function stopCardPoll() {
+                if (cardPollTimer) {
+                    clearInterval(cardPollTimer);
+                    cardPollTimer = null;
+                }
+            }
+
+            function startCardPoll() {
+                stopCardPoll();
+                lastCardSeenAt = '';
+                cardPollTimer = setInterval(pollCardTap, 400);
+                pollCardTap();
+            }
+
+            function pollCardTap() {
+                if (typeof isWalkInOverlayOpen === 'function' && isWalkInOverlayOpen()) return;
+                fetch(cardTapUrl, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (!data || !data.uid || !data.seen_at) return;
+                        if (data.seen_at === lastCardSeenAt) return;
+                        lastCardSeenAt = data.seen_at;
+                        if (currentKioskStep !== 3) {
+                            showEarlyCardToast();
+                            return;
+                        }
+                        lookupStudent({ cardUid: data.uid });
+                    })
+                    .catch(function () {});
             }
 
             function appendStudentKey(key) {
@@ -566,7 +713,8 @@
                 }
                 setStudentOk(false);
                 if (!currentStudentId()) {
-                    setStudentMessage('Enter your student ID.');
+                    setSmsOffer(null);
+                    setStudentMessage('Enter your student ID or tap your ID card.');
                     return;
                 }
                 setStudentMessage('Checking…');
@@ -712,6 +860,7 @@
             } else {
                 setStudentOk(false);
             }
+            startCardPoll();
         });
     </script>
 
@@ -745,6 +894,21 @@
         }
         .kiosk-title-block {
             margin-bottom: 0.35rem;
+        }
+        .kiosk-early-card {
+            margin: 12px auto 0;
+            max-width: 36rem;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #fbbf24;
+            background: #fffbeb;
+            color: #92400e;
+            font-size: 15px;
+            font-weight: 700;
+            text-align: center;
+        }
+        .kiosk-early-card.hidden {
+            display: none !important;
         }
         .kiosk-form {
             padding-top: 14px;
@@ -1190,6 +1354,23 @@
         .step3-footer {
             margin-top: 8px;
         }
+        .step3-sms {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .step3-sms input {
+            width: 16px;
+            height: 16px;
+        }
+        .step3-sms-hint {
+            margin: 2px 0 6px;
+            font-size: 12px;
+            color: #64748b;
+        }
         .step3-question {
             font-size: 14px;
             color: #334155;
@@ -1345,6 +1526,8 @@
         }
         .kiosk-walkin-card-issue {
             max-width: 440px;
+            max-height: calc(100vh - 16px);
+            overflow: hidden;
             text-align: left;
         }
         .kiosk-walkin-title {
@@ -1376,6 +1559,11 @@
             gap: 8px;
             margin-bottom: 10px;
         }
+        .kiosk-walkin-sms-pad {
+            margin-top: 4px;
+            margin-bottom: 0;
+            gap: 4px;
+        }
         .kiosk-walkin-key {
             min-height: 52px;
             border-radius: 12px;
@@ -1392,6 +1580,27 @@
             background: linear-gradient(180deg, #1f6dd6, #1d4ed8);
             border-color: #1d4ed8;
             color: #fff;
+        }
+        .kiosk-walkin-card-issue .kiosk-walkin-key {
+            min-height: 34px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .kiosk-walkin-sms-display.is-empty {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        .kiosk-walkin-sms-display.is-invalid {
+            border-color: #b91c1c;
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        .kiosk-walkin-sms-msg {
+            min-height: 1.2em;
+            margin: 6px 0 0;
+            font-size: 13px;
+            font-weight: 700;
+            color: #b91c1c;
         }
         .kiosk-walkin-label {
             display: block;
@@ -1453,13 +1662,28 @@
             border: 1px solid #1d4ed8;
             color: #fff;
         }
+        .kiosk-walkin-submit:disabled {
+            background: #cbd5e1;
+            border-color: #cbd5e1;
+            color: #64748b;
+            cursor: not-allowed;
+        }
         @media (max-height: 650px) {
+            .kiosk-walkin-overlay { padding: 8px; }
+            .kiosk-walkin-card { padding: 10px 12px 8px; }
+            .kiosk-walkin-card-issue .kiosk-walkin-title { font-size: 18px; margin-bottom: 4px; }
+            .kiosk-walkin-card-issue .kiosk-walkin-label { margin: 4px 0 2px; font-size: 12px; }
+            .kiosk-walkin-card-issue .kiosk-walkin-select,
+            .kiosk-walkin-card-issue .kiosk-walkin-choice { min-height: 32px; padding: 4px 10px; font-size: 15px; }
+            .kiosk-walkin-card-issue .kiosk-walkin-sms-msg { min-height: 1em; margin: 2px 0 0; font-size: 12px; }
+            .kiosk-walkin-card-issue .kiosk-walkin-actions { margin-top: 6px; }
+            .kiosk-walkin-card-issue .kiosk-walkin-cancel,
+            .kiosk-walkin-card-issue .kiosk-walkin-submit { min-height: 34px; font-size: 15px; }
             .kiosk-walkin-key { min-height: 42px; font-size: 18px; }
             .kiosk-walkin-select,
             .kiosk-walkin-choice,
             .kiosk-walkin-cancel,
             .kiosk-walkin-submit { min-height: 44px; font-size: 16px; }
-            .kiosk-walkin-card { padding: 12px; }
         }
     </style>
 @endsection

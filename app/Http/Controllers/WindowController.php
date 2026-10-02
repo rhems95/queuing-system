@@ -7,6 +7,8 @@ use App\Models\QueueCall;
 use App\Models\Service;
 use App\Models\Window;
 use App\Services\FairQueueScheduler;
+use App\Services\GsmNotifier;
+use App\Services\PrinterPaperStatus;
 use App\Services\QueueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -20,6 +22,8 @@ class WindowController extends Controller
     public function __construct(
         private QueueService $queueService,
         private FairQueueScheduler $scheduler,
+        private PrinterPaperStatus $printerPaper,
+        private GsmNotifier $sms,
     ) {
     }
 
@@ -68,6 +72,7 @@ class WindowController extends Controller
                 'priority' => $q->priority ? 'Priority' : 'Regular',
                 'student_name' => $this->queueService->servingLabelForQueue($q),
             ])->values()->all(),
+            'paper_out' => $this->printerPaper->isOut(),
         ];
     }
 
@@ -104,6 +109,7 @@ class WindowController extends Controller
             'waitingTickets' => $waitingTickets,
             'heldTickets' => $heldTickets,
             'servingStartedAt' => $servingStartedAt,
+            'paperOut' => $this->printerPaper->isOut(),
         ]);
     }
 
@@ -137,6 +143,7 @@ class WindowController extends Controller
             'nextQueue' => $nextQueue,
             'window' => $window,
             'servingStartedAt' => $servingStartedAt,
+            'paperOut' => $this->printerPaper->isOut(),
         ]);
     }
 
@@ -345,6 +352,9 @@ class WindowController extends Controller
             return back()->with('status', 'No more queues.');
         }
 
+        $this->sms->sendCalled($queue, $this->windowName($windowId));
+        $this->sms->notifyWaitingWithinTen($windowServiceId);
+
         return back()->with('called_queue_number', $queue->queue_number);
     }
 
@@ -370,8 +380,11 @@ class WindowController extends Controller
         $currentCall->save();
 
         $queue = Queue::find($currentCall->queue_id);
+        if ($queue) {
+            $this->sms->sendCalled($queue, $this->windowName($windowId));
+        }
 
-        return back()->with('recalled_queue_number', $queue->queue_number);
+        return back()->with('recalled_queue_number', $queue?->queue_number);
     }
 
     public function complete()
@@ -448,6 +461,9 @@ class WindowController extends Controller
             return back()->with('status', 'No current queue to hold.');
         }
 
+        $serviceId = (int) DB::table('windows')->where('id', $windowId)->value('service_id');
+        $this->sms->notifyWaitingWithinTen($serviceId);
+
         return back()->with('status', 'Ticket '.$held->queue_number.' set aside.');
     }
 
@@ -509,7 +525,14 @@ class WindowController extends Controller
             return back()->with('status', 'Held ticket was not found.');
         }
 
+        $this->sms->sendCalled($queue, $this->windowName($windowId));
+
         return back()->with('called_queue_number', $queue->queue_number);
+    }
+
+    private function windowName(int $windowId): string
+    {
+        return (string) DB::table('windows')->where('id', $windowId)->value('window_name');
     }
 
     /**

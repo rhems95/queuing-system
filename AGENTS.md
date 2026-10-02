@@ -11,7 +11,7 @@ Read **[README.md](README.md)** for operator-oriented setup. This file is the **
 ## System purpose (mental model)
 
 ```text
-Customer → Kiosk (student ID on confirm + ETA + 80mm print, no name on ticket)
+Customer → Kiosk (student ID keypad or RFID/NFC tap on confirm + ETA + 58mm print, no name on ticket)
          ↘ Walk-in: corner PIN (`settings.walkin_pin`) — no Guard login
                 ↓
          queues / daily_queue_counters / students / settings
@@ -23,7 +23,7 @@ Staff windows (shared 2P→1R, Hold/set-aside, student name while serving) → q
 Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done only)
 ```
 
-- **Student ID on confirm only** — name is never printed or shown on the public display.
+- **Student ID on confirm only** — name is never printed or shown on the public display. Optional **Notify me by SMS** uses the stored mobile (last four digits only). Off unless checked. Walk-in uses an on-screen number pad (no Windows keyboard). Blank means no text. A typed number must be a Philippine mobile (`09` and 9 more digits) or **Issue & Print** stays disabled.
 - **Print-only** kiosk (Eco Mode removed).
 - **One staff user per window** (app + DB unique when migration applied).
 - **Multi-cashier compatible:** Cashier 1–3 share one Cashier waiting queue; each has an independent open call + timer.
@@ -35,18 +35,18 @@ Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done onl
 
 ### Kiosk (public) — UI LOCKED
 
-- Flow: service → priority (`regular` \| `priority`) → confirm (Student ID keypad + ETA) → `KioskController@store` → `kiosk.printing` (auto `window.print()` + countdown). Still **3 steps**.
-- Confirm step may show live waiting counts + estimated wait (`GET /kiosk/estimate`) and Student ID lookup (`GET /kiosk/student`); do not redesign the step chrome.
-- Confirm stays disabled until lookup succeeds. Unknown ID or an already-open ticket today is an error. Name may appear on confirm only so the student can check it; **never print the name**.
+- Flow: service → priority (`regular` \| `priority`) → confirm (Student ID keypad or ACR122U tap + ETA) → `KioskController@store` → `kiosk.printing` (auto `window.print()` + countdown). Still **3 steps**.
+- Confirm step may show live waiting counts + estimated wait (`GET /kiosk/estimate`) and Student ID lookup (`GET /kiosk/student`); card tap polls `GET /kiosk/card` then the same lookup with `card_uid`. Do not redesign the step chrome.
+- Confirm stays disabled until lookup succeeds. Unknown ID, unknown card, or an already-open ticket today is an error. Forgetting the card is not a walk-in. Name may appear on confirm only so the student can check it; **never print the name**.
 - Confirm uses a compact two-column layout (summary + keypad) so a **1024×600** kiosk screen does not need to scroll.
 - Thermal ticket may add **one** compact line when ETA is available: `Estimated Time: N minutes` (omit when history is insufficient).
-- Print sizing (current baseline): title/lines ~13px, number ~34px, footer ~12px — change only when asked.
+- Print sizing (current baseline): title ~15px, lines ~11px, number ~28px, footer ~10px, tight line spacing — change only when asked.
 - Promissory Notes **hidden** from kiosk service list (filter in `KioskController@index`); may still exist for staff/display.
 - **Do not redesign/restyle/restructure** kiosk Blade/CSS/JS unless the user explicitly asks (print sizing / ETA line / confirm Student ID keypad / tiny walk-in PIN corner button / small PECIT seal in the title row are allowed exceptions when requested).
-- Tiny bottom-right hit target always opens a PIN pad (every click). PIN is stored in `settings.walkin_pin` (Admin → Kiosk PIN), not `.env`. Correct PIN shows a walk-in issue overlay (no Student ID). PIN is checked on the server only. After print or cancel, the next corner click asks for the PIN again. Print still number-only; countdown returns to the kiosk. This is not a student multi-ticket ID.
+- Tiny bottom-right hit target always opens a PIN pad (every click). PIN is stored in `settings.walkin_pin` (Admin → Kiosk PIN), not `.env`. Correct PIN shows a walk-in issue overlay (no Student ID) sized for **1024×600** without scrolling. Optional mobile uses the on-screen pad only. PIN is checked on the server only. After print or cancel, the next corner click asks for the PIN again. Print still number-only; countdown returns to the kiosk. This is not a student multi-ticket ID.
 - Shell: `layouts/app.blade.php`. Views: `resources/views/kiosk/*`.
-- Thermal layout: **80mm** (XP-58(XP-Q90EC)), centered number — `kiosk/printing.blade.php`.
-- Silent print: not possible from a normal tab; use `bats/start-kiosk-chrome.bat` (`--kiosk --kiosk-printing`). Launcher matches printer **XP-Q90EC**, waits 10s, clears Chrome sticky printer; close all Chrome first.
+- Thermal layout: **58mm** (XP-58(XP-Q90EC)), centered number — `kiosk/printing.blade.php`.
+- Silent print: not possible from a normal tab; use `bats/start-kiosk-chrome.bat` (`--kiosk --kiosk-printing`). Launcher matches printer **XP-Q90EC**, waits 10s, starts the ACR122U watcher and the GSM sender, clears Chrome sticky printer; close all Chrome first. Reader helper: `bats/start-acr122-reader.bat` / `tools/kiosk/Watch-Acr122.ps1` writes `storage/app/kiosk-card.json`. `GET /kiosk/card` starts that watcher when it is not already running.
 - New tickets should set `queues.created_at` when the column exists (used for average waiting time in reports).
 
 ### Guard (kiosk PIN only — no login)
@@ -65,6 +65,8 @@ Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done onl
 - **Hold** (`POST /window/hold`): finish the open call, set `queues.status = held`, free the window. Held tickets leave Now Serving and waiting lists.
 - **Call held** (`POST /window/call-held`): resume a held ticket at this window without 2P→1R; requires no open serving ticket.
 - Shortcuts: **Alt+N** → Call Next; **Alt+R** → Recall; **Alt+C** → Complete.
+- **Paper-out:** kiosk PC watcher `tools/kiosk/Watch-PrinterPaper.ps1` (started with `start-kiosk-chrome.bat`, no window) writes `storage/app/kiosk-printer.json`. It uses the XP-Q90EC sensor, and also treats a ticket that stays **Printing** on that printer as out of paper (Windows does not set a paper-out error, and the USB port stays busy while that job is held). Staff window and System Float show an alert. The kiosk print page does not. Issued tickets stay valid.
+- **SMS (SIM7600):** opt-in only. After print: ticket number. When a waiting ticket first moves to 10 or fewer ahead (fair order): come-back text. When staff calls or recalls: window name. A ticket already within 10 at issue skips the come-back text. PHP writes `storage/app/sms-outbox/*.json`; `tools/kiosk/Watch-GsmSms.ps1` sends AT commands and must not block the queue. It picks the SIM7600 **AT** port by itself. There is no COM setting. The modem, driver, and sender stay on the kiosk/server PC. Number-only texts. No separate “you are next” text. Walk-in numbers must normalize to `+639` and 9 more digits.
 - History: `GET /window/history` (own **done** tickets only; hold sessions are not counted as served).
 - **Fair scheduling (service-wide):** 2 Priority → 1 Regular across all windows sharing a `service_id`. `callNext` locks the `services` row then claims via `FairQueueScheduler` (atomic status update; no duplicate ticket assignment).
 - **System float (Windows always-on-top):**
@@ -96,8 +98,8 @@ Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done onl
 
 ### Admin (auth, `admin` middleware)
 
-- Dashboard: live totals + waiting table (polls `/admin/queues/waiting` with counts + priority); quick links; SVG icons.
-- Users CRUD, **students** (add / delete / CSV import), served history (edit/delete), all tickets (includes `held` + student name for admin).
+- Dashboard: live totals + waiting table (polls `/admin/queues/waiting` with counts; same 2P→1R call order as staff, per service); quick links; SVG icons.
+- Users CRUD, **students** (add / edit / delete / CSV import), served history (edit/delete), all tickets (includes `held` + student name for admin).
 - **Reports:** overall avg waiting time + avg service time; **Averages by Window** table (served count, avg wait, avg service). Count **done** tickets only (latest completed call; hold sessions excluded).
   - Wait ≈ `queues.created_at` → `queue_calls.called_time`
   - Service ≈ `called_time` → `finished_time`
@@ -140,11 +142,14 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 |------|--------|
 | Routes | `routes/web.php` only (no `api.php`) |
 | Kiosk (protected UI) | `KioskController`, `views/kiosk/*`, `layouts/app.blade.php` |
-| Print 80mm (XP-58(XP-Q90EC)) | `views/kiosk/printing.blade.php` |
+| Print 58mm (XP-58(XP-Q90EC)) | `views/kiosk/printing.blade.php` |
 | Display | `DisplayController`, `views/display/index.blade.php` |
 | Staff | `WindowController`, `views/staff/window.blade.php`, `history.blade.php`, `float.blade.php` |
 | Float tools | `bats/start-staff-float.bat`, `tools/staff-float/Start-StaffFloat.ps1` |
 | Kiosk silent print | `bats/start-kiosk-chrome.bat`, `tools/kiosk/*.ps1` |
+| ACR122U tap | `bats/start-acr122-reader.bat`, `tools/kiosk/Watch-Acr122.ps1`, `storage/app/kiosk-card.json` |
+| Printer paper-out | `tools/kiosk/Watch-PrinterPaper.ps1`, `storage/app/kiosk-printer.json`, staff window + float alert |
+| GSM SMS | `GsmNotifier`, `tools/kiosk/Watch-GsmSms.ps1`, `storage/app/sms-outbox`, `storage/app/kiosk-gsm.json` |
 | Launcher guide | `bats/GUIDE.txt` |
 | Walk-in | `KioskWalkInGate`, kiosk PIN overlay; admin `/guard` → `GuardIssueController`, `views/guard/issue.blade.php` |
 | Kiosk PIN | `SettingsController`, `views/admin/settings.blade.php`, `settings` table |
@@ -152,7 +157,7 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | Panel theme | `layouts/panel.blade.php`, `css/panel.css`, sidebars; header moon/sun toggles dark mode (`localStorage pecit-theme`, kiosk/display unchanged) |
 | Queue logic | `FairQueueScheduler`, `WaitTimeEstimator`, `QueueService`, `StudentQueueGuard`, `TicketIssuer`, `KioskWalkInGate` |
 | Capstone About | `AboutController`, `config/about.php`, `views/about/*`, `storage/app/private/about/team/` |
-| Diagrams | `README.md` (Mermaid ERD + flowchart), `docs/erd.md`, `docs/erd/queuing_system.erd` (ERD Designer / MariaDB; do not hand-edit), `docs/system-flowchart.md`, Archify maps `docs/archify/pecit-runtime.architecture.html` and `docs/archify/pecit-erd.architecture.html` |
+| Diagrams | `README.md` (Mermaid ERD + flowchart), `docs/system-flowchart.md`, `docs/dfd-level1.md`, `docs/erd.md`, `docs/erd/queuing_system.erd` (ERD Designer / MariaDB; do not hand-edit), `CHANGELOG.md`, viewer `public/flowchart-viewer.html`, Archify maps `docs/archify/pecit-runtime.architecture.html` and `docs/archify/pecit-erd.architecture.html` |
 | Security headers | `SetSecurityHeaders` middleware |
 | Logo | `public/logo/logo.png` |
 
@@ -166,7 +171,8 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | GET/POST | `/login`, POST `/logout` | Auth |
 | GET/POST | `/kiosk` | Public ticket (`student_id` required on POST) |
 | GET | `/kiosk/estimate` | Waiting counts + ETA JSON |
-| GET | `/kiosk/student` | Confirm-step student ID lookup |
+| GET | `/kiosk/student` | Confirm-step student ID or card UID lookup |
+| GET | `/kiosk/card` | Last fresh ACR122U tap UID (helper file) |
 | GET | `/kiosk/walk-in/status` | PIN session unlocked? |
 | POST | `/kiosk/walk-in/unlock` | Check walk-in PIN |
 | POST | `/kiosk/walk-in/lock` | Clear PIN session after cancel/print |
@@ -177,7 +183,7 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | GET | `/admin` | Admin dashboard |
 | GET | `/admin/queues/waiting` | Live waiting JSON (+ counts) |
 | resource | `/admin/users` | User CRUD |
-| GET/POST/DELETE | `/admin/students…` | Student allowlist (add, delete, CSV import) |
+| GET/POST/PUT/DELETE | `/admin/students…` | Student allowlist (add, edit, delete, CSV import) |
 | GET/PUT/DELETE | `/admin/history…` | History, tickets, reports, edit |
 | GET/PUT | `/admin/settings` | Kiosk walk-in PIN (database) |
 | GET/POST | `/guard` | Admin-only walk-in issue |
@@ -211,6 +217,8 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | `2026_09_09_010000_align_students_collation_with_queues.php` | Match `students` collation to dump (`utf8mb4_general_ci`) |
 | `2026_09_10_000000_add_guard_role_and_walk_in_tickets.php` | `users.role` + `guard`; `queues.issued_by` / `issue_reason`; demo `guard@gmail.com` |
 | `2026_09_10_010000_add_settings_walkin_pin.php` | `settings` table; seed `walkin_pin` = `1981` |
+| `2026_09_26_000000_add_card_uid_and_mobile_to_students.php` | `students.card_uid` unique nullable; `students.mobile` nullable |
+| `2026_10_02_000000_add_sms_notices_to_queues.php` | `queues.sms_mobile`, `sms_issued`, `sms_near` |
 
 Rebuild dump helper: `php database/sql/build_queuing_system_dump.php`.
 
@@ -223,8 +231,8 @@ Rebuild dump helper: `php database/sql/build_queuing_system_dump.php`.
 | `users` | `role` admin\|staff\|guard; staff `window_id`; guard issuer cannot log in |
 | `settings` | Key/value (`walkin_pin` for kiosk walk-in) |
 | `daily_queue_counters` | Locked increment per service + date in kiosk store |
-| `students` | Allowlisted kiosk IDs (`student_id`, `name`) — dump seeds `2024-0001`…`2024-0005` |
-| `queues` | `queue_number`, `service_id`, optional `student_id`, optional `issued_by` / `issue_reason` (walk-in), `priority` 0/1, `status` waiting\|serving\|done\|cancelled\|held, `queue_date`, optional `created_at` for wait metrics — **name is never stored on the ticket** |
+| `students` | Allowlisted kiosk IDs (`student_id`, `name`, optional `card_uid`, optional `mobile`) — dump seeds `2024-0001`…`2024-0005` plus the RFID sample roster in `database/samples/pecit-students.csv` |
+| `queues` | `queue_number`, `service_id`, optional `student_id`, optional `issued_by` / `issue_reason` (walk-in), optional `sms_mobile` / `sms_issued` / `sms_near`, `priority` 0/1, `status` waiting\|serving\|done\|cancelled\|held, `queue_date`, optional `created_at` for wait metrics — **name is never stored on the ticket** |
 | `queue_calls` | `queue_id`, `window_id`, `called_time`, `finished_time` (null = open). Display recall token derived in app (`id` + `called_time`) |
 
 ### Seeded reference data (dump)
@@ -263,7 +271,8 @@ Models: check `$timestamps` / `$fillable` per model — several domain models us
 13. Do not put team photos under `public/`; keep `storage/app/private/about/team/` and allowlisted photo streaming.
 14. Do not add the About page to sidebars; keep Ctrl+Alt+Shift+A as the entry.
 15. One open ticket per student per day (`waiting`/`serving`/`held`). Hold is not Complete; reports count **done** only.
-16. Walk-in tickets: kiosk corner PIN (`settings.walkin_pin`, Admin → Kiosk PIN) or admin `/guard`. No Student ID; `issued_by` is the issuer user id. Guard role cannot log in. Do not add a multi-ticket student ID on the public kiosk. Print and display stay number-only.
+16. Walk-in tickets: kiosk corner PIN (`settings.walkin_pin`, Admin → Kiosk PIN) or admin `/guard`. No Student ID; `issued_by` is the issuer user id. Guard role cannot log in. Do not add a multi-ticket student ID on the public kiosk. Print and display stay number-only. Optional walk-in SMS accepts only a Philippine mobile (`09` + 9 digits) or blank; invalid input disables Issue & Print.
+17. GSM SMS stays on the kiosk/server PC. Do not add a COM-port setting. Do not block ticket issue or Call Next on the modem.
 
 ---
 
@@ -313,7 +322,7 @@ Kiosk launchers wait **10 seconds** before opening the browser (gives Apache/pri
 3. Staff/admin/login: extend `layouts.panel`; reuse `pecit-*` classes and `partials/icon`.
 4. Align `queuing_system.sql` if you intentionally change domain schema.
 5. Never commit `.env` or real secrets; avoid committing large personal photos unless the team wants them in-repo.
-6. When behavior/launchers/schema/users change, update **README.md** (operators) and **this file** (agents).
+6. When behavior/launchers/schema/users change, update **README.md**, **CHANGELOG.md**, **this file**, `docs/system-flowchart.md`, and `docs/dfd-level1.md`.
 
 ---
 
@@ -322,9 +331,10 @@ Kiosk launchers wait **10 seconds** before opening the browser (gives Apache/pri
 - [ ] Kiosk 3-step + print (confirm adds Student ID keypad; rest of chrome unchanged)
 - [ ] Kiosk confirm shows waiting counts + ETA via `/kiosk/estimate`
 - [ ] Kiosk Student ID lookup via `/kiosk/student`; Confirm disabled until OK
+- [ ] Confirm tap via ACR122U: `/kiosk/card` then `/kiosk/student?card_uid=`; unknown card = unknown ID
 - [ ] Unknown ID and second ticket same day are rejected
 - [ ] Kiosk POST validation (`service_id`, `priority`, `student_id`)
-- [ ] 80mm thermal (XP-58(XP-Q90EC)); optional `Estimated Time: N minutes` line only; **no student name**
+- [ ] 58mm thermal (XP-58(XP-Q90EC)); optional `Estimated Time: N minutes` line only; **no student name**
 - [ ] Silent print via `bats/start-kiosk-chrome.bat` (survives countdown; XP-Q90EC match)
 - [ ] Display + `/display/data`; waiting list = fair call order; 10 rows no scroll; voice if enabled; no names; held absent
 - [ ] Staff call-next / recall / complete / hold / call-held; name while serving; fair 2P→1R; independent service timers
@@ -333,8 +343,10 @@ Kiosk launchers wait **10 seconds** before opening the browser (gives Apache/pri
 - [ ] Admin dashboard live counts; reports show overall + per-window avg wait/service (**done** only)
 - [ ] Offline: no CDN fonts/icons; `npm run build` assets load
 - [ ] Ctrl+Alt+Shift+A opens About; photos from private folder when present
-- [ ] Admin Students: add, delete, CSV import; kiosk lookup uses the list
+- [ ] Admin Students: add, edit, delete, CSV import (`student_id,name,card_uid,mobile`); kiosk lookup uses the list
 - [ ] Guard cannot log in; kiosk corner PIN from `settings.walkin_pin` (Admin editable): every corner click asks for PIN → issue walk-in → print number-only → back to kiosk; wrong PIN rejected
+- [ ] Walk-in mobile pad: blank is allowed; `09` + 9 digits enables Issue & Print; any other number keeps it disabled and is rejected by the server
+- [ ] Opt-in SMS: ticket number after print; 10-away only if the line was longer at issue; window name on call and recall; queue does not wait on the modem
 - [ ] Auth middleware: admin vs staff
 
 ---

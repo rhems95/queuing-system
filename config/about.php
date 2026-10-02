@@ -13,7 +13,7 @@ return [
     'project' => 'PECIT Queuing System',
     'institution' => 'Philippine Electronics and Communication Institute of Technology Inc.',
     'subtitle' => 'Capstone Research Project',
-    'description' => 'An anonymous campus queue system for PECIT frontline offices. Students confirm with a Student ID; 80mm thermal tickets and the public display show numbers only — never names. People without a record use a kiosk walk-in PIN instead of a Guard login. Staff share a fair 2 Priority → 1 Regular call order across counters, with Hold and independent service timers. Admins manage users, the kiosk PIN, students, and reports on completed tickets only.',
+    'description' => 'An anonymous campus queue system for PECIT frontline offices. Students confirm with a Student ID; 58mm thermal tickets and the public display show numbers only — never names. People without a record use a kiosk walk-in PIN instead of a Guard login. Staff share a fair 2 Priority → 1 Regular call order across counters, with Hold and independent service timers. Admins manage users, the kiosk PIN, students, and reports on completed tickets only.',
     'shortcut_hint' => 'Ctrl + Alt + Shift + A',
     'members' => [
         [

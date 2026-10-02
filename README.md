@@ -2,7 +2,7 @@
 
 Queue management system for **Philippine Electronics and Communication Institute of Technology Inc. (PECIT)** — capstone research project.
 
-Customers take a ticket from a public **kiosk** after entering a Student ID on confirm. People who cannot use the kiosk (new enrollees, no record) get a **walk-in ticket** from the kiosk PIN (no Guard login). Staff call numbers at service windows (and can Hold a ticket). A public **display** shows who is being served — numbers only, no names. **Admins** manage users, the kiosk PIN, history, and reports.
+Customers take a ticket from a public **kiosk** after a Student ID on confirm (keypad or ID-card tap). People who cannot use the kiosk get a **walk-in ticket** from the kiosk PIN. Optional SMS can tell them the ticket number, when they are 10 or fewer ahead, and which window to go to. Staff call numbers at service windows (and can Hold a ticket). A public **display** shows who is being served — numbers only, no names. **Admins** manage users, the kiosk PIN, students, history, and reports.
 
 **Stack:** Laravel 12 · Blade · Vite/Tailwind · MySQL/MariaDB (typical **XAMPP** on Windows)
 
@@ -12,7 +12,7 @@ Customers take a ticket from a public **kiosk** after entering a Student ID on c
 
 | Module | Access | Purpose |
 |--------|--------|---------|
-| **Kiosk** | Public | 3-step ticket: service → priority → confirm (Student ID + live wait estimate) → 80mm print. Tiny corner button + PIN issues walk-ins. |
+| **Kiosk** | Public | 3-step ticket: service → priority → confirm (Student ID keypad or card tap + live wait estimate) → 58mm print. Optional SMS. Tiny corner button + PIN issues walk-ins. |
 | **Display** | Public | Now serving (by window group) + waiting list in call order + optional voice (no names, no held) |
 | **Staff window** | Staff login | Call Next (fair 2P→1R), Recall, Complete, Hold; per-counter service timer; student name while serving |
 | **Staff float** | Staff | Small always-on-top Windows panel for the same actions (incl. Hold) |
@@ -21,16 +21,18 @@ Customers take a ticket from a public **kiosk** after entering a Student ID on c
 
 - Tickets stay **anonymous on print and the public display** (no student name). The kiosk confirm step requires a **Student ID**.
 - One student may have only **one open ticket per day** (waiting, serving, or held), across all services.
-- **Walk-in tickets**: kiosk corner PIN (Admin → **Kiosk PIN**, stored in `settings`); no Student ID, many at once; staff sees “Walk-in (reason)”; print/display stay number-only. There is no Guard login.
-- Demo IDs in the dump: `2024-0001` Juan Dela Cruz, `2024-0002` Maria Santos, `2024-0003` Jose Rizal, `2024-0004` Ana Reyes, `2024-0005` Pedro Garcia.
+- **Walk-in tickets**: kiosk corner PIN (Admin → **Kiosk PIN**, stored in `settings`); no Student ID, many at once; staff sees “Walk-in (reason)”; print/display stay number-only. Optional mobile uses the on-screen pad. It must be blank or a Philippine number (`09` and 9 more digits). **Issue & Print** stays off while the number is invalid. There is no Guard login.
+- Demo IDs in the dump: `2024-0001` Juan Dela Cruz, `2024-0002` Maria Santos, `2024-0003` Jose Rizal, `2024-0004` Ana Reyes, `2024-0005` Pedro Garcia. Sample RFID roster (ID, name, card UID, mobile) is in `database/samples/pecit-students.csv`.
 - Staff can **Hold** (set aside) the current ticket, then **Call** it later without waiting in the 2P→1R line.
 - Priority is **Regular** or **Priority** only.
 - Calling uses shared **2 Priority → 1 Regular** per service (Cashier 1 / 2 / 3 share one Cashier queue).
 - Each counter has its own **service timer**; Complete on one window never affects another.
+- If the kiosk thermal printer runs out of paper, the staff window and System Float show **Kiosk printer is out of paper**. Tickets already issued stay valid. The kiosk launcher starts this check in the background.
+- **SMS** is off unless the student checks **Notify me by SMS** (number already on the student record; the screen shows only the last four digits). A walk-in may enter a mobile on the issue screen. Texts: ticket number after print, a come-back text when the ticket first reaches 10 or fewer ahead, and the window name when the ticket is called or recalled. A ticket already within 10 at print skips the come-back text. The queue does not wait on the modem. Plug the SIM7600 into the kiosk/server PC, install the driver that creates an **AT** port, and start `bats\start-kiosk-chrome.bat`. Do not set a COM port; the sender finds the AT port. Staff PCs do not need the driver.
 - Estimated wait uses active counters + history; the thermal ticket may add one line: `Estimated Time: N minutes`.
 - Kiosk UI is **finalized** — do not redesign it casually (print sizing / ETA line / confirm Student ID keypad / tiny walk-in PIN button / small PECIT seal in the title row are allowed exceptions).
 - Login / staff / admin use the **PECIT** navy/gold theme (local fonts + SVG icons, no CDN).
-- Thermal tickets target **XP-58(XP-Q90EC)** (80mm).
+- Thermal tickets target **XP-58(XP-Q90EC)** (58mm).
 - Secret **About / capstone credits** page: press **Ctrl + Alt + Shift + A** (not in menus).
 
 ---
@@ -138,7 +140,7 @@ Roles: **`admin`** or **`staff`**. Staff must be assigned a **window**; only **o
 
 A `guard` issuer row may exist in the dump for `issued_by` on walk-in tickets. It **cannot log in**. Create or edit admin/staff under **Admin → Users**.
 
-Kiosk IDs are managed under **Admin → Students** (add one, delete, or bulk import a CSV with `student_id,name`). Existing IDs in a CSV are skipped. A student with an open ticket today cannot be deleted.
+Kiosk IDs are managed under **Admin → Students** (add, edit, delete, or bulk import a CSV with `student_id,name,card_uid,mobile`). Existing IDs in a CSV are skipped. A student with an open ticket today cannot be deleted. Confirm accepts the keypad **or** an ACR122U RFID/NFC tap. On the kiosk PC run `bats\start-kiosk-chrome.bat` (starts the reader watcher) or `bats\start-acr122-reader.bat`. Unknown cards are treated as an unknown ID. Card serials and mobile numbers can be filled in later.
 
 ---
 
@@ -156,8 +158,8 @@ Kiosk IDs are managed under **Admin → Students** (add one, delete, or bulk imp
 | `users` | `role` = `admin` \| `staff` \| `guard` (issuer only, no login); staff have `window_id` |
 | `settings` | Key/value app settings (kiosk walk-in PIN) |
 | `daily_queue_counters` | Per-service daily serial for ticket numbers |
-| `students` | Allowlisted Student IDs + names for kiosk lookup |
-| `queues` | Tickets: number, service, optional `student_id`, optional `issued_by`/`issue_reason` (walk-in), priority (0/1), status (`waiting`/`serving`/`done`/`cancelled`/`held`), date |
+| `students` | Allowlisted Student IDs, names, optional `card_uid`, optional `mobile` |
+| `queues` | Tickets: number, service, optional `student_id`, optional `issued_by`/`issue_reason` (walk-in), optional `sms_mobile` / `sms_issued` / `sms_near`, priority (0/1), status (`waiting`/`serving`/`done`/`cancelled`/`held`), date |
 | `queue_calls` | Call history: queue ↔ window, called/finished times (service duration) |
 
 ### Seeded services & windows (dump)
@@ -202,7 +204,7 @@ Domain migrations (if aligning an existing DB instead of full import) live under
 
 See `bats/GUIDE.txt` for every launcher’s purpose.
 
-### Kiosk + silent print (XP-58(XP-Q90EC) / 80mm)
+### Kiosk + silent print (XP-58(XP-Q90EC) / 58mm)
 
 1. Run `bats/start-kiosk-chrome.bat` (or `bats/start-kiosk-edge.bat`) — waits **10 seconds**, sets the printer matching **XP-Q90EC** as Windows default, clears Chrome sticky printer settings, then opens fullscreen kiosk + silent print.
 2. If the printer name differs, edit `PRINTER_MATCH` in the `.bat` (do not put parentheses in echoed CMD values).
@@ -226,7 +228,7 @@ Waiting list columns follow the same **call order** as Call Next (2 Priority →
 
 ### Walk-in tickets (kiosk PIN)
 
-On the kiosk, tap the **tiny square in the bottom-right corner**, enter the walk-in PIN, then issue a ticket (service, priority, reason). Each tap of that button asks for the PIN again (after print or cancel too). There is no Guard login.
+On the kiosk, tap the **tiny square in the bottom-right corner**, enter the walk-in PIN, then issue a ticket (service, priority, reason). The screen fits **1024×600** without scrolling. Mobile for SMS is optional: use the pad, leave it blank, or enter `09` plus 9 digits. **Issue & Print** is disabled for any other number. Each tap of the corner button asks for the PIN again (after print or cancel too). There is no Guard login.
 
 Change the PIN under **Admin → Kiosk PIN** (stored in the `settings` table, default `1981`). Admin can still issue walk-ins from **Walk-in Tickets**.
 
@@ -252,7 +254,7 @@ Log in as admin → `/admin`:
 
 ## Diagrams (Mermaid)
 
-GitHub renders these on the README. You can also paste them into [mermaid.live](https://mermaid.live), or open the local viewer at `/flowchart-viewer.html` (offline Mermaid in `public/vendor/mermaid/`). More detail: [docs/system-flowchart.md](docs/system-flowchart.md). Crow’s-foot ERD: [docs/erd/queuing_system.erd](docs/erd/queuing_system.erd) (open in [ERD Designer](https://kajitiluna.github.io/erd-designer) or the `kajitiluna.erd-designer` extension). Interactive Archify maps: [runtime architecture](docs/archify/pecit-runtime.architecture.html) and [ERD](docs/archify/pecit-erd.architecture.html).
+GitHub renders these on the README. You can also paste them into [mermaid.live](https://mermaid.live), or open the local viewer at `/flowchart-viewer.html` (offline Mermaid in `public/vendor/mermaid/`). More detail: [docs/system-flowchart.md](docs/system-flowchart.md) and [docs/dfd-level1.md](docs/dfd-level1.md). Recent changes: [CHANGELOG.md](CHANGELOG.md). Crow’s-foot ERD: [docs/erd/queuing_system.erd](docs/erd/queuing_system.erd) (open in [ERD Designer](https://kajitiluna.github.io/erd-designer) or the `kajitiluna.erd-designer` extension). Interactive Archify maps: [runtime architecture](docs/archify/pecit-runtime.architecture.html) and [ERD](docs/archify/pecit-erd.architecture.html).
 
 ### Entity-relationship diagram (ERD)
 
@@ -305,6 +307,9 @@ erDiagram
         varchar student_id
         bigint issued_by
         varchar issue_reason
+        varchar sms_mobile
+        tinyint sms_issued
+        tinyint sms_near
         tinyint priority
         enum status
         date queue_date
@@ -315,6 +320,8 @@ erDiagram
         bigint id PK
         varchar student_id UK
         varchar name
+        varchar card_uid
+        varchar mobile
     }
 
     SETTINGS {
@@ -336,14 +343,19 @@ erDiagram
 
 ```mermaid
 flowchart TD
-    Start([Customer arrives]) --> Kiosk["Kiosk: service → priority → confirm ID + ETA"]
-    Start --> Walkin["Walk-in: kiosk corner PIN from settings"]
-    Walkin --> WalkIssue["POST /kiosk/walk-in: no student ID"]
-    Kiosk --> Est["Show waiting counts + ETA; lookup student"]
+    Start([Customer arrives]) --> Kiosk["Kiosk: service → priority → ID keypad or card tap + ETA"]
+    Start --> Walkin["Walk-in: kiosk corner PIN"]
+    Walkin --> WalkMob{"Mobile blank or 09 + 9 digits?"}
+    WalkMob -->|Invalid| WalkBlock["Issue and Print stays off"]
+    WalkMob -->|OK| WalkIssue["POST /kiosk/walk-in: no student ID"]
+    Kiosk --> Est["Waiting counts + ETA; lookup ID or card UID"]
     Est --> Issue["POST /kiosk: lock student + counter, insert queue"]
     WalkIssue --> Print
-    Issue --> Print["Print 80mm ticket (no name) + optional Estimated Time"]
-    Print --> Wait([Customer waits])
+    Issue --> Print["Print compact 58mm ticket, number only"]
+    Print --> Sms{"SMS opted in?"}
+    Sms -->|Yes| IssuedText["Text the ticket number"]
+    Sms -->|No| Wait
+    IssuedText --> Wait([Customer waits])
 
     Issue --> Display["Display: now serving + waiting in 2P→1R order"]
     Wait --> Display
@@ -351,16 +363,18 @@ flowchart TD
     Display --> Staff{"Staff Call Next / Recall / Complete / Hold"}
     Staff -->|Call Next| Fair["FairQueueScheduler: 2 Priority → 1 Regular"]
     Fair --> Lock["Lock service row; claim one waiting ticket"]
-    Lock --> Serving["queue status=serving; queue_calls open; timer starts"]
-    Serving --> Display
+    Lock --> Serving["status=serving; queue_calls open; timer starts"]
+    Serving --> Notify["Text the window name; text tickets now 10 or fewer ahead"]
+    Notify --> Display
     Serving --> Staff
-    Staff -->|Recall| Reannounce["Refresh called_time for TTS/display"]
+    Staff -->|Recall| Reannounce["Refresh called_time and text the window again"]
     Reannounce --> Display
-    Staff -->|Hold| Held["finished_time set; status=held; gone from display"]
-    Held --> Staff
+    Staff -->|Hold| Held["status=held; gone from display; line moves up"]
+    Held --> Near["Text waiting tickets that reach 10 ahead"]
+    Near --> Staff
     Staff -->|Call held| Serving
-    Staff -->|Complete| Done["finished_time set; status=done"]
-    Done --> Reports["Admin reports: avg wait & service by window"]
+    Staff -->|Complete| Done["status=done"]
+    Done --> Reports["Admin reports: avg wait and service by window"]
     Done --> End([Ticket complete])
 ```
 
@@ -380,4 +394,4 @@ npm run build
 - Fonts: Source Sans 3 bundled into `public/build/` via Vite
 - After CSS/JS/font changes: `npm run build`
 
-For AI agents and deeper technical context, see **[AGENTS.md](AGENTS.md)**.
+For AI agents and deeper technical context, see **[AGENTS.md](AGENTS.md)**. Recent behavior changes are listed in **[CHANGELOG.md](CHANGELOG.md)**.

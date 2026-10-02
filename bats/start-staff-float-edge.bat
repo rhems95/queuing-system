@@ -12,7 +12,7 @@ if "%FLOAT_URL%"=="" if exist "%BAT_DIR%staff-float-url.txt" (
         if not "%%U"=="" if "%FLOAT_URL%"=="" set "FLOAT_URL=%%U"
     )
 )
-if "%FLOAT_URL%"=="" set "FLOAT_URL=http://localhost/queue-system/public/window/float"
+if "%FLOAT_URL%"=="" set "FLOAT_URL=http://192.168.2.100/queue-system/public/window/float"
 
 start "" powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File "%ROOT_DIR%\tools\staff-float\Start-StaffFloat.ps1" -Browser edge -Url "%FLOAT_URL%"
 exit

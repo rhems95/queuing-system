@@ -63,6 +63,7 @@ class TicketIssuer
         ?string $studentId = null,
         ?int $issuedBy = null,
         ?string $issueReason = null,
+        ?string $smsMobile = null,
     ): Queue {
         $today = Carbon::today()->toDateString();
 
@@ -106,6 +107,11 @@ class TicketIssuer
         }
         if (Schema::hasColumn('queues', 'updated_at')) {
             $payload['updated_at'] = now();
+        }
+        if (Schema::hasColumn('queues', 'sms_mobile') && $smsMobile) {
+            $payload['sms_mobile'] = $smsMobile;
+            $payload['sms_issued'] = 0;
+            $payload['sms_near'] = 0;
         }
 
         $queueId = DB::table('queues')->insertGetId($payload);
