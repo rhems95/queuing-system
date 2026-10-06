@@ -289,6 +289,11 @@
             var estimateUrl = @json(route('kiosk.estimate'));
             var studentLookupUrl = @json(route('kiosk.student'));
             var cardTapUrl = @json(route('kiosk.card'));
+            var paperWatchUrl = @json(route('kiosk.paper'));
+            fetch(paperWatchUrl, { headers: { 'Accept': 'application/json' }, cache: 'no-store' }).catch(function () {});
+            setInterval(function () {
+                fetch(paperWatchUrl, { headers: { 'Accept': 'application/json' }, cache: 'no-store' }).catch(function () {});
+            }, 15000);
             var servicesById = @json($services->mapWithKeys(fn ($s) => [(string) $s->id => strtoupper($s->service_name)]));
             var hasKioskErrors = @json($errors->any());
             var studentOk = false;

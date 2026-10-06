@@ -103,13 +103,13 @@ flowchart TD
     Overlay --> Mob{"Blank or 09 + 9 digits?"}
     Mob -->|No| Block["Issue and Print disabled"]
     Mob -->|Yes| WPOST["POST /kiosk/walk-in"]
-    WPOST --> WTxn["Insert ticket: student_id null,<br/>issued_by, issue_reason, sms_mobile"]
+    WPOST --> WTxn["Insert walk-in ticket<br/>token T1006ABC, three letters"]
     Txn --> Print
     WTxn --> Print["58mm number-only ticket"]
     Print --> Text{"sms_mobile set?"}
-    Text -->|Yes| Out["Enqueue ticket-number text<br/>mark near if already within 10"]
+    Text -->|Yes| Out["Enqueue ticket text<br/>walk-in text includes the token"]
     Text -->|No| AP
-    Out --> AP["window.print + countdown"]
+    Out --> AP["window.print + countdown<br/>walk-in token on screen only"]
     AP --> Home([Back to /kiosk])
         </div>
     </section>
@@ -288,6 +288,8 @@ flowchart TD
     subgraph Settings["GET/PUT /admin/settings — SettingsController"]
         P1["Edit walkin_pin in settings table"]
         P2["4–6 digits; not stored in .env"]
+        P3["paper_sms_contacts: name, PH mobile, Send SMS checkbox"]
+        P4["One paper-out text per outage to checked numbers"]
     end
 
     subgraph WalkInAdmin["GET/POST /guard — GuardIssueController"]
@@ -305,7 +307,7 @@ flowchart TD
     subgraph AdminFlow["Typical flow"]
         A1["Login /login as admin"]
         A2["Dashboard overview"]
-        A3["Manage users, students, kiosk PIN"]
+        A3["Manage users, students, kiosk PIN, paper SMS list"]
         A4["Audit history / tickets / reports; optional /guard issue"]
     end
     A1 --> A2 --> A3 --> A4
@@ -432,7 +434,7 @@ flowchart TB
 
     ES -->|Call next, recall, complete, hold, call held| P3
     P3 -->|Current ticket, name, timer, paper-out alert| ES
-    P3 -->|Window-name text and 10-away text| EG
+    P3 -->|Window-name text, 10-away text, and one paper-out text| EG
 
     EA -->|Users, students, card, mobile, kiosk PIN, reports| P4
     P4 -->|Screens and CSV result| EA
@@ -454,7 +456,7 @@ flowchart TB
     D4 -->|Users, windows, students, settings| P4
     D1 -->|Tickets and filters| P4
     D3 -->|Served history, done only| P4
-    P4 -->|Update users, students, walk-in PIN| D4
+    P4 -->|Update users, students, walk-in PIN, paper SMS list| D4
         </div>
     </section>
 

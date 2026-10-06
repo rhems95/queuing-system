@@ -2,6 +2,28 @@
 
 Notable behavior of the PECIT queue system. Older capstone notes that say SMS fires at five ahead are out of date.
 
+## 2026-10-06
+
+### Printer paper SMS
+
+- Admin → **Kiosk settings** stores staff or assistant mobiles. Each row has a **Send SMS** checkbox.
+- A checked number gets one text when the kiosk printer first runs out of paper: `PECIT: Kiosk printer is out of paper. Load a new roll.`
+- An unchecked number stays on the list and is not texted.
+- Loading a new roll clears the sent mark, so the next time the paper runs out the text can go out again.
+- The text uses the same modem outbox as student notices. Printing and Call Next do not wait on it.
+
+### Walk-in screen token
+
+- Each walk-in ticket gets a token such as `T1006ABC`: weekday initial, month, day, and three random letters.
+- The cooldown screen shows the token. The printed ticket and the public display do not.
+- Staff see the token while that walk-in is being served, so they can match a photo of the screen.
+- If the walk-in entered a mobile number, the ticket text includes the token.
+
+### SMS sender
+
+- The modem's saved message center was blank, so text-mode sends failed. The sender now includes the Smart message center in each text.
+- Starting the sender again no longer stops a sender that is already running. A stuck text prompt is cancelled before the next try.
+
 ## 2026-10-02
 
 ### SMS (SIM7600)

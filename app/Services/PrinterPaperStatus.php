@@ -23,11 +23,14 @@ class PrinterPaperStatus
             $this->ensureWatcher();
         }
 
-        if (! is_array($data) || empty($data['paper_out'])) {
-            return false;
-        }
+        $out = is_array($data)
+            && ! empty($data['paper_out'])
+            && $age !== null
+            && $age <= self::HOLD_SECONDS;
 
-        return $age !== null && $age <= self::HOLD_SECONDS;
+        app(PaperOutAlerts::class)->sync($out);
+
+        return $out;
     }
 
     /**

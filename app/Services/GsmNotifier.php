@@ -53,6 +53,10 @@ class GsmNotifier
         if ($serviceName !== '') {
             $text .= ' ('.$serviceName.')';
         }
+        $token = trim((string) ($queue->screen_token ?? ''));
+        if ($token !== '') {
+            $text .= '. Token: '.$token;
+        }
         $text .= '.';
 
         if ($this->enqueue($queue->id.'-issued', (string) $queue->sms_mobile, $text)) {
@@ -92,6 +96,16 @@ class GsmNotifier
         $windowName = trim($windowName) !== '' ? trim($windowName) : 'the window';
         $text = 'PECIT: '.$queue->queue_number.', proceed to '.$windowName.'.';
         $this->enqueue($queue->id.'-called-'.now()->format('YmdHis'), (string) $queue->sms_mobile, $text);
+    }
+
+    public function sendPaperOut(string $id, string $mobile): bool
+    {
+        $mobile = $this->normalizeMobile($mobile);
+        if ($mobile === null) {
+            return false;
+        }
+
+        return $this->enqueue($id, $mobile, 'PECIT: Kiosk printer is out of paper. Load a new roll.');
     }
 
     /**

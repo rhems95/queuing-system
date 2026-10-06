@@ -48,7 +48,7 @@ flowchart TB
 
     ES -->|Call next, recall, complete, hold, call held| P3
     P3 -->|Current ticket, name, timer, paper-out alert| ES
-    P3 -->|Window-name text and 10-away text| EG
+    P3 -->|Window-name text, 10-away text, and one paper-out text| EG
 
     EA -->|Users, students, card, mobile, kiosk PIN, reports| P4
     P4 -->|Screens and CSV result| EA
@@ -70,17 +70,17 @@ flowchart TB
     D4 -->|Users, windows, students, settings| P4
     D1 -->|Tickets and filters| P4
     D3 -->|Served history, done only| P4
-    P4 -->|Update users, students, walk-in PIN| D4
+    P4 -->|Update users, students, walk-in PIN, paper SMS list| D4
 ```
 
 ### Data store definitions
 
 | ID | Maps to tables (logical) | Contents |
 |----|---------------------------|----------|
-| **D1** | `queues` | Ticket rows: number, service, optional `student_id`, optional `issued_by`/`issue_reason` (walk-in), optional `sms_mobile`, `sms_issued`, `sms_near`, priority, status (`waiting`/`serving`/`done`/`cancelled`/`held`), date |
+| **D1** | `queues` | Ticket rows: number, service, optional `student_id`, optional `issued_by`/`issue_reason` (walk-in), optional `screen_token` (cooldown only), optional `sms_mobile`, `sms_issued`, `sms_near`, priority, status (`waiting`/`serving`/`done`/`cancelled`/`held`), date |
 | **D2** | `daily_queue_counters` | Per service per day: last issued serial |
 | **D3** | `queue_calls` | Links queue to window: called / finished times (open = `finished_time` null) |
-| **D4** | `services`, `windows`, `users`, `students`, `settings` | Service prefixes, window groups, accounts (guard issuer cannot log in), Student ID allowlist with optional `card_uid` and `mobile`, kiosk walk-in PIN |
+| **D4** | `services`, `windows`, `users`, `students`, `settings`, `paper_sms_contacts` | Service prefixes, window groups, accounts (guard issuer cannot log in), Student ID allowlist with optional `card_uid` and `mobile`, kiosk walk-in PIN, staff mobiles for the paper-out text |
 
 SMS files (`storage/app/sms-outbox`) and helper status files (`kiosk-card.json`, `kiosk-printer.json`, `kiosk-gsm.json`) are local hand-offs on the kiosk PC. They are not database stores.
 
@@ -91,7 +91,7 @@ SMS files (`storage/app/sms-outbox`) and helper status files (`kiosk-card.json`,
 | **1.0** | Issue ticket | `KioskController@store`, `GET /kiosk/student`, `GET /kiosk/card`, `POST /kiosk/walk-in/unlock`, `POST /kiosk/walk-in`. Enqueues the ticket-number text when SMS was chosen. |
 | **2.0** | Produce display data | `DisplayController@index`, `DisplayController@data`. Numbers only. Held tickets are omitted. |
 | **3.0** | Serve at window | `WindowController` call-next / recall / complete / hold / call-held. After call or recall, enqueue the window-name text. After call or hold, enqueue the 10-away text for tickets that just entered that range. |
-| **4.0** | Administer system | `AdminDashboardController`, `UserManagementController`, `StudentManagementController`, `SettingsController`, `GuardIssueController`, `HistoryController` |
+| **4.0** | Administer system | `AdminDashboardController`, `UserManagementController`, `StudentManagementController`, `SettingsController`, `GuardIssueController`, `HistoryController`. Settings also stores which staff mobiles get the paper-out text. |
 
 ### External entities
 
@@ -99,7 +99,7 @@ SMS files (`storage/app/sms-outbox`) and helper status files (`kiosk-card.json`,
 |--------|------|
 | **Customer** | Uses the public kiosk (Student ID, card tap, or walk-in PIN). No login. |
 | **Card reader** | ACR122U on the kiosk PC. Writes the last UID for the confirm step. |
-| **GSM module** | SIM7600 on the kiosk/server PC. Sends the three opt-in texts. The app does not set its COM port. |
+| **GSM module** | SIM7600 on the kiosk/server PC. Sends the three opt-in texts, and one paper-out text to each checked staff number. The app does not set its COM port. |
 | **Staff** | Logged-in counter user tied to one window. Sees the paper-out alert. |
 | **Administrator** | Full admin routes, including students, kiosk PIN, and optional `/guard` issue |
 | **Display client** | Browser on TV/monitor; read-only public display |

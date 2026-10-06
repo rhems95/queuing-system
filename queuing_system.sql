@@ -116,6 +116,7 @@ CREATE TABLE `queues` (
   `student_id` varchar(50) DEFAULT NULL,
   `issued_by` bigint(20) UNSIGNED DEFAULT NULL,
   `issue_reason` varchar(32) DEFAULT NULL,
+  `screen_token` varchar(12) DEFAULT NULL,
   `sms_mobile` varchar(20) DEFAULT NULL,
   `sms_issued` tinyint(1) NOT NULL DEFAULT 0,
   `sms_near` tinyint(1) NOT NULL DEFAULT 0,
@@ -375,6 +376,19 @@ INSERT INTO `settings` (`id`, `setting_key`, `setting_value`, `updated_at`) VALU
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `paper_sms_contacts`
+--
+
+CREATE TABLE `paper_sms_contacts` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(80) NOT NULL,
+  `mobile` varchar(20) NOT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -484,6 +498,13 @@ ALTER TABLE `settings`
   ADD UNIQUE KEY `settings_setting_key_unique` (`setting_key`);
 
 --
+-- Indexes for table `paper_sms_contacts`
+--
+ALTER TABLE `paper_sms_contacts`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `paper_sms_contacts_mobile_unique` (`mobile`);
+
+--
 -- Indexes for table `users`
 --
 ALTER TABLE `users`
@@ -543,6 +564,12 @@ ALTER TABLE `services`
 --
 ALTER TABLE `settings`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `paper_sms_contacts`
+--
+ALTER TABLE `paper_sms_contacts`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `users`

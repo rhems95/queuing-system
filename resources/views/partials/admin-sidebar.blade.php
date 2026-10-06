@@ -22,7 +22,7 @@
         <a href="{{ route('admin.settings.edit') }}"
            class="pecit-nav-link {{ request()->routeIs('admin.settings.*') ? 'is-active' : '' }}">
             @include('partials.icon', ['name' => 'lock'])
-            <span>Kiosk PIN</span>
+            <span>Kiosk settings</span>
         </a>
         <a href="{{ route('guard.issue') }}"
            class="pecit-nav-link {{ request()->routeIs('guard.*') ? 'is-active' : '' }}">

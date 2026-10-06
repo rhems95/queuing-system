@@ -33,6 +33,7 @@ Route::get('/kiosk', [KioskController::class, 'index'])->name('kiosk');
 Route::get('/kiosk/estimate', [KioskController::class, 'estimate'])->name('kiosk.estimate');
 Route::get('/kiosk/student', [KioskController::class, 'lookupStudent'])->name('kiosk.student');
 Route::get('/kiosk/card', [KioskController::class, 'lastCardTap'])->name('kiosk.card');
+Route::get('/kiosk/paper', [KioskController::class, 'paperWatch'])->name('kiosk.paper');
 Route::get('/kiosk/walk-in/status', [KioskController::class, 'walkInStatus'])->name('kiosk.walkin.status');
 Route::post('/kiosk/walk-in/unlock', [KioskController::class, 'walkInUnlock'])->name('kiosk.walkin.unlock');
 Route::post('/kiosk/walk-in/lock', [KioskController::class, 'walkInLock'])->name('kiosk.walkin.lock');
@@ -67,6 +68,7 @@ Route::middleware('auth')->group(function () {
         Route::delete('/history/{queue_call}', [HistoryController::class, 'destroy'])->name('history.destroy');
         Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
         Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+        Route::put('/settings/paper-sms', [SettingsController::class, 'updatePaperSms'])->name('settings.paper-sms');
     });
 
     // Staff-only routes (own counter / served tickets only)

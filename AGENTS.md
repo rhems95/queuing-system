@@ -65,8 +65,8 @@ Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done onl
 - **Hold** (`POST /window/hold`): finish the open call, set `queues.status = held`, free the window. Held tickets leave Now Serving and waiting lists.
 - **Call held** (`POST /window/call-held`): resume a held ticket at this window without 2P→1R; requires no open serving ticket.
 - Shortcuts: **Alt+N** → Call Next; **Alt+R** → Recall; **Alt+C** → Complete.
-- **Paper-out:** kiosk PC watcher `tools/kiosk/Watch-PrinterPaper.ps1` (started with `start-kiosk-chrome.bat`, no window) writes `storage/app/kiosk-printer.json`. It uses the XP-Q90EC sensor, and also treats a ticket that stays **Printing** on that printer as out of paper (Windows does not set a paper-out error, and the USB port stays busy while that job is held). Staff window and System Float show an alert. The kiosk print page does not. Issued tickets stay valid.
-- **SMS (SIM7600):** opt-in only. After print: ticket number. When a waiting ticket first moves to 10 or fewer ahead (fair order): come-back text. When staff calls or recalls: window name. A ticket already within 10 at issue skips the come-back text. PHP writes `storage/app/sms-outbox/*.json`; `tools/kiosk/Watch-GsmSms.ps1` sends AT commands and must not block the queue. It picks the SIM7600 **AT** port by itself. There is no COM setting. The modem, driver, and sender stay on the kiosk/server PC. Number-only texts. No separate “you are next” text. Walk-in numbers must normalize to `+639` and 9 more digits.
+- **Paper-out:** kiosk PC watcher `tools/kiosk/Watch-PrinterPaper.ps1` (started with `start-kiosk-chrome.bat`, no window) writes `storage/app/kiosk-printer.json`. It uses the XP-Q90EC sensor, and also treats a ticket that stays **Printing** on that printer as out of paper (Windows does not set a paper-out error, and the USB port stays busy while that job is held). Staff window and System Float show an alert. The kiosk print page does not. Issued tickets stay valid. Admin → Kiosk settings can store staff or assistant mobiles with a **Send SMS** checkbox. Checked numbers get one text, `PECIT: Kiosk printer is out of paper. Load a new roll.`, when the roll first runs out. Loading paper clears that mark so the next outage can text again. Unchecked numbers stay on the list and are not texted. The same outbox is used, so the queue does not wait on the modem.
+- **SMS (SIM7600):** opt-in only. After print: ticket number. When a waiting ticket first moves to 10 or fewer ahead (fair order): come-back text. When staff calls or recalls: window name. A ticket already within 10 at issue skips the come-back text. PHP writes `storage/app/sms-outbox/*.json`; `tools/kiosk/Watch-GsmSms.ps1` sends AT commands and must not block the queue. It picks the SIM7600 **AT** port by itself. There is no COM setting. Each text includes the Smart message center, because the modem's saved center can be blank or unusable. The modem, driver, and sender stay on the kiosk/server PC. Number-only texts. No separate “you are next” text. Walk-in numbers must normalize to `+639` and 9 more digits.
 - History: `GET /window/history` (own **done** tickets only; hold sessions are not counted as served).
 - **Fair scheduling (service-wide):** 2 Priority → 1 Regular across all windows sharing a `service_id`. `callNext` locks the `services` row then claims via `FairQueueScheduler` (atomic status update; no duplicate ticket assignment).
 - **System float (Windows always-on-top):**
@@ -148,7 +148,7 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | Float tools | `bats/start-staff-float.bat`, `tools/staff-float/Start-StaffFloat.ps1` |
 | Kiosk silent print | `bats/start-kiosk-chrome.bat`, `tools/kiosk/*.ps1` |
 | ACR122U tap | `bats/start-acr122-reader.bat`, `tools/kiosk/Watch-Acr122.ps1`, `storage/app/kiosk-card.json` |
-| Printer paper-out | `tools/kiosk/Watch-PrinterPaper.ps1`, `storage/app/kiosk-printer.json`, staff window + float alert |
+| Printer paper-out | `tools/kiosk/Watch-PrinterPaper.ps1`, `storage/app/kiosk-printer.json`, staff window + float alert, optional staff SMS (`paper_sms_contacts`) |
 | GSM SMS | `GsmNotifier`, `tools/kiosk/Watch-GsmSms.ps1`, `storage/app/sms-outbox`, `storage/app/kiosk-gsm.json` |
 | Launcher guide | `bats/GUIDE.txt` |
 | Walk-in | `KioskWalkInGate`, kiosk PIN overlay; admin `/guard` → `GuardIssueController`, `views/guard/issue.blade.php` |
@@ -173,6 +173,7 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | GET | `/kiosk/estimate` | Waiting counts + ETA JSON |
 | GET | `/kiosk/student` | Confirm-step student ID or card UID lookup |
 | GET | `/kiosk/card` | Last fresh ACR122U tap UID (helper file) |
+| GET | `/kiosk/paper` | Quiet paper check; may enqueue one staff paper-out text |
 | GET | `/kiosk/walk-in/status` | PIN session unlocked? |
 | POST | `/kiosk/walk-in/unlock` | Check walk-in PIN |
 | POST | `/kiosk/walk-in/lock` | Clear PIN session after cancel/print |
@@ -186,6 +187,7 @@ After CSS/JS/font changes: `npm run build` (output in `public/build/`).
 | GET/POST/PUT/DELETE | `/admin/students…` | Student allowlist (add, edit, delete, CSV import) |
 | GET/PUT/DELETE | `/admin/history…` | History, tickets, reports, edit |
 | GET/PUT | `/admin/settings` | Kiosk walk-in PIN (database) |
+| PUT | `/admin/settings/paper-sms` | Staff paper-out SMS numbers and checkboxes |
 | GET/POST | `/guard` | Admin-only walk-in issue |
 | GET | `/window` | Staff dashboard |
 | GET | `/window/float` | Float UI |
@@ -230,9 +232,10 @@ Rebuild dump helper: `php database/sql/build_queuing_system_dump.php`.
 | `windows` | Counter; `service_id`, `group_name`, `status` |
 | `users` | `role` admin\|staff\|guard; staff `window_id`; guard issuer cannot log in |
 | `settings` | Key/value (`walkin_pin` for kiosk walk-in) |
+| `paper_sms_contacts` | Staff or assistant mobiles for the printer paper-out text (`name`, `mobile`, `enabled`) |
 | `daily_queue_counters` | Locked increment per service + date in kiosk store |
 | `students` | Allowlisted kiosk IDs (`student_id`, `name`, optional `card_uid`, optional `mobile`) — dump seeds `2024-0001`…`2024-0005` plus the RFID sample roster in `database/samples/pecit-students.csv` |
-| `queues` | `queue_number`, `service_id`, optional `student_id`, optional `issued_by` / `issue_reason` (walk-in), optional `sms_mobile` / `sms_issued` / `sms_near`, `priority` 0/1, `status` waiting\|serving\|done\|cancelled\|held, `queue_date`, optional `created_at` for wait metrics — **name is never stored on the ticket** |
+| `queues` | `queue_number`, `service_id`, optional `student_id`, optional `issued_by` / `issue_reason` (walk-in), optional `screen_token` (cooldown screen only), optional `sms_mobile` / `sms_issued` / `sms_near`, `priority` 0/1, `status` waiting\|serving\|done\|cancelled\|held, `queue_date`, optional `created_at` for wait metrics — **name is never stored on the ticket** |
 | `queue_calls` | `queue_id`, `window_id`, `called_time`, `finished_time` (null = open). Display recall token derived in app (`id` + `called_time`) |
 
 ### Seeded reference data (dump)
@@ -271,8 +274,8 @@ Models: check `$timestamps` / `$fillable` per model — several domain models us
 13. Do not put team photos under `public/`; keep `storage/app/private/about/team/` and allowlisted photo streaming.
 14. Do not add the About page to sidebars; keep Ctrl+Alt+Shift+A as the entry.
 15. One open ticket per student per day (`waiting`/`serving`/`held`). Hold is not Complete; reports count **done** only.
-16. Walk-in tickets: kiosk corner PIN (`settings.walkin_pin`, Admin → Kiosk PIN) or admin `/guard`. No Student ID; `issued_by` is the issuer user id. Guard role cannot log in. Do not add a multi-ticket student ID on the public kiosk. Print and display stay number-only. Optional walk-in SMS accepts only a Philippine mobile (`09` + 9 digits) or blank; invalid input disables Issue & Print.
-17. GSM SMS stays on the kiosk/server PC. Do not add a COM-port setting. Do not block ticket issue or Call Next on the modem.
+16. Walk-in tickets: kiosk corner PIN (`settings.walkin_pin`, Admin → Kiosk PIN) or admin `/guard`. No Student ID; `issued_by` is the issuer user id. Guard role cannot log in. Do not add a multi-ticket student ID on the public kiosk. Print and display stay number-only. Each walk-in gets a screen token (`T1006ABC`: weekday initial, month, day, three letters). It is shown on the cooldown screen and to staff while serving, and it is not printed. If a mobile was given, the ticket SMS includes that token. Optional walk-in SMS accepts only a Philippine mobile (`09` + 9 digits) or blank; invalid input disables Issue & Print.
+17. GSM SMS stays on the kiosk/server PC. Do not add a COM-port setting. Do not block ticket issue or Call Next on the modem. Paper-out texts go only to checked rows in `paper_sms_contacts`, once per outage.
 
 ---
 
@@ -346,7 +349,9 @@ Kiosk launchers wait **10 seconds** before opening the browser (gives Apache/pri
 - [ ] Admin Students: add, edit, delete, CSV import (`student_id,name,card_uid,mobile`); kiosk lookup uses the list
 - [ ] Guard cannot log in; kiosk corner PIN from `settings.walkin_pin` (Admin editable): every corner click asks for PIN → issue walk-in → print number-only → back to kiosk; wrong PIN rejected
 - [ ] Walk-in mobile pad: blank is allowed; `09` + 9 digits enables Issue & Print; any other number keeps it disabled and is rejected by the server
+- [ ] Walk-in cooldown screen shows a token such as T1006ABC; the printed ticket does not; the ticket SMS includes it when a mobile was entered
 - [ ] Opt-in SMS: ticket number after print; 10-away only if the line was longer at issue; window name on call and recall; queue does not wait on the modem
+- [ ] Admin → Kiosk settings: paper SMS list; unchecked numbers get no text; one text when paper first runs out
 - [ ] Auth middleware: admin vs staff
 
 ---

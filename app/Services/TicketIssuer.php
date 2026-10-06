@@ -54,6 +54,23 @@ class TicketIssuer
     }
 
     /**
+     * Walk-in screen token: weekday initial + month + day + 3 letters.
+     * Tuesday 6 October 2026 is T1006 plus three letters, for example T1006ABC.
+     */
+    public static function makeWalkInToken(?Carbon $at = null): string
+    {
+        $at = $at ?? Carbon::now();
+        $dayLetter = ['M', 'T', 'W', 'T', 'F', 'S', 'S'][$at->dayOfWeekIso - 1];
+        $alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $suffix = '';
+        for ($i = 0; $i < 3; $i++) {
+            $suffix .= $alphabet[random_int(0, 25)];
+        }
+
+        return $dayLetter.$at->format('md').$suffix;
+    }
+
+    /**
      * Next waiting ticket for a service today. Caller should hold any
      * student-row lock before calling when issuing a student ticket.
      */
@@ -102,6 +119,9 @@ class TicketIssuer
         if (Schema::hasColumn('queues', 'issue_reason')) {
             $payload['issue_reason'] = $issueReason;
         }
+        if ($issuedBy && Schema::hasColumn('queues', 'screen_token')) {
+            $payload['screen_token'] = $this->freshWalkInToken($today);
+        }
         if (Schema::hasColumn('queues', 'created_at')) {
             $payload['created_at'] = now();
         }
@@ -117,5 +137,21 @@ class TicketIssuer
         $queueId = DB::table('queues')->insertGetId($payload);
 
         return Queue::findOrFail($queueId);
+    }
+
+    private function freshWalkInToken(string $today): string
+    {
+        for ($try = 0; $try < 30; $try++) {
+            $token = self::makeWalkInToken();
+            $taken = DB::table('queues')
+                ->whereDate('queue_date', $today)
+                ->where('screen_token', $token)
+                ->exists();
+            if (! $taken) {
+                return $token;
+            }
+        }
+
+        return self::makeWalkInToken();
     }
 }

@@ -21,14 +21,14 @@ Customers take a ticket from a public **kiosk** after a Student ID on confirm (k
 
 - Tickets stay **anonymous on print and the public display** (no student name). The kiosk confirm step requires a **Student ID**.
 - One student may have only **one open ticket per day** (waiting, serving, or held), across all services.
-- **Walk-in tickets**: kiosk corner PIN (Admin → **Kiosk PIN**, stored in `settings`); no Student ID, many at once; staff sees “Walk-in (reason)”; print/display stay number-only. Optional mobile uses the on-screen pad. It must be blank or a Philippine number (`09` and 9 more digits). **Issue & Print** stays off while the number is invalid. There is no Guard login.
+- **Walk-in tickets**: kiosk corner PIN (Admin → **Kiosk settings**, stored in `settings`); no Student ID, many at once; staff sees “Walk-in (reason)” and a screen token such as `T1006ABC`. Print and the public display stay number-only. The token is on the cooldown screen only, not on the printed ticket. Optional mobile uses the on-screen pad. It must be blank or a Philippine number (`09` and 9 more digits). **Issue & Print** stays off while the number is invalid. A walk-in text includes the ticket number and the token. There is no Guard login.
 - Demo IDs in the dump: `2024-0001` Juan Dela Cruz, `2024-0002` Maria Santos, `2024-0003` Jose Rizal, `2024-0004` Ana Reyes, `2024-0005` Pedro Garcia. Sample RFID roster (ID, name, card UID, mobile) is in `database/samples/pecit-students.csv`.
 - Staff can **Hold** (set aside) the current ticket, then **Call** it later without waiting in the 2P→1R line.
 - Priority is **Regular** or **Priority** only.
 - Calling uses shared **2 Priority → 1 Regular** per service (Cashier 1 / 2 / 3 share one Cashier queue).
 - Each counter has its own **service timer**; Complete on one window never affects another.
-- If the kiosk thermal printer runs out of paper, the staff window and System Float show **Kiosk printer is out of paper**. Tickets already issued stay valid. The kiosk launcher starts this check in the background.
-- **SMS** is off unless the student checks **Notify me by SMS** (number already on the student record; the screen shows only the last four digits). A walk-in may enter a mobile on the issue screen. Texts: ticket number after print, a come-back text when the ticket first reaches 10 or fewer ahead, and the window name when the ticket is called or recalled. A ticket already within 10 at print skips the come-back text. The queue does not wait on the modem. Plug the SIM7600 into the kiosk/server PC, install the driver that creates an **AT** port, and start `bats\start-kiosk-chrome.bat`. Do not set a COM port; the sender finds the AT port. Staff PCs do not need the driver.
+- If the kiosk thermal printer runs out of paper, the staff window and System Float show **Kiosk printer is out of paper**. Tickets already issued stay valid. The kiosk launcher starts this check in the background. Under **Admin → Kiosk settings**, add staff or assistant mobiles and check **Send SMS** for each one that should get a text. One text is sent when the paper first runs out. Unchecked numbers are kept and not texted.
+- **SMS** is off unless the student checks **Notify me by SMS** (number already on the student record; the screen shows only the last four digits). A walk-in may enter a mobile on the issue screen. Texts: ticket number after print, a come-back text when the ticket first reaches 10 or fewer ahead, and the window name when the ticket is called or recalled. A ticket already within 10 at print skips the come-back text. The queue does not wait on the modem. Plug the SIM7600 into the kiosk/server PC, install the driver that creates an **AT** port, and start `bats\start-kiosk-chrome.bat`. Do not set a COM port; the sender finds the AT port and includes the Smart message center in each text. Staff PCs do not need the driver.
 - Estimated wait uses active counters + history; the thermal ticket may add one line: `Estimated Time: N minutes`.
 - Kiosk UI is **finalized** — do not redesign it casually (print sizing / ETA line / confirm Student ID keypad / tiny walk-in PIN button / small PECIT seal in the title row are allowed exceptions).
 - Login / staff / admin use the **PECIT** navy/gold theme (local fonts + SVG icons, no CDN).
@@ -159,7 +159,7 @@ Kiosk IDs are managed under **Admin → Students** (add, edit, delete, or bulk i
 | `settings` | Key/value app settings (kiosk walk-in PIN) |
 | `daily_queue_counters` | Per-service daily serial for ticket numbers |
 | `students` | Allowlisted Student IDs, names, optional `card_uid`, optional `mobile` |
-| `queues` | Tickets: number, service, optional `student_id`, optional `issued_by`/`issue_reason` (walk-in), optional `sms_mobile` / `sms_issued` / `sms_near`, priority (0/1), status (`waiting`/`serving`/`done`/`cancelled`/`held`), date |
+| `queues` | Tickets: number, service, optional `student_id`, optional `issued_by`/`issue_reason` (walk-in), optional `screen_token`, optional `sms_mobile` / `sms_issued` / `sms_near`, priority (0/1), status (`waiting`/`serving`/`done`/`cancelled`/`held`), date |
 | `queue_calls` | Call history: queue ↔ window, called/finished times (service duration) |
 
 ### Seeded services & windows (dump)
@@ -230,7 +230,7 @@ Waiting list columns follow the same **call order** as Call Next (2 Priority →
 
 On the kiosk, tap the **tiny square in the bottom-right corner**, enter the walk-in PIN, then issue a ticket (service, priority, reason). The screen fits **1024×600** without scrolling. Mobile for SMS is optional: use the pad, leave it blank, or enter `09` plus 9 digits. **Issue & Print** is disabled for any other number. Each tap of the corner button asks for the PIN again (after print or cancel too). There is no Guard login.
 
-Change the PIN under **Admin → Kiosk PIN** (stored in the `settings` table, default `1981`). Admin can still issue walk-ins from **Walk-in Tickets**.
+Change the PIN under **Admin → Kiosk settings** (stored in the `settings` table, default `1981`). The same page stores staff numbers for the printer paper-out text. Admin can still issue walk-ins from **Walk-in Tickets**.
 
 ### Admin
 
@@ -238,7 +238,7 @@ Log in as admin → `/admin`:
 
 - **Dashboard** — live totals (today / waiting / serving / completed), quick links, live waiting table; moon/sun in the header toggles dark mode
 - **Users** — admin / staff accounts and window assignment
-- **Kiosk PIN** — edit the walk-in PIN (database `settings` table)
+- **Kiosk settings** — edit the walk-in PIN (`settings` table) and the staff paper-out SMS list (`paper_sms_contacts`)
 - **Walk-in Tickets** — issue tickets for people who cannot use the kiosk
 - **Served History / All Tickets** — records
 - **Reports & Analytics** — overall and **per-window** average waiting time and average service time
@@ -307,6 +307,7 @@ erDiagram
         varchar student_id
         bigint issued_by
         varchar issue_reason
+        varchar screen_token
         varchar sms_mobile
         tinyint sms_issued
         tinyint sms_near
@@ -328,6 +329,13 @@ erDiagram
         bigint id PK
         varchar setting_key UK
         varchar setting_value
+    }
+
+    PAPER_SMS_CONTACTS {
+        bigint id PK
+        varchar name
+        varchar mobile UK
+        tinyint enabled
     }
 
     QUEUE_CALLS {

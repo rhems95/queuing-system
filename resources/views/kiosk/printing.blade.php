@@ -223,6 +223,10 @@
                     <div class="ticket-row"><span>Service:</span> <strong>{{ strtoupper($service->service_name) }}</strong></div>
                     <div class="ticket-divider"></div>
                     <div class="ticket-message">Please wait for your number to be called.</div>
+                    @if (!empty($queue->screen_token))
+                        <div class="ticket-divider"></div>
+                        <div class="ticket-row"><span>Token:</span> <strong>{{ $queue->screen_token }}</strong></div>
+                    @endif
                     <div class="ticket-divider"></div>
                     <div class="ticket-cooldown">Returning in: <span id="countdown">25</span> seconds</div>
                     <div class="ticket-divider"></div>

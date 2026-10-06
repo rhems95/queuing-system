@@ -21,7 +21,7 @@ End If
 For Each proc In wmi.ExecQuery("SELECT ProcessId, CommandLine FROM Win32_Process WHERE Name='powershell.exe' OR Name='pwsh.exe'")
     If Not IsNull(proc.CommandLine) Then
         If InStr(1, proc.CommandLine, "Watch-GsmSms.ps1", vbTextCompare) > 0 Then
-            proc.Terminate
+            WScript.Quit 0
         End If
     End If
 Next

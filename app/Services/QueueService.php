@@ -86,7 +86,13 @@ class QueueService
         }
 
         if ($queue && $queue->issued_by) {
-            return TicketIssuer::walkInServingLabel($queue->issue_reason);
+            $label = TicketIssuer::walkInServingLabel($queue->issue_reason);
+            $token = trim((string) ($queue->screen_token ?? ''));
+            if ($token !== '') {
+                return $label.' · '.$token;
+            }
+
+            return $label;
         }
 
         return null;

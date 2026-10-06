@@ -6,6 +6,7 @@ use App\Models\Queue;
 use App\Models\Service;
 use App\Services\GsmNotifier;
 use App\Services\KioskCardTap;
+use App\Services\PrinterPaperStatus;
 use App\Services\KioskWalkInGate;
 use App\Services\StudentQueueGuard;
 use App\Services\TicketIssuer;
@@ -26,6 +27,13 @@ class KioskController extends Controller
         private KioskWalkInGate $walkInGate,
         private GsmNotifier $sms,
     ) {
+    }
+
+    public function paperWatch(PrinterPaperStatus $paper): JsonResponse
+    {
+        $paper->isOut();
+
+        return response()->json(['ok' => true]);
     }
 
     public function index(Request $request)

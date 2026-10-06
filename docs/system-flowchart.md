@@ -115,13 +115,13 @@ flowchart TD
     Overlay --> Mob{"Blank or 09 + 9 digits?"}
     Mob -->|No| Block["Issue and Print disabled"]
     Mob -->|Yes| WPOST["POST /kiosk/walk-in"]
-    WPOST --> WTxn["Insert ticket: student_id null,<br/>issued_by, issue_reason, sms_mobile"]
+    WPOST --> WTxn["Insert walk-in ticket<br/>token T1006ABC, three letters"]
     Txn --> Print
     WTxn --> Print["58mm number-only ticket"]
     Print --> Text{"sms_mobile set?"}
-    Text -->|Yes| Out["Enqueue ticket-number text<br/>mark near if already within 10"]
+    Text -->|Yes| Out["Enqueue ticket text<br/>walk-in text includes the token"]
     Text -->|No| AP
-    Out --> AP["window.print + countdown"]
+    Out --> AP["window.print + countdown<br/>walk-in token on screen only"]
     AP --> Home([Back to /kiosk])
 ```
 
@@ -301,6 +301,8 @@ flowchart TD
     subgraph Settings["GET/PUT /admin/settings — SettingsController"]
         P1["Edit walkin_pin in settings table"]
         P2["4–6 digits; not stored in .env"]
+        P3["paper_sms_contacts: name, PH mobile, Send SMS checkbox"]
+        P4["One paper-out text per outage to checked numbers"]
     end
 
     subgraph WalkInAdmin["GET/POST /guard — GuardIssueController"]
@@ -318,7 +320,7 @@ flowchart TD
     subgraph AdminFlow["Typical flow"]
         A1["Login /login as admin"]
         A2["Dashboard overview"]
-        A3["Manage users, students, kiosk PIN"]
+        A3["Manage users, students, kiosk PIN, paper SMS list"]
         A4["Audit history / tickets / reports; optional /guard issue"]
     end
     A1 --> A2 --> A3 --> A4

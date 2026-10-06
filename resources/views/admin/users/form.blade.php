@@ -57,7 +57,7 @@
                         <input type="text" value="Kiosk issuer (no login)" class="pecit-input" disabled>
                         <p class="pecit-page-sub" style="margin-top:0.4rem;">
                             This account cannot log in. Change the walk-in PIN under
-                            <a href="{{ route('admin.settings.edit') }}">Kiosk PIN</a>.
+                            <a href="{{ route('admin.settings.edit') }}">Kiosk settings</a>.
                         </p>
                     @else
                     <select name="role" id="roleSelect" class="pecit-select" required>

@@ -66,6 +66,8 @@ function Test-GsmPort([string]$name) {
             $port.RtsEnable = $true
             $port.Open()
             Start-Sleep -Milliseconds 200
+            $port.Write([char]27)
+            Start-Sleep -Milliseconds 120
             $port.DiscardInBuffer()
             $reply = Send-At $port "AT" 1200
             if ($reply -match 'OK') {
@@ -107,6 +109,33 @@ function Find-GsmPort {
     return $null
 }
 
+function Convert-SwappedDigits([string]$digits) {
+    if ($digits.Length % 2 -eq 1) { $digits += 'F' }
+    $out = ''
+    for ($i = 0; $i -lt $digits.Length; $i += 2) {
+        $out += $digits[$i + 1] + $digits[$i]
+    }
+    return $out
+}
+
+function Convert-Gsm7Hex([string]$text) {
+    $buffer = 0
+    $bits = 0
+    $out = ''
+    foreach ($ch in $text.ToCharArray()) {
+        $septet = [int]$ch -band 0x7F
+        $buffer = $buffer -bor ($septet -shl $bits)
+        $bits += 7
+        while ($bits -ge 8) {
+            $out += ([byte]($buffer -band 0xFF)).ToString('X2')
+            $buffer = $buffer -shr 8
+            $bits -= 8
+        }
+    }
+    if ($bits -gt 0) { $out += ([byte]($buffer -band 0xFF)).ToString('X2') }
+    return $out
+}
+
 function Send-GsmText([string]$portName, [string]$number, [string]$text) {
     $port = $null
     try {
@@ -117,6 +146,9 @@ function Send-GsmText([string]$portName, [string]$number, [string]$text) {
         $port.RtsEnable = $true
         $port.Open()
         Start-Sleep -Milliseconds 150
+        $port.Write([char]27)
+        Start-Sleep -Milliseconds 120
+        $port.DiscardInBuffer()
         $hello = Send-At $port "AT" 1500
         if ($hello -notmatch 'OK') {
             $port.Close()
@@ -127,17 +159,29 @@ function Send-GsmText([string]$portName, [string]$number, [string]$text) {
             $port.DtrEnable = $true
             $port.RtsEnable = $true
             $port.Open()
+            Start-Sleep -Milliseconds 150
+            $port.Write([char]27)
+            Start-Sleep -Milliseconds 120
+            $port.DiscardInBuffer()
             $hello = Send-At $port "AT" 1500
             if ($hello -notmatch 'OK') { return $false }
         }
-        $mode = Send-At $port "AT+CMGF=1" 2000
+        $digits = ($number -replace '\D', '')
+        if ($digits.StartsWith('0')) { $digits = '63' + $digits.Substring(1) }
+        if ($digits.Length -lt 11) { return $false }
+        $smscDigits = '639180000101'
+        $smscSwap = Convert-SwappedDigits $smscDigits
+        $smsc = (1 + ($smscSwap.Length / 2)).ToString('X2') + '91' + $smscSwap
+        $destSwap = Convert-SwappedDigits $digits
+        $packed = Convert-Gsm7Hex $text
+        $tpdu = '0100' + $digits.Length.ToString('X2') + '91' + $destSwap + '0000' + $text.Length.ToString('X2') + $packed
+        $mode = Send-At $port "AT+CMGF=0" 2000
         if ($mode -notmatch 'OK') { return $false }
-        [void](Send-At $port 'AT+CSCS="GSM"' 1500)
         $port.DiscardInBuffer()
-        $port.Write("AT+CMGS=`"$number`"`r")
+        $port.Write(('AT+CMGS=' + ($tpdu.Length / 2)) + "`r")
         $prompt = Read-AtReply $port 8000
         if ($prompt -notmatch '>') { return $false }
-        $port.Write($text)
+        $port.Write($smsc + $tpdu)
         $port.Write([char]26)
         $done = Read-AtReply $port 30000
         return ($done -match '\+CMGS:' -and $done -notmatch 'ERROR')

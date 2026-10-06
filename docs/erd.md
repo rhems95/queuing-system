@@ -63,6 +63,10 @@ erDiagram
         varchar student_id
         bigint issued_by
         varchar issue_reason
+        varchar screen_token
+        varchar sms_mobile
+        tinyint sms_issued
+        tinyint sms_near
         tinyint priority
         enum status
         date queue_date
@@ -73,12 +77,21 @@ erDiagram
         bigint id PK
         varchar student_id UK
         varchar name
+        varchar card_uid
+        varchar mobile
     }
 
     SETTINGS {
         bigint id PK
         varchar setting_key UK
         varchar setting_value
+    }
+
+    PAPER_SMS_CONTACTS {
+        bigint id PK
+        varchar name
+        varchar mobile UK
+        tinyint enabled
     }
 
     QUEUE_CALLS {
@@ -102,3 +115,6 @@ erDiagram
 | Student → Queues | Optional Student ID on a ticket; name is staff/admin only |
 | User → Queues | Optional `issued_by` for kiosk/admin walk-in tickets |
 | Settings | `walkin_pin` for the kiosk walk-in PIN (admin editable) |
+| Queue `screen_token` | Walk-in only. Weekday initial, month, day, and three letters, such as `T1006ABC`. Shown on the cooldown screen and to staff. Not printed and not on the public display. |
+| Queue SMS columns | Optional `sms_mobile` plus flags for the ticket text and the 10-away text |
+| Paper SMS contacts | Staff or assistant mobiles. `enabled` is the Send SMS checkbox for the printer paper-out text |

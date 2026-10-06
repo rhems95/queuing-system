@@ -17,6 +17,7 @@ class Queue extends Model
         'queue_date',
         'issued_by',
         'issue_reason',
+        'screen_token',
         'sms_mobile',
         'sms_issued',
         'sms_near',

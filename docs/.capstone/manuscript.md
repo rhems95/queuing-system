@@ -51,9 +51,9 @@ Finally, the researchers thank their families and one another—Mike D. Bedrona,
 
 *(Preliminary page. In Word: lowercase Roman numeral, centered at the bottom.)*
 
-Student service offices at the Philippine Electronics and Communication Institute of Technology (PECIT) currently process Cashier, Registrar, and Data Management Office (DMO) transactions through manual first-come-first-served lining. That physical line can produce unclear order, line cutting, weak priority handling, crowding, and no shared view of who is waiting. This capstone developed and implemented a standalone Local Area Network (LAN)–based kiosk queuing system with a 58mm thermal printer as a localized replacement for that process. One mini PC (Intel Core i5 8th Generation, 8 GB RAM) serves as both the public kiosk and the application server. The kiosk uses an ACR122U-A9 RFID/NFC reader and a SIM7600G-H GSM/LTE module. When the printer is out of paper, the staff dashboard shows a paper-out alert.
+Student service offices at the Philippine Electronics and Communication Institute of Technology (PECIT) currently process Cashier, Registrar, and Data Management Office (DMO) transactions through manual first-come-first-served lining. That physical line can produce unclear order, line cutting, weak priority handling, crowding, and no shared view of who is waiting. This capstone developed and implemented a standalone Local Area Network (LAN)–based kiosk queuing system with a 58mm thermal printer as a localized replacement for that process. One mini PC (Intel Core i5 8th Generation, 8 GB RAM) serves as both the public kiosk and the application server. The kiosk uses an ACR122U-A9 RFID/NFC reader and a SIM7600G-H GSM/LTE module. When the printer is out of paper, the staff window and System Float show a paper-out alert, and checked staff or assistant numbers may receive one SMS.
 
-The student kiosk remains three steps: service selection, Regular or Priority, and confirmation. Confirmation requires a validated Student ID typed on the keypad or tapped on an enrolled RFID/NFC card, or an authorized walk-in ticket after the kiosk PIN is accepted. Clients who do not bring the card may still type the Student ID. **Notify me by SMS** is off by default and uses the mobile number stored on the student record; students do not type a number at Confirm. If no mobile is on file, the control stays off and disabled and shows that no SMS number is on file; print still proceeds. Walk-in clients may enter a number only on the PIN overlay. The printed ticket, public display, and optional local GSM SMS stay number-only. GSM SMS may notify an opted-in ticket when it is five places away in fair call order and when it is called. Staff windows that share a service, including Cashier 1 to Cashier 3, use one waiting queue and a service-wide 2 Priority → 1 Regular call order, with Hold and Call Held. Administrators manage users, the student allowlist, RFID/NFC card UID and mobile enrollment, the walk-in PIN, and reports based on completed transactions only.
+The student kiosk remains three steps: service selection, Regular or Priority, and confirmation. Confirmation requires a validated Student ID typed on the keypad or tapped on an enrolled RFID/NFC card, or an authorized walk-in ticket after the kiosk PIN is accepted. Clients who do not bring the card may still type the Student ID. **Notify me by SMS** is off by default and uses the mobile number stored on the student record; students do not type a number at Confirm. If no mobile is on file, the control stays off and disabled and shows that no SMS number is on file; print still proceeds. Walk-in clients may leave the mobile blank or enter a Philippine number (09 and 9 more digits) on the PIN overlay; any other number keeps Issue and Print disabled. Each walk-in receives a screen token such as T1006ABC (weekday initial, month, day, and three letters), shown on the cooldown screen and not printed. The printed ticket and public display stay number-only. GSM SMS may send the ticket number after print, a come-back text when the ticket first has 10 or fewer ahead in fair call order, and the window name when it is called. Staff windows that share a service, including Cashier 1 to Cashier 3, use one waiting queue and a service-wide 2 Priority → 1 Regular call order, with Hold and Call Held. Administrators manage users, the student allowlist, RFID/NFC card UID and mobile enrollment, the walk-in PIN, and reports based on completed transactions only.
 
 Development followed the Waterfall model. Evaluation used functional tests, one technical expert review, and User Acceptance Testing aligned with ISO/IEC 25010 product-quality characteristics. User feedback was **Strongly Agree** (Cashier **5.00**, Registrar **5.00**, DMO **4.92**, Student form **4.91**; combined **4.96**). The IT expert scored **5.00** overall. The study does not claim a measured reduction in waiting time.
 
@@ -100,9 +100,9 @@ Despite these developments, existing queue management implementations differ in 
 
 A standalone, Local Area Network (LAN)-based architecture is appropriate for an institutional environment where continuous internet connectivity is not required for essential queue operations [22], [9]. In the developed system, the kiosk, staff workstations, public display, administrator computer, and local database communicate within the institution's local network. The system is built using Laravel 12, Blade, Vite/Tailwind, and MySQL/MariaDB and is intended for local deployment through the institution's available computing and network resources.
 
-The proposed system is specifically designed for the student service offices of the Philippine Electronics and Communication Institute of Technology (PECIT). Through the touchscreen kiosk, clients select a service, choose either Regular or Priority, and proceed to a confirmation stage. During confirmation the Student ID is typed on the keypad or read from an enrolled RFID/NFC student ID card at the kiosk reader, then validated before a queue ticket is generated. Clients who do not bring the physical ID may still type the Student ID. Clients who cannot use a Student ID may request a walk-in ticket at the same kiosk after entering the designated kiosk PIN. When sufficient historical and current queue information is available, the confirmation stage may also provide an estimated waiting time. A **Notify me by SMS** control is **off by default**. Students do not type a mobile number at the kiosk; notices use the mobile number stored with the Student ID and RFID/NFC card serial in the student list. Walk-in clients have no student record and may enter a mobile number only on the PIN overlay. The student kiosk flow remains a three-step process of service selection, priority selection, and confirmation before ticket generation.
+The proposed system is specifically designed for the student service offices of the Philippine Electronics and Communication Institute of Technology (PECIT). Through the touchscreen kiosk, clients select a service, choose either Regular or Priority, and proceed to a confirmation stage. During confirmation the Student ID is typed on the keypad or read from an enrolled RFID/NFC student ID card at the kiosk reader, then validated before a queue ticket is generated. Clients who do not bring the physical ID may still type the Student ID. Clients who cannot use a Student ID may request a walk-in ticket at the same kiosk after entering the designated kiosk PIN. When sufficient historical and current queue information is available, the confirmation stage may also provide an estimated waiting time. A **Notify me by SMS** control is **off by default**. Students do not type a mobile number at the kiosk; notices use the mobile number stored with the Student ID and RFID/NFC card serial in the student list. Walk-in clients have no student record and may leave the mobile blank or enter a Philippine number (`09` and 9 more digits) only on the PIN overlay. Each walk-in receives a screen token, such as T1006ABC, shown on the cooldown screen and not printed. The student kiosk flow remains a three-step process of service selection, priority selection, and confirmation before ticket generation.
 
-The staff component supports coordinated queue management across service windows. Multiple windows assigned to the same service can share one waiting queue. In the Cashier service, for example, Cashier 1, Cashier 2, and Cashier 3 share a common Cashier waiting queue while maintaining independent active transactions and service timers. The system applies a service-wide 2 Priority → 1 Regular scheduling rule and provides authorized staff with functions to call the next queue, recall a queue, place a transaction on hold, resume a held transaction, and complete a transaction. While serving, staff may view the student name associated with a validated Student ID or the walk-in reason for an authorized walk-in ticket.
+The staff component supports coordinated queue management across service windows. Multiple windows assigned to the same service can share one waiting queue. In the Cashier service, for example, Cashier 1, Cashier 2, and Cashier 3 share a common Cashier waiting queue while maintaining independent active transactions and service timers. The system applies a service-wide 2 Priority → 1 Regular scheduling rule and provides authorized staff with functions to call the next queue, recall a queue, place a transaction on hold, resume a held transaction, and complete a transaction. While serving, staff may view the student name associated with a validated Student ID, or the walk-in reason and screen token for an authorized walk-in ticket.
 
 The system also provides a public queue display showing current serving numbers and waiting queues without exposing student names publicly. Queue and service activities are recorded in the local database, enabling administrators to manage authorized users and student records, set the kiosk walk-in PIN, monitor queue activities, review transaction history, and generate reports containing waiting-time and service-time information from completed transactions only.
 
@@ -137,7 +137,7 @@ Specifically, this study seeks to answer the following questions:
 1. How can student transactions at the Cashier, Registrar, and DMO be organized when clients currently wait in a **manual first-come-first-served line** that uses **no queue ticket** and is subject to line cutting?
 2. How can a client’s request be checked and confirmed—through Student ID validation by keypad or RFID/NFC tap, or authorized walk-in issuance—before a queue number is given, instead of relying only on physical arrival?
 3. How can clients have a clear queue reference when the current process issues no ticket, and how can priority clients be served fairly while several windows share one service queue, instead of depending only on a first-come-first-served physical line?
-4. How can clients and service windows track who is being served and who is waiting when the current process has no real-time queue display, and how can a student who opts in to SMS—or a walk-in who gives a mobile number—be notified when their ticket is near and when it is called?
+4. How can clients and service windows track who is being served and who is waiting when the current process has no real-time queue display, and how can a student who opts in to SMS—or a walk-in who gives a Philippine mobile number—be notified after print, when the ticket first has 10 or fewer ahead, and when it is called?
 5. How can the developed system be evaluated in terms of functionality, usability, efficiency, reliability and accuracy, and user satisfaction through system testing, expert evaluation, and User Acceptance Testing (UAT)?
 
 
@@ -157,7 +157,7 @@ Specifically, this study aims to:
 1. Develop a standalone kiosk-based queuing management system that automates and organizes student transactions for the selected PECIT student service offices, particularly the Cashier, Registrar, and Data Management Office (DMO).
 2. Implement a confirmation-based transaction process that allows clients to select a service, choose Regular or Priority queue status, type or tap and validate their Student ID or complete authorized kiosk-PIN walk-in issuance, and confirm the request before a queue number is generated.
 3. Integrate a **58mm USB thermal printer** that automatically produces a physical queue ticket containing the necessary queue information after a confirmed transaction, and incorporate a priority queue mechanism that follows the **2 Priority → 1 Regular** scheduling rule while supporting multiple service windows assigned to the same service.
-4. Implement a real-time queue display and monitoring feature that allows clients and authorized staff to view current queue information, supports coordination among service windows, and sends optional local GSM SMS notices when a ticket is five places away in fair call order and when the number is called. Students opt in with an SMS toggle that is off by default and uses the mobile number stored on their student record. Walk-in clients may enter a number only on the PIN overlay.
+4. Implement a real-time queue display and monitoring feature that allows clients and authorized staff to view current queue information, supports coordination among service windows, and sends optional local GSM SMS notices with the ticket number after print, when a ticket first has 10 or fewer ahead in fair call order, and with the window name when the number is called. Students opt in with an SMS toggle that is off by default and uses the mobile number stored on their student record. Walk-in clients may enter a Philippine mobile only on the PIN overlay, and that text also includes the screen token.
 5. Evaluate the developed system in terms of functionality, usability, efficiency, reliability and accuracy, and user satisfaction through system testing, expert evaluation, and User Acceptance Testing (UAT), using quality characteristics aligned with ISO/IEC 25010 [10].
 
 
@@ -192,9 +192,9 @@ The system also includes staff-controlled queue management functions. Authorized
 
 For services with multiple windows, the system supports a shared waiting queue across windows. The queue scheduler follows the 2 Priority → 1 Regular service order across windows sharing the same service.
 
-The system further includes a real-time public queue display that shows current serving numbers and waiting queues. Student names and held tickets are not displayed publicly. A student who turns on SMS after a successful lookup may receive a GSM SMS at the mobile number stored on the student record when the ticket is about five waiting tickets away in the same fair call order used by Call Next, with an estimated wait when history is sufficient, and a second SMS when the number is called or recalled. If no mobile is on file, the SMS control stays off and disabled and shows that no SMS number is on file; print still proceeds. Walk-in clients may enter a mobile number only on the PIN overlay. Queue operations continue if the GSM module is unavailable. Queue and service activities are recorded in the local database for monitoring, history, and administrative reporting. The administrator can manage authorized users and student records, enroll RFID/NFC card serials (UID) and mobile numbers against Student IDs, set the kiosk walk-in PIN, monitor queue activities, review records, and access waiting-time and service-time reports based on completed transactions.
+The system further includes a real-time public queue display that shows current serving numbers and waiting queues. Student names and held tickets are not displayed publicly. A student who turns on SMS after a successful lookup may receive a GSM SMS at the mobile number stored on the student record: the ticket number after print, a come-back text the first time the ticket has 10 or fewer ahead in the same fair call order used by Call Next, and the window name when the number is called or recalled. A ticket already within 10 at print does not get the come-back text. If no mobile is on file, the SMS control stays off and disabled and shows that no SMS number is on file; print still proceeds. Walk-in clients may enter a Philippine mobile only on the PIN overlay. A walk-in ticket text also includes the screen token. Queue operations continue if the GSM module is unavailable. Queue and service activities are recorded in the local database for monitoring, history, and administrative reporting. The administrator can manage authorized users and student records, enroll RFID/NFC card serials (UID) and mobile numbers against Student IDs, set the kiosk walk-in PIN, monitor queue activities, review records, and access waiting-time and service-time reports based on completed transactions.
 
-The system operates within the institution's Local Area Network (LAN) and does not require continuous internet connectivity for normal queue operations [22]. It uses Laravel 12, Blade, Vite/Tailwind, and MySQL/MariaDB on one mini PC that serves as both kiosk and application server (Intel Core i5 8th Generation, 8 GB RAM). The mini PC hosts the kiosk touchscreen, the 58mm XP-Q90EC printer, the ACR122U-A9 RFID/NFC reader, and the SIM7600G-H GSM/LTE module. When the printer is out of paper, the staff dashboard shows a paper-out alert.
+The system operates within the institution's Local Area Network (LAN) and does not require continuous internet connectivity for normal queue operations [22]. It uses Laravel 12, Blade, Vite/Tailwind, and MySQL/MariaDB on one mini PC that serves as both kiosk and application server (Intel Core i5 8th Generation, 8 GB RAM). The mini PC hosts the kiosk touchscreen, the 58mm XP-Q90EC printer, the ACR122U-A9 RFID/NFC reader, and the SIM7600G-H GSM/LTE module. When the printer is out of paper, the staff window and System Float show a paper-out alert, and checked staff or assistant numbers may receive one SMS.
 
 #### 1.5.2 Delimitation
 
@@ -210,7 +210,7 @@ The system does not include:
 - cloud-based queue synchronization; and
 - remote queue management through the internet.
 
-RFID/NFC at the kiosk is used only to identify an enrolled student card at confirmation. It is not used for payment, attendance, or door access. Forgetting the physical ID is not a walk-in; the client may still type the Student ID. Students do not type a mobile number on Confirm. SMS uses the stored student mobile only when the SMS control is turned on. The kiosk does not show the full number; at most the last four digits may appear. SMS text contains the ticket number, service or window, and an estimate when available. Names are not sent by SMS.
+RFID/NFC at the kiosk is used only to identify an enrolled student card at confirmation. It is not used for payment, attendance, or door access. Forgetting the physical ID is not a walk-in; the client may still type the Student ID. Students do not type a mobile number on Confirm. SMS uses the stored student mobile only when the SMS control is turned on. The kiosk does not show the full number; at most the last four digits may appear. SMS text contains the ticket number, the service or window, and, for a walk-in, the screen token. Names are not sent by SMS. The come-back text does not include an estimated wait.
 
 Student tickets require a valid Student ID during the kiosk confirmation process, and only one open student ticket is allowed per Student ID per day. Walk-in tickets do not use a Student ID; they are issued at the kiosk after the walk-in PIN is accepted, or by an administrator, and more than one walk-in ticket may be open at the same time. The Guard role is used only as the kiosk issuer record and cannot log in. The student's name may be displayed during confirmation for verification and to authorized staff while serving, but it is not printed on the queue ticket, is not displayed on the public queue monitor, and is not included in SMS.
 
@@ -234,15 +234,15 @@ The study provides **PECIT** with a queue management solution tailored to its Ca
 
 #### 1.6.4 System Administrator
 
-The system gives the administrator centralized functions for monitoring queue activities, managing authorized users and student records, enrolling RFID/NFC card serials (UID) and mobile numbers against Student IDs, setting the kiosk walk-in PIN, reviewing transaction records, and generating reports. Recorded queue and service information can support the monitoring of waiting time, service time, completed transactions, and service-window performance. Reports are based on **done** tickets only.
+The system gives the administrator centralized functions for monitoring queue activities, managing authorized users and student records, enrolling RFID/NFC card serials (UID) and mobile numbers against Student IDs, setting the kiosk walk-in PIN, storing staff mobiles for the printer paper-out text, reviewing transaction records, and generating reports. Recorded queue and service information can support the monitoring of waiting time, service time, completed transactions, and service-window performance. Reports are based on **done** tickets only.
 
 #### 1.6.5 Administrative Staff
 
-The system assists Cashier, Registrar, and DMO personnel through a structured queue process. Authorized staff can **Call Next**, **Recall**, **Hold**, **Call Held**, and **Complete**. Staff can see the student name while serving a validated student ticket, or the walk-in reason for an authorized walk-in ticket. For services with multiple windows, the system supports a shared waiting queue while keeping independent active transactions and service timers. The service-wide **2 Priority → 1 Regular** rule provides a consistent method for managing queue order.
+The system assists Cashier, Registrar, and DMO personnel through a structured queue process. Authorized staff can **Call Next**, **Recall**, **Hold**, **Call Held**, and **Complete**. Staff can see the student name while serving a validated student ticket, or the walk-in reason and screen token for an authorized walk-in ticket. For services with multiple windows, the system supports a shared waiting queue while keeping independent active transactions and service timers. The service-wide **2 Priority → 1 Regular** rule provides a consistent method for managing queue order.
 
 #### 1.6.6 Students and Parents
 
-The system provides students and parents with a more organized and transparent way of joining and monitoring queues. Through the kiosk, they can select the service, choose Regular or Priority, type or tap and validate their Student ID or complete authorized walk-in issuance, optionally turn on SMS (off by default), confirm the request, and receive a printed **number-only** ticket. Students do not type a phone number; SMS uses the number stored with the Student ID. Walk-in clients may enter a number only after the kiosk PIN is accepted. The public display allows them to monitor queue progress without remaining in a physical line. The system may show an estimated waiting time when data are sufficient, and may send **GSM SMS** notices when the ticket is near and when it is called.
+The system provides students and parents with a more organized and transparent way of joining and monitoring queues. Through the kiosk, they can select the service, choose Regular or Priority, type or tap and validate their Student ID or complete authorized walk-in issuance, optionally turn on SMS (off by default), confirm the request, and receive a printed **number-only** ticket. Students do not type a phone number; SMS uses the number stored with the Student ID. Walk-in clients may leave the mobile blank or enter a Philippine number after the kiosk PIN is accepted, and they see a screen token on the cooldown screen. The public display allows them to monitor queue progress without remaining in a physical line. The system may show an estimated waiting time when data are sufficient, and may send **GSM SMS** notices after print, when the ticket first has 10 or fewer ahead, and when it is called.
 
 #### 1.6.7 Future Researchers
 
@@ -262,7 +262,7 @@ To ensure clarity and consistency, the following terms are defined conceptually 
 
 **Estimated Waiting Time** – Refers to the calculated approximate time a client may wait before being served, based on available current queue information and sufficient historical service data.
 
-**GSM SMS Notice** – Refers to an optional **number-only** text sent through a SIM7600G-H GSM/LTE USB module on the mini PC that also hosts the kiosk and application server. A student turns on **Notify me by SMS** at confirmation (off by default). The notice uses the mobile number stored on the student record, not a number typed at the kiosk. If no mobile is on file, the control stays off and print still proceeds. A walk-in ticket may use a number entered only on the PIN overlay. A ticket that opted in may receive one notice when it is about five waiting tickets away in fair call order (with an estimated wait when history is sufficient) and another notice when the number is called or recalled. Queue operations do not depend on the modem.
+**GSM SMS Notice** – Refers to an optional **number-only** text sent through a SIM7600G-H GSM/LTE USB module on the mini PC that also hosts the kiosk and application server. A student turns on **Notify me by SMS** at confirmation (off by default). The notice uses the mobile number stored on the student record, not a number typed at the kiosk. If no mobile is on file, the control stays off and print still proceeds. A walk-in ticket may use a blank mobile or a Philippine number (`09` and 9 more digits) entered only on the PIN overlay. The sender on the kiosk PC finds the modem command port and includes the Smart message center in each text. A ticket that opted in may receive the ticket number after print, a come-back notice the first time it has 10 or fewer ahead in fair call order, and the window name when the number is called or recalled. A ticket already within 10 at print does not get the come-back notice. A walk-in ticket text also includes the screen token. Queue operations do not depend on the modem.
 
 **Interview** – Refers to the oral data-gathering method used only with Cashier, Registrar, and DMO staff during requirements analysis. Students and parents were not interviewed.
 
@@ -276,7 +276,7 @@ To ensure clarity and consistency, the following terms are defined conceptually 
 
 **Notify me by SMS** – Refers to the confirmation-step control that is **off by default**. Students do not type a phone number. If a mobile number is stored with the Student ID, turning the control on copies that number to the ticket for GSM notices. The kiosk does not show the full number; at most the last four digits may appear after the control is on. If no mobile is on file, the control stays off and disabled and shows **No SMS number on file**. Confirm and print still proceed.
 
-**Paper-Out Alert** – Refers to the notice shown on the staff dashboard when the 58mm thermal printer has no paper. Stored tickets remain valid and can be reprinted after paper is loaded.
+**Paper-Out Alert** – Refers to the notice shown on the staff window and System Float when the 58mm thermal printer has no paper or a ticket stays stuck in Printing. Stored tickets remain valid. The administrator may store staff or assistant mobiles and check Send SMS for each number that should receive one text when the paper first runs out. Loading a new roll clears that mark.
 
 **Priority Queue** – Refers to the queue category assigned to qualified priority clients and processed according to the system's **2 Priority → 1 Regular** scheduling rule.
 
@@ -302,11 +302,11 @@ To ensure clarity and consistency, the following terms are defined conceptually 
 
 **Student ID** – Refers to the identification number typed by the client during the kiosk confirmation stage, or resolved from an enrolled RFID/NFC card serial, and validated against the authorized student list before a student queue ticket is generated. Walk-in tickets do not use a Student ID.
 
-**Thermal Printer** – Refers to the 58mm USB XP-58 (XP-Q90EC) printer connected to the mini PC and used to automatically produce the client's physical queue ticket after confirmation. Paper-out is reported to the staff dashboard.
+**Thermal Printer** – Refers to the 58mm USB XP-58 (XP-Q90EC) printer connected to the mini PC and used to automatically produce the client's physical queue ticket after confirmation. Paper-out is reported on the staff window and System Float, with an optional SMS to checked staff numbers.
 
 **User Acceptance Testing (UAT)** – Refers to the evaluation conducted after the system was implemented, using the Cashier, Registrar, DMO, and Student System Feedback Forms, to determine whether the developed queue management system satisfies functionality, usability, efficiency, reliability and accuracy, and satisfaction requirements, using quality characteristics aligned with ISO/IEC 25010 [10]. UAT results belong in Chapter 4 and are separate from the Chapter 3 needs-assessment questionnaire.
 
-**Walk-in Ticket** – Refers to a queue ticket issued without a Student ID after the kiosk walk-in PIN is accepted, or by an administrator. Walk-in tickets may be open at the same time, are printed as numbers only, and appear to staff as Walk-in followed by the recorded reason. The walk-in overlay may accept an optional mobile number for SMS because there is no student record.
+**Walk-in Ticket** – Refers to a queue ticket issued without a Student ID after the kiosk walk-in PIN is accepted, or by an administrator. Walk-in tickets may be open at the same time, are printed as numbers only, and appear to staff as Walk-in followed by the recorded reason and a screen token. The walk-in overlay may accept a blank mobile or a Philippine mobile (`09` and 9 more digits). Any other number keeps Issue and Print disabled. Each walk-in receives a screen token such as T1006ABC: weekday initial, month, day, and three random letters. The token is shown on the cooldown screen and to staff while serving, is included in the ticket SMS when a mobile was entered, and is not printed or shown on the public display.
 
 
 
@@ -348,7 +348,7 @@ This concept is relevant because the PECIT system may show an estimated waiting 
 
 A physical queue ticket gives the client a clear reference that can be kept while waiting, instead of depending only on a place in a first-come-first-served line [12], [8]. Queue tickets usually contain limited information such as the queue number, service, and date or time.
 
-Other Philippine systems have used a ticketless Student ID approach with SMS and voice announcement [17]. The present study takes a different route. After confirmation, the PECIT kiosk sends ticket information to a connected 58mm USB thermal printer. The printed ticket shows the queue number and may include an estimated waiting time when enough history exists. The student’s name is not printed.
+Other Philippine systems have used a ticketless Student ID approach with SMS and voice announcement [17]. The present study takes a different route. After confirmation, the PECIT kiosk sends ticket information to a connected 58mm USB thermal printer. The printed ticket shows the queue number and may include an estimated waiting time when enough history exists. The student’s name and the walk-in screen token are not printed.
 
 #### 2.1.5 Standalone and Local Area Network-Based Information Systems
 
@@ -436,7 +436,7 @@ The study supports the relevance of queue management to Cashier operations. It i
 
 Ramoga [17] developed a ticketless, Student ID–operated queue management system with SMS notification and voice-over for the Registrar and Cashier offices of Jose Rizal Memorial State University–Dipolog Campus. The study addressed long waiting times, crowded service areas, and communication gaps in a manual process.
 
-The main difference is the queueing approach. Ramoga’s system is ticketless and uses SMS and voice announcement. The PECIT system issues a physical 58mm thermal ticket, keeps names off the ticket, public display, and SMS, and operates within a standalone LAN. SMS in the present study is optional and local (GSM/LTE module): a five-tickets-away estimate and a now-serving notice. Students opt in with **Notify me by SMS** (off by default); the notice uses the mobile number stored on the student record rather than a number typed at the kiosk. Walk-in clients who have no Student ID are handled through a kiosk PIN and may enter a mobile number only on that overlay. It is not a cloud SMS gateway and does not replace the printed ticket.
+The main difference is the queueing approach. Ramoga’s system is ticketless and uses SMS and voice announcement. The PECIT system issues a physical 58mm thermal ticket, keeps names off the ticket, public display, and SMS, and operates within a standalone LAN. SMS in the present study is optional and local (GSM/LTE module): a ticket-number text after print, a come-back text at 10 or fewer ahead, and a window-name text when called. Students opt in with **Notify me by SMS** (off by default); the notice uses the mobile number stored on the student record rather than a number typed at the kiosk. Walk-in clients who have no Student ID are handled through a kiosk PIN and may enter a Philippine mobile only on that overlay. The issued text includes a screen token that is shown on the cooldown screen and is not printed. It is not a cloud SMS gateway and does not replace the printed ticket.
 
 ##### 2.2.2.4 Smart Queuing and Appointment Management System
 
@@ -504,7 +504,7 @@ Sixth, those systems use different architectures. Some are web-based and appoint
 
 Finally, technology should match institutional requirements and infrastructure [22], [11], [9]. This supports a localized PECIT design.
 
-The proposed system therefore combines a touchscreen kiosk, Student ID validation by keypad or RFID/NFC tap, authorized kiosk-PIN walk-in issuance, Regular and Priority queueing, confirmation before ticket generation, 58mm thermal printing, estimated waiting time when data are sufficient, optional local GSM SMS after **Notify me by SMS** is turned on (stored student mobile; walk-in overlay number only), service-wide 2 Priority → 1 Regular scheduling, shared multi-counter queues, Hold and Call Held staff controls, a number-only public display, local database storage, and administrative reports based on completed transactions only.
+The proposed system therefore combines a touchscreen kiosk, Student ID validation by keypad or RFID/NFC tap, authorized kiosk-PIN walk-in issuance, Regular and Priority queueing, confirmation before ticket generation, 58mm thermal printing, estimated waiting time when data are sufficient, optional local GSM SMS after **Notify me by SMS** is turned on (stored student mobile; walk-in Philippine number and screen token), service-wide 2 Priority → 1 Regular scheduling, shared multi-counter queues, Hold and Call Held staff controls, a number-only public display, local database storage, and administrative reports based on completed transactions only.
 
 ### 2.4 Summary of the Review
 
@@ -542,7 +542,7 @@ The software requirements include Windows 10/11, PHP 8.2 or higher, Laravel 12, 
 
 ##### 3.1.1.3 System Requirements
 
-The system requirements include service selection; Regular or Priority selection; confirmation before ticket generation; Student ID validation by keypad or RFID/NFC tap or authorized kiosk-PIN walk-in issuance; one open student ticket per Student ID per day; queue-number generation; 58mm thermal printing; estimated waiting time when sufficient completed history is available; optional local GSM SMS when a student turns on **Notify me by SMS** (off by default; stored student mobile) or when a walk-in enters a number on the PIN overlay, sent when a ticket is five places away and when it is called; shared service queues; 2 Priority → 1 Regular scheduling; multi-counter support; staff Call Next, Recall, Complete, Hold, and Call Held; number-only public display; transaction recording; administrator user, student, card UID, mobile, PIN, and report functions; authentication; and standalone LAN operation.
+The system requirements include service selection; Regular or Priority selection; confirmation before ticket generation; Student ID validation by keypad or RFID/NFC tap or authorized kiosk-PIN walk-in issuance; one open student ticket per Student ID per day; queue-number generation; 58mm thermal printing; estimated waiting time when sufficient completed history is available; optional local GSM SMS when a student turns on **Notify me by SMS** (off by default; stored student mobile) or when a walk-in enters a Philippine number on the PIN overlay, sent after print, when a ticket first has 10 or fewer ahead, and when it is called; shared service queues; 2 Priority → 1 Regular scheduling; multi-counter support; staff Call Next, Recall, Complete, Hold, and Call Held; number-only public display; transaction recording; administrator user, student, card UID, mobile, PIN, paper SMS contacts, and report functions; authentication; and standalone LAN operation.
 
 The student kiosk remains a three-step flow: service selection, priority selection, and confirmation. During confirmation, the Student ID is typed or read from an enrolled RFID/NFC card and validated against the authorized student list. Clients who do not bring the card may still type the Student ID. Clients who cannot use a Student ID may request a walk-in ticket at the same kiosk after the walk-in PIN is accepted. Cashier 1, Cashier 2, and Cashier 3 share one Cashier waiting queue while keeping independent active transactions and service timers.
 
@@ -558,7 +558,7 @@ This phase identified the problems of the existing first-come-first-served line 
 
 ##### 3.1.2.2 System Design
 
-This phase converted the requirements into the architecture, process models, database structure, workflow, and interface designs. The design covers the mini PC (kiosk and server), 58mm printer, ACR122U-A9 RFID/NFC reader, SIM7600G-H GSM/LTE module, staff panels, public display, and administrator dashboard, including walk-in PIN issuance, fair scheduling, Hold and Call Held, paper-out alerts on the staff dashboard, optional SMS notices, and privacy rules.
+This phase converted the requirements into the architecture, process models, database structure, workflow, and interface designs. The design covers the mini PC (kiosk and server), 58mm printer, ACR122U-A9 RFID/NFC reader, SIM7600G-H GSM/LTE module, staff panels, public display, and administrator dashboard, including walk-in PIN issuance, fair scheduling, Hold and Call Held, paper-out alerts on the staff window and System Float, with optional staff SMS, optional SMS notices, and privacy rules.
 
 ##### 3.1.2.3 Implementation/Development
 
@@ -566,7 +566,7 @@ This phase produced the working application: Student Kiosk Module, Staff Module,
 
 ##### 3.1.2.4 Testing
 
-Testing verified the kiosk, Student ID keypad and RFID/NFC tap, walk-in rules, one-open-student-ticket-per-day rule, queue generation, 58mm printing, paper-out alert on the staff dashboard, GSM SMS five-ahead and called notices, fair scheduling, staff functions, public display, multi-counter behavior, database transactions, and access controls. Integration testing verified communication among the mini PC (kiosk and server), database, printer, ACR122U-A9 reader, SIM7600G-H module, staff module, display, and administrator module.
+Testing verified the kiosk, Student ID keypad and RFID/NFC tap, walk-in rules, one-open-student-ticket-per-day rule, queue generation, 58mm printing, paper-out alert on the staff window and System Float, GSM SMS ticket, 10-away, and called notices, fair scheduling, staff functions, public display, multi-counter behavior, database transactions, and access controls. Integration testing verified communication among the mini PC (kiosk and server), database, printer, ACR122U-A9 reader, SIM7600G-H module, staff module, display, and administrator module.
 
 ##### 3.1.2.5 Deployment
 
@@ -590,7 +590,7 @@ The public display shows current serving numbers and waiting queues in the same 
 
 ##### 3.1.3.4 Staff Queue Management
 
-Authorized staff can Call Next, Recall, Complete, Hold, and Call Held. Windows that share a service use one waiting queue and keep independent active calls and timers. Staff may see the student name while serving a validated student ticket, or Walk-in (reason) for an authorized walk-in ticket.
+Authorized staff can Call Next, Recall, Complete, Hold, and Call Held. Windows that share a service use one waiting queue and keep independent active calls and timers. Staff may see the student name while serving a validated student ticket, or Walk-in (reason) and the screen token for an authorized walk-in ticket.
 
 ##### 3.1.3.5 Queue Records and Administrative Reporting
 
@@ -750,7 +750,7 @@ Part IV suggestions matched those features: install a kiosk that issues a queue 
 | Concern about incorrect selections      | Confirmation, with Student ID typed or tapped, or authorized walk-in issuance                                                          |
 | Staff need better queue control         | Call Next, Recall, Complete, Hold, and Call Held                                                                                       |
 | Need for transaction monitoring         | Queue records and done-only reports                                                                                                    |
-| Need to be notified while waiting       | Optional local GSM SMS after **Notify me by SMS** (stored student mobile; walk-in overlay number) at five tickets away and when called |
+| Need to be notified while waiting       | Optional local GSM SMS after **Notify me by SMS** (stored student mobile; walk-in Philippine number and screen token) after print, at 10 or fewer ahead, and when called |
 
 
 Technical requirements of the implemented system were added to these user findings: Student ID validation by keypad or RFID/NFC tap, one open student ticket per day, kiosk-PIN walk-in issuance, 58mm printing, optional local GSM SMS, multi-counter Cashier queues, independent window timers, Hold and Call Held, number-only public display, settings-based walk-in PIN, and administrator reports based on completed transactions only.
@@ -770,7 +770,7 @@ The system shall:
 5. Reject a second open student ticket for the same Student ID on the same day.
 6. Allow authorized walk-in issuance at the kiosk after the walk-in PIN is accepted, or by an administrator, without a Student ID.
 7. Generate a unique queue number by service and operating date.
-8. Store the queue record, including optional `student_id` or `issued_by` / `issue_reason` for walk-in tickets.
+8. Store the queue record, including optional `student_id` or `issued_by` / `issue_reason` / `screen_token` for walk-in tickets.
 9. Print a 58mm thermal ticket that does not include the student name.
 10. Show estimated waiting time only when sufficient completed history is available.
 11. Place new tickets in the appropriate service queue.
@@ -779,13 +779,13 @@ The system shall:
 14. Allow staff to view the waiting list, Call Next, Recall, Complete, Hold, and Call Held at their assigned window.
 15. Maintain an independent service timer for each window.
 16. Display current serving and waiting numbers on the public display, omitting names and held tickets.
-17. Optionally send a local GSM SMS when a waiting ticket that opted in is five places away in fair call order (with an estimated wait when history is sufficient) and when that number is called or recalled. Student opt-in uses **Notify me by SMS**, which is off by default and copies the mobile number stored on the student record. Students shall not type a mobile number on Confirm. If no mobile is on file, the control shall stay off and disabled and shall show **No SMS number on file**; Confirm and print shall still proceed. The kiosk shall not display the full mobile number; at most the last four digits may appear after opt-in. Walk-in tickets may use a number entered only on the PIN overlay. SMS shall not include the student name. Queue operations shall continue if the modem is unavailable.
+17. Optionally send a local GSM SMS when a ticket that opted in is printed, when it first has 10 or fewer ahead in fair call order, and when that number is called or recalled. A ticket already within 10 at print shall not receive the come-back text. Student opt-in uses **Notify me by SMS**, which is off by default and copies the mobile number stored on the student record. Students shall not type a mobile number on Confirm. If no mobile is on file, the control shall stay off and disabled and shall show **No SMS number on file**; Confirm and print shall still proceed. The kiosk shall not display the full mobile number; at most the last four digits may appear after opt-in. Walk-in tickets may use a blank mobile or a Philippine number (`09` and 9 more digits) entered only on the PIN overlay, and that text shall include the screen token. SMS shall not include the student name. Queue operations shall continue if the modem is unavailable.
 18. Record queue calls and completion times.
 19. Provide staff history of the user’s own completed tickets and administrator history and reports.
 20. Allow administrators to manage users and student records, enroll RFID/NFC card serials (UID) and mobile numbers against Student IDs, set the kiosk walk-in PIN, issue walk-in tickets, and generate done-only wait and service reports.
 21. Operate on the institution LAN without continuous internet connectivity.
 22. Restrict staff and administrator functions to authenticated users. The Guard role cannot log in.
-23. Detect when the 58mm thermal printer is out of paper and show an alert on the staff dashboard so windows can reload the printer. Stored tickets remain valid.
+23. Detect when the 58mm thermal printer is out of paper and show an alert on the staff window and System Float so windows can reload the printer. Checked staff or assistant numbers may receive one SMS when the paper first runs out. Stored tickets remain valid. The kiosk print page does not show the alert.
 
 
 
@@ -823,7 +823,7 @@ Evaluation quality. System testing, expert evaluation, and User Acceptance Testi
 6. Walk-in tickets have no Student ID. They require the kiosk PIN or administrator issuance. Several walk-in tickets may be open at the same time.
 7. The Guard role is the issuer record for kiosk walk-in tickets and cannot log in.
 8. Queue numbers are generated by service and date through a locked daily counter.
-9. Every generated ticket is printed on the configured 58mm printer. The name is never printed. If the printer is out of paper, the staff dashboard shows a paper-out alert; the stored ticket remains valid and can be reprinted after paper is loaded.
+9. Every generated ticket is printed on the configured 58mm printer. The name and the walk-in screen token are never printed. If the printer is out of paper, the staff window and System Float show a paper-out alert, and checked staff numbers may receive one SMS; the stored ticket remains valid.
 10. Call Next follows 2 Priority → 1 Regular across windows that share a service. Concurrent Call Next actions must not assign the same ticket twice.
 11. Each window keeps its own open call and timer. A window cannot complete another window’s open call.
 12. Hold finishes the open call, sets status to `held`, frees the window, and removes the number from Now Serving and waiting lists.
@@ -834,9 +834,11 @@ Evaluation quality. System testing, expert evaluation, and User Acceptance Testi
 17. One staff user is assigned to a service window.
 18. Promissory Notes is hidden from the public kiosk service list.
 19. Essential operations run on the LAN without continuous internet connectivity.
-20. Optional GSM SMS is sent at most once for the five-tickets-away event and again when the ticket is called or recalled, and only when the ticket opted in. Position uses fair call order for that service. Held tickets are not counted as waiting.
+20. Optional GSM SMS sends the ticket number after print, at most one come-back text when the ticket first has 10 or fewer ahead, and the window name when the ticket is called or recalled, and only when the ticket opted in. A ticket already within 10 at print skips the come-back text. Position uses fair call order for that service. Held tickets are not counted as waiting.
 21. RFID/NFC is an alternate confirm input only. Service and Regular or Priority are selected first. The reader is not used for payment or attendance.
-22. Students do not type a mobile number on Confirm. **Notify me by SMS** is off by default. If `students.mobile` is empty, the control is disabled and shows **No SMS number on file**. The full number is not shown; last four digits may appear after opt-in. Walk-in clients may enter a number only on the PIN overlay.
+22. Students do not type a mobile number on Confirm. **Notify me by SMS** is off by default. If `students.mobile` is empty, the control is disabled and shows **No SMS number on file**. The full number is not shown; last four digits may appear after opt-in. Walk-in clients may leave the mobile blank or enter `09` and 9 more digits on the PIN overlay. Any other number keeps Issue and Print disabled.
+23. Each walk-in ticket stores a screen token: weekday initial, month, day, and three letters, such as T1006ABC for Tuesday 6 October. The token is shown on the cooldown screen and to staff while serving. It is not printed and is not shown on the public display. When a walk-in SMS is sent after print, that text includes the token.
+24. The administrator may store staff or assistant name and Philippine mobile under Kiosk settings, with a Send SMS checkbox on each row. Only checked numbers receive one text when the printer first runs out of paper. Unchecked rows are kept and are not texted. Loading paper clears that mark so the next outage can send again.
 
 
 
@@ -897,9 +899,9 @@ The primary actors are the Client, Staff, and Administrator. The system performs
 | Actor            | Client / authorized issuer                                                                                                                                                                                                                                                                                                                                         |
 | Objective        | Issue a ticket without a Student ID                                                                                                                                                                                                                                                                                                                                |
 | Precondition     | Kiosk walk-in control is used, or an administrator issues a walk-in ticket                                                                                                                                                                                                                                                                                         |
-| Normal Flow      | 1. Client or staff uses the kiosk corner control. 2. System asks for the walk-in PIN every time. 3. Server checks the PIN in settings. 4. Authorized user selects service, priority, and reason. 5. Because there is no student record, the overlay may accept an optional mobile number for SMS. If none is entered, no SMS is sent. 6. System issues the ticket. |
+| Normal Flow      | 1. Client or staff uses the kiosk corner control. 2. System asks for the walk-in PIN every time. 3. Server checks the PIN in settings. 4. Authorized user selects service, priority, and reason. 5. The overlay may leave the mobile blank or accept `09` and 9 more digits. Any other number keeps Issue and Print disabled. If none is entered, no SMS is sent. 6. System issues the ticket and a screen token such as T1006ABC. |
 | Alternative Flow | Wrong PIN is rejected. After print or cancel, the next corner click asks for the PIN again.                                                                                                                                                                                                                                                                        |
-| Postcondition    | A walk-in ticket is stored with `issued_by` and `issue_reason`. Print and display remain number-only.                                                                                                                                                                                                                                                              |
+| Postcondition    | A walk-in ticket is stored with `issued_by`, `issue_reason`, and `screen_token`. The token is shown on the cooldown screen and to staff while serving. Print and the public display remain number-only.                                                                                                                                                                                                                                                              |
 
 
 
@@ -928,7 +930,7 @@ The primary actors are the Client, Staff, and Administrator. The system performs
 | Objective        | Print the 58mm ticket                                                                                                                                    |
 | Precondition     | Queue record has been created                                                                                                                            |
 | Normal Flow      | 1. System prepares ticket data. 2. Browser/kiosk sends the print request. 3. XP-58 (XP-Q90EC) prints the number-only ticket.                             |
-| Alternative Flow | If the printer is out of paper, the staff dashboard shows a paper-out alert. The stored ticket remains valid and can be reprinted after paper is loaded. |
+| Alternative Flow | If the printer is out of paper, the staff window and System Float show a paper-out alert, and checked staff numbers may receive one SMS. The stored ticket remains valid. |
 | Postcondition    | Client receives a physical queue reference.                                                                                                              |
 
 
@@ -1128,7 +1130,7 @@ The primary actors are the Client, Staff, and Administrator. The system performs
 
 Existing process. Students and other clients go directly to the Cashier, Registrar, or DMO and wait in a first-come-first-served line. Staff watch the line and call the next person by physical order. During busy periods this produces unclear order, line cutting, difficulty serving priority clients, overcrowding, and no shared view of who is waiting.
 
-Proposed process. The client starts at the kiosk, selects service and Regular or Priority, and confirms with a typed or tapped Student ID or an authorized walk-in PIN path. The system stores the ticket and prints a 58mm number-only ticket. Optional GSM SMS is sent only after **Notify me by SMS** is turned on (stored student mobile) or after a walk-in number is entered on the PIN overlay, when the ticket is five places away and when it is called. Staff call by 2 Priority → 1 Regular across shared windows, and may Hold or Call Held. The public display shows serving and waiting numbers only. The administrator monitors completed-transaction reports.
+Proposed process. The client starts at the kiosk, selects service and Regular or Priority, and confirms with a typed or tapped Student ID or an authorized walk-in PIN path. The system stores the ticket and prints a 58mm number-only ticket. Optional GSM SMS is sent only after **Notify me by SMS** is turned on (stored student mobile) or after a valid walk-in number is entered on the PIN overlay: after print, when the ticket first has 10 or fewer ahead, and when it is called. Staff call by 2 Priority → 1 Regular across shared windows, and may Hold or Call Held. The public display shows serving and waiting numbers only. The administrator monitors completed-transaction reports.
 
 #### 3.4.2 System Architecture
 
@@ -1138,7 +1140,7 @@ Mini PC (kiosk and server). Runs Windows, XAMPP/Laravel, and the kiosk browser. 
 
 Touchscreen monitor. Public three-step student flow, RFID/NFC tap or keypad on confirm, and corner PIN walk-in issuance.
 
-58mm USB thermal printer. XP-58 (XP-Q90EC). Prints the number and optional ETA line. No name. Paper-out is reported to the staff dashboard.
+58mm USB thermal printer. XP-58 (XP-Q90EC). Prints the number and optional ETA line. No name. Paper-out is reported on the staff window and System Float, with an optional SMS to checked staff numbers.
 
 RFID/NFC reader. ACR122U-A9 USB reader at the kiosk; enrolled ISO 14443A / MIFARE card serial maps to Student ID.
 
@@ -1148,13 +1150,13 @@ LAN. Connects the mini PC, staff PCs, public display, and administrator PC.
 
 Application server. Laravel 12 on the same mini PC, with Blade, Vite/Tailwind, and services for fair scheduling, wait estimation, student-ticket guarding, walk-in PIN checks, paper-out alerts, and optional SMS dispatch.
 
-MySQL/MariaDB. Stores services, windows, users, students, settings, daily_queue_counters, queues, and queue_calls.
+MySQL/MariaDB. Stores services, windows, users, students, settings, paper_sms_contacts, daily_queue_counters, queues, and queue_calls.
 
 Staff windows. Call Next, Recall, Complete, Hold, Call Held, and per-window timers.
 
 Public display. Serving and waiting numbers in fair order; no names; no held tickets.
 
-Administrator dashboard. Users, students, kiosk PIN, walk-in issue, history, and done-only reports.
+Administrator dashboard. Users, students, kiosk PIN, paper-out SMS list, walk-in issue, history, and done-only reports.
 
 #### 3.4.3 Unified Modeling Language (UML)
 
@@ -1164,15 +1166,15 @@ Administrator dashboard. Users, students, kiosk PIN, walk-in issue, history, and
 
 Student/Client: select service, select Regular or Priority, type or tap Student ID, optionally turn on **Notify me by SMS** (off by default; stored student mobile only), view ETA when available, confirm, receive printed number.
 
-Walk-in path: enter kiosk PIN, issue walk-in ticket, receive printed number.
+Walk-in path: enter kiosk PIN, issue walk-in ticket, see the screen token on the cooldown screen, receive printed number.
 
-Staff: log in, view waiting list, Call Next, Recall, Complete, Hold, Call Held, view name or walk-in reason while serving, receive a paper-out alert on the staff dashboard.
+Staff: log in, view waiting list, Call Next, Recall, Complete, Hold, Call Held, view name or walk-in reason while serving, receive a paper-out alert on the staff window and System Float.
 
 Administrator: log in, manage users, manage students (RFID/NFC card UID and mobile), set kiosk PIN, issue walk-in ticket, view reports.
 
 Public display: show Now Serving and waiting numbers only.
 
-Database: store students, settings, queues (`student_id` or `issued_by` / `issue_reason`), counters, and queue calls.
+Database: store students, settings, paper SMS contacts, queues (`student_id` or `issued_by` / `issue_reason` / `screen_token`), counters, and queue calls.
 
 ##### 3.4.3.2 Activity Diagram
 
@@ -1198,7 +1200,7 @@ Level 1 expands confirmation and validation, walk-in unlock, number generation, 
 
 The principal entities are services, windows, users, students, settings, daily_queue_counters, queues, and queue_calls.
 
-Services relate to windows, queues, and daily_queue_counters. Students supply the allowlist used when `queues.student_id` is present. Walk-in tickets leave `student_id` null and store `issued_by` and `issue_reason`. Users have role `admin`, `staff`, or `guard`. Staff users have a unique `window_id`. The guard user cannot log in. Settings store `walkin_pin`. Queue_calls link a ticket to a window with `called_time` and `finished_time`. Any ERD drawing placed in the manuscript is a placeholder and must be replaced so it shows these entities.
+Services relate to windows, queues, and daily_queue_counters. Students supply the allowlist used when `queues.student_id` is present. Walk-in tickets leave `student_id` null and store `issued_by` and `issue_reason`. Users have role `admin`, `staff`, or `guard`. Staff users have a unique `window_id`. The guard user cannot log in. Settings store `walkin_pin`. `paper_sms_contacts` stores staff mobiles for the paper-out text. Walk-in tickets may store `screen_token`. Queue_calls link a ticket to a window with `called_time` and `finished_time`. Any ERD drawing placed in the manuscript is a placeholder and must be replaced so it shows these entities.
 
 #### 3.4.6 Database Design
 
@@ -1206,7 +1208,7 @@ The database is MySQL/MariaDB. Domain tables are services, windows, users, stude
 
 ##### 3.4.6.1 Database Schema
 
-`services` stores service name and ticket prefix. `windows` stores window name, group, assigned service, and status. `users` stores name, login, password, role, and optional unique window. `students` stores authorized Student ID and name. `settings` stores `walkin_pin`. `daily_queue_counters` stores last number per service and date. `queues` stores number, service, optional student, optional issuer and reason, priority, status, date, and timestamps. `queue_calls` stores queue, window, called time, and finished time. Any schema drawing placed in the manuscript is a placeholder and must be replaced so it matches this structure.
+`services` stores service name and ticket prefix. `windows` stores window name, group, assigned service, and status. `users` stores name, login, password, role, and optional unique window. `students` stores authorized Student ID, name, optional card serial, and optional mobile. `settings` stores `walkin_pin`. `paper_sms_contacts` stores staff mobiles for the paper-out text. `daily_queue_counters` stores last number per service and date. `queues` stores number, service, optional student, optional issuer and reason, optional screen token, optional SMS number and notice flags, priority, status, date, and timestamps. `queue_calls` stores queue, window, called time, and finished time. Any schema drawing placed in the manuscript is a placeholder and must be replaced so it matches this structure.
 
 ##### 3.4.6.2 Data Dictionary
 
@@ -1307,8 +1309,10 @@ Guard exists as the kiosk issuer row and cannot log in.
 | status        | ENUM        | —            | waiting, serving, done, cancelled, held                                                            |
 | queue_date    | DATE        | —            | Issue date                                                                                         |
 | created_at    | TIMESTAMP   | —            | Used for wait averages                                                                             |
-| notify_mobile | VARCHAR(20) | —            | Ticket SMS number: copied from `students.mobile` when SMS is on, or entered on the walk-in overlay |
-| sms_near_sent | TINYINT     | —            | 1 after the five-tickets-away SMS                                                                  |
+| screen_token  | VARCHAR(12) | —            | Walk-in cooldown token, such as T1006ABC; not printed                                              |
+| sms_mobile    | VARCHAR(20) | —            | Ticket SMS number: copied from `students.mobile` when SMS is on, or entered on the walk-in overlay |
+| sms_issued    | TINYINT     | —            | 1 after the ticket-number text is queued                                                           |
+| sms_near      | TINYINT     | —            | 1 after the 10-away text is queued, or when the ticket was already within 10 at issue              |
 | updated_at    | TIMESTAMP   | —            | Last update                                                                                        |
 
 
@@ -1340,26 +1344,38 @@ Reports use the latest completed call of a `done` ticket. Hold sessions are excl
 | users                | Stores authorized administrator and staff accounts                                             |
 | students             | Stores authorized Student IDs, names, optional card serials (UID), and optional mobile numbers |
 | settings             | Stores the kiosk walk-in PIN (`walkin_pin`); the PIN is not published here                     |
+| paper_sms_contacts   | Staff or assistant mobiles and the Send SMS checkbox for the printer paper-out text            |
 | daily_queue_counters | Maintains the last queue number per service and date                                           |
 | queues               | Stores generated queue tickets and their statuses                                              |
 | queue_calls          | Records calls, windows, called time, and finished time                                         |
 
 
+**Table 3.13 Data Dictionary – Paper SMS Contacts**
 
+
+| Field Name | Data Type   | Key    | Description                                                             |
+| ---------- | ----------- | ------ | ----------------------------------------------------------------------- |
+| id         | BIGINT      | PK     | Contact identifier                                                      |
+| name       | VARCHAR(80) | —      | Staff or assistant label                                                |
+| mobile     | VARCHAR(20) | Unique | Philippine mobile stored as +639 and 9 digits                           |
+| enabled    | TINYINT     | —      | 1 means Send SMS is checked; unchecked rows are kept and are not texted |
+
+
+Checked contacts receive one text when the printer first runs out of paper. Loading paper clears that mark.
 
 #### 3.4.7 System Flowchart
 
-The client uses the kiosk. A student completes three steps and Student ID validation by keypad or RFID/NFC tap. After lookup, **Notify me by SMS** is off by default and uses the stored student mobile; students do not type a number. A walk-in user unlocks with the PIN, enters a reason, and may enter a mobile number on the overlay. The system increments the daily counter, stores the ticket, prints the number-only 58mm ticket, and updates the display. Optional GSM SMS is sent when an opted-in ticket is five places away and when it is called. Staff call by 2 Priority → 1 Regular, or resume a held ticket. Status moves among waiting, serving, held, and done. The administrator reviews users, students, card UID and mobile enrollment, PIN, and done-only reports. The system stays on the LAN. Any flowchart drawing placed in the manuscript is a placeholder and must be replaced so it shows the typed-ID path, the RFID/NFC tap path, the walk-in PIN path, GSM SMS notices, plus Hold and Call Held.
+The client uses the kiosk. A student completes three steps and Student ID validation by keypad or RFID/NFC tap. After lookup, **Notify me by SMS** is off by default and uses the stored student mobile; students do not type a number. A walk-in user unlocks with the PIN, enters a reason, may enter a Philippine mobile or leave it blank, and receives a screen token such as T1006ABC. The system increments the daily counter, stores the ticket, prints the number-only 58mm ticket, and updates the display. Optional GSM SMS is sent when an opted-in ticket is printed, when it first has 10 or fewer ahead, and when it is called. Staff call by 2 Priority → 1 Regular, or resume a held ticket. Status moves among waiting, serving, held, and done. The administrator reviews users, students, card UID and mobile enrollment, the walk-in PIN, the paper-out SMS list, and done-only reports. The system stays on the LAN. Any flowchart drawing placed in the manuscript is a placeholder and must be replaced so it shows the typed-ID path, the RFID/NFC tap path, the walk-in PIN path, GSM SMS notices, plus Hold and Call Held.
 
 #### 3.4.8 User Interface Design
 
 The implemented interfaces are described from the current system. Screenshots or wireframes placed beside this section are placeholders and must be replaced with captures of the live kiosk, staff panel, administrator dashboard, and public display. The text below is the description of record.
 
-Kiosk. The public kiosk is a three-step flow on a compact 1024×600 layout: Cashier, Registrar, and DMO; Regular or Priority; then confirmation with a summary column, Student ID keypad, and RFID/NFC reader. Confirm stays disabled until lookup succeeds. The matched name may appear for checking only. Waiting counts and estimated wait may appear when data are sufficient. **Notify me by SMS** is off by default and uses the stored student mobile; students do not type a number. If no mobile is on file, the control is disabled and shows **No SMS number on file**. The full number is not shown. Promissory Notes is hidden. A small bottom-right control opens the walk-in PIN pad on every use. After a correct PIN, the overlay issues a walk-in ticket with service, priority, reason, and an optional mobile number. After print, a countdown returns to the first step. The student name is never printed.
+Kiosk. The public kiosk is a three-step flow on a compact 1024×600 layout: Cashier, Registrar, and DMO; Regular or Priority; then confirmation with a summary column, Student ID keypad, and RFID/NFC reader. Confirm stays disabled until lookup succeeds. The matched name may appear for checking only. Waiting counts and estimated wait may appear when data are sufficient. **Notify me by SMS** is off by default and uses the stored student mobile; students do not type a number. If no mobile is on file, the control is disabled and shows **No SMS number on file**. The full number is not shown. Promissory Notes is hidden. A small bottom-right control opens the walk-in PIN pad on every use. After a correct PIN, the overlay issues a walk-in ticket with service, priority, reason, and a blank mobile or a Philippine mobile (`09` and 9 more digits). Any other number keeps Issue and Print disabled. After print, the cooldown screen shows the number and the screen token, then a countdown returns to the first step. The student name and the walk-in token are never printed.
 
-Staff panel. Authorized staff see the current number, student name or Walk-in (reason), an independent window timer, a fair waiting list of up to 10, and a held list. Controls are Call Next, Recall, Complete, Hold, and Call Held. Shortcuts are Alt+N, Alt+R, and Alt+C. An optional System Float window can stay on top on the staff PC. Staff history shows that user’s own done tickets. When the thermal printer has no paper, a paper-out alert appears on the staff dashboard so the roll can be replaced before the next client is blocked.
+Staff panel. Authorized staff see the current number, student name or Walk-in (reason) and screen token, an independent window timer, a fair waiting list of up to 10, and a held list. Controls are Call Next, Recall, Complete, Hold, and Call Held. Shortcuts are Alt+N, Alt+R, and Alt+C. An optional System Float window can stay on top on the staff PC and shows the same paper-out alert. Staff history shows that user’s own done tickets. When the thermal printer has no paper or a ticket stays stuck in Printing, a paper-out alert appears on the staff window and System Float so the roll can be replaced. Checked staff numbers may receive one SMS.
 
-Administrator dashboard. The PECIT panel shows live totals and waiting information, users, students (add, delete, CSV import, RFID/NFC card UID and mobile), kiosk PIN, walk-in issue, history, all tickets including held, and done-only wait and service reports. There is no public Services CRUD screen.
+Administrator dashboard. The PECIT panel shows live totals and waiting information, users, students (add, delete, CSV import, RFID/NFC card UID and mobile), kiosk settings (walk-in PIN and printer paper SMS), walk-in issue, history, all tickets including held, and done-only wait and service reports. There is no public Services CRUD screen.
 
 Public display. Windows are grouped by `group_name`: Window 1 Cashier 1–3, Window 2 Promissory Notes, Window 3 DMO, Window 4 Registrar. The screen shows Now Serving and up to 10 waiting numbers in the same fair order as Call Next. Names and held tickets are omitted. Voice announcement may be enabled.
 
@@ -1369,14 +1385,14 @@ Public display. Windows are grouped by `group_name`: Window 1 Cashier 1–3, Win
 
 #### 3.5.1 Hardware Requirements
 
-**Table 3.13 Hardware Requirements**
+**Table 3.14 Hardware Requirements**
 
 
 | Hardware Component         | Configuration                                                                |
 | -------------------------- | ---------------------------------------------------------------------------- |
 | Mini PC (kiosk and server) | Intel Core i5 8th Generation, 8 GB RAM; hosts the kiosk UI and Laravel/XAMPP |
 | Touchscreen monitor        | Public three-step kiosk, attached to the mini PC                             |
-| 58mm USB thermal printer   | XP-58 (XP-Q90EC); paper-out alert on the staff dashboard                     |
+| 58mm USB thermal printer   | XP-58 (XP-Q90EC); paper-out alert on the staff window and System Float                     |
 | RFID/NFC reader            | ACR122U-A9 USB, ISO 14443A / MIFARE, at kiosk confirm                        |
 | GSM/LTE USB module         | SIM7600G-H on the mini PC; SIM and load required                             |
 | HDMI monitor               | Public queue display                                                         |
@@ -1392,7 +1408,7 @@ Public display. Windows are grouped by `group_name`: Window 1 Cashier 1–3, Win
 
 #### 3.5.2 Software Requirements
 
-**Table 3.14 Software Requirements**
+**Table 3.15 Software Requirements**
 
 
 | Software                  | Purpose                      |
@@ -1429,7 +1445,7 @@ The kiosk posts confirmed student or walk-in requests to the Laravel application
 
 #### 3.7.1 Internal Communication
 
-**Table 3.15 Internal Communication Interface**
+**Table 3.16 Internal Communication Interface**
 
 
 | Source      | Destination     | Data                                                           | Purpose                                |
@@ -1437,7 +1453,7 @@ The kiosk posts confirmed student or walk-in requests to the Laravel application
 | Kiosk       | Application     | Service, priority, Student ID or walk-in PIN/reason            | Validate and create ticket             |
 | Application | Database        | Queue, student or issuer, priority, status, counters, settings | Store and retrieve                     |
 | Application | Thermal printer | Number and optional ETA                                        | Print number-only ticket               |
-| Mini PC     | Staff panel     | Printer paper status                                           | Paper-out alert on the staff dashboard |
+| Mini PC     | Staff panel     | Printer paper status                                           | Paper-out alert on the staff window and System Float; one SMS to checked staff numbers |
 | Database    | Staff panel     | Waiting, serving, held, name or walk-in reason                 | Window operations                      |
 | Database    | Admin dashboard | Users, students, PIN, history, reports                         | Administration                         |
 | Database    | Public display  | Serving and waiting numbers                                    | Public monitoring                      |
@@ -1447,7 +1463,7 @@ The kiosk posts confirmed student or walk-in requests to the Laravel application
 
 #### 3.7.2 External Communication
 
-**Table 3.16 External Communication Interface**
+**Table 3.17 External Communication Interface**
 
 
 | External Entity      | Interface         | Information sent                             | System response                                                           |
@@ -1477,7 +1493,7 @@ Each phase was completed before the next. The kiosk chrome was kept as a locked 
 
 #### 3.8.3 Development Tools
 
-**Table 3.17 Development Tools**
+**Table 3.18 Development Tools**
 
 
 | Tool                      | Purpose                                |
@@ -1509,7 +1525,7 @@ The application is installed on the local server or kiosk host. Staff and displa
 
 #### 3.9.1 System Workflow
 
-The student selects service and priority, types or taps a Student ID, may turn on **Notify me by SMS** (off by default; stored mobile), and confirms. The application validates the ID and the one-open-ticket rule, then prints. A walk-in user unlocks with the PIN, enters a reason, may enter a mobile number on the overlay, and receives a number-only ticket. Staff call from the shared fair list or resume a held ticket. Optional GSM SMS is sent at five tickets away and when called. Completed tickets supply report averages.
+The student selects service and priority, types or taps a Student ID, may turn on **Notify me by SMS** (off by default; stored mobile), and confirms. The application validates the ID and the one-open-ticket rule, then prints. A walk-in user unlocks with the PIN, enters a reason, may leave the mobile blank or enter a Philippine number, sees a screen token on the cooldown screen, and receives a number-only ticket. Staff call from the shared fair list or resume a held ticket. Optional GSM SMS is sent after print, at 10 or fewer ahead, and when called. Completed tickets supply report averages.
 
 #### 3.9.2 Operational Workflow
 
@@ -1517,7 +1533,7 @@ The student selects service and priority, types or taps a Student ID, may turn o
 2. Client selects Cashier, Registrar, or DMO.
 3. Client selects Regular or Priority.
 4. Student path: type or tap Student ID, wait for lookup, optionally turn on **Notify me by SMS** if a number is on file, confirm.
-5. Walk-in path: corner control, PIN, reason, confirm.
+5. Walk-in path: corner control, PIN, reason, blank or Philippine mobile, confirm. The cooldown screen shows the screen token.
 6. System generates and stores the number.
 7. Printer issues the 58mm ticket.
 8. Display and staff lists update. Optional GSM SMS is queued when applicable.
@@ -1528,32 +1544,32 @@ The student selects service and priority, types or taps a Student ID, may turn o
 
 #### 3.9.3 Module Interaction
 
-**Table 3.18 Module Interaction**
+**Table 3.19 Module Interaction**
 
 
 | Module          | Primary function                                              | Interacts with                        |
 | --------------- | ------------------------------------------------------------- | ------------------------------------- |
 | Kiosk           | Three-step student flow and PIN walk-in                       | Application, database, printer        |
 | Application     | Validation, numbering, scheduling, ETA, PIN check             | All modules                           |
-| Database        | Students, settings, queues, calls                             | Application                           |
+| Database        | Students, settings, paper SMS contacts, queues, calls         | Application                           |
 | Thermal printer | Number-only ticket                                            | Kiosk / application                   |
 | Staff panel     | Call Next, Recall, Complete, Hold, Call Held, paper-out alert | Application, database, printer status |
 | Public display  | Fair serving and waiting numbers                              | Application, database                 |
-| Administrator   | Users, students, PIN, walk-in issue, reports                  | Application, database                 |
+| Administrator   | Users, students, PIN, paper SMS list, walk-in issue, reports  | Application, database                 |
 
 
 
 
 #### 3.9.4 Input–Process–Output Workflow
 
-**Table 3.19 Input–Process–Output Workflow**
+**Table 3.20 Input–Process–Output Workflow**
 
 
 | Input                  | Process                           | Output                       |
 | ---------------------- | --------------------------------- | ---------------------------- |
 | Service and priority   | Validate selection                | Ready confirmation           |
 | Student ID             | Lookup and one-open-ticket check  | Validated student request    |
-| Walk-in PIN and reason | Server PIN check                  | Authorized walk-in request   |
+| Walk-in PIN and reason | Server PIN check                  | Authorized walk-in request and screen token |
 | Valid request          | Increment counter and store queue | Queue record                 |
 | Queue record           | Print 58mm ticket                 | Physical number reference    |
 | Queue and call updates | Refresh display and staff lists   | Serving, waiting, held views |
@@ -1568,7 +1584,7 @@ The plan followed Waterfall from requirements through deployment and documentati
 
 #### 3.10.1 Gantt Chart
 
-**Table 3.20 Gantt Chart for January to May**
+**Table 3.21 Gantt Chart for January to May**
 
 
 | Activity                       | January   | February  | March     | April     | May       |
@@ -1579,7 +1595,7 @@ The plan followed Waterfall from requirements through deployment and documentati
 | Chapter 3                      |           |           |           | Weeks 1–4 | Weeks 1–2 |
 
 
-**Table 3.21 Gantt Chart for June to October**
+**Table 3.22 Gantt Chart for June to October**
 
 
 | Activity                           | June      | July      | August    | September |
@@ -1597,7 +1613,7 @@ The plan followed Waterfall from requirements through deployment and documentati
 
 Hardware used for development and testing was already available and is not treated as a purchased project cost.
 
-**Table 3.22 Hardware Resources**
+**Table 3.23 Hardware Resources**
 
 
 | Item                       | Quantity  | Remarks                                |
@@ -1618,12 +1634,12 @@ Hardware used for development and testing was already available and is not treat
 
 #### 3.10.3 Risk Management Plan
 
-**Table 3.23 Risk Management Plan**
+**Table 3.24 Risk Management Plan**
 
 
 | Potential risk        | Possible impact               | Mitigation                                                              |
 | --------------------- | ----------------------------- | ----------------------------------------------------------------------- |
-| Printer out of paper  | No ticket print               | Staff dashboard paper-out alert; spare roll; reprint from stored ticket |
+| Printer out of paper  | No ticket print               | Staff window and System Float paper-out alert; one SMS to checked staff numbers; spare roll; reprint from stored ticket |
 | Power interruption    | Temporary stop                | Local file/database recovery after restart                              |
 | LAN failure           | Display and staff out of sync | Inspect switch and cables before opening                                |
 | Software defect       | Wrong ticket or call          | Unit, integration, and UAT before deployment                            |
@@ -1640,7 +1656,7 @@ Testing followed implementation and supported Specific Objective 5: evaluate fun
 
 #### 3.11.1 Test Planning
 
-**Table 3.24 Test Planning**
+**Table 3.25 Test Planning**
 
 
 | Testing activity          | Objective                                       | Expected outcome                    |
@@ -1684,9 +1700,9 @@ This chapter presents the implementation of the Standalone Kiosk-Based Queuing M
 
 The system was developed and implemented for the selected student service offices of the Philippine Electronics and Communication Institute of Technology (PECIT), specifically the Cashier, Registrar, and DMO. It organizes queue generation, ticket issuance, fair multi-window calling, public monitoring, and administrative recording.
 
-The system operates on the institution LAN. One mini PC (Intel Core i5 8th Generation, 8 GB RAM) serves as both the public kiosk host and the application server. Attached to that mini PC are a touchscreen monitor, a 58mm USB thermal printer (XP-58 / XP-Q90EC), a USB RFID/NFC reader (ACR122U-A9), and a GSM/LTE USB module (SIM7600G-H). Staff workstations, an administrator computer, a public display, and a local MySQL/MariaDB database connect over the LAN. Essential queue operations do not require continuous internet connectivity [11]. GSM SMS is optional and uses the local SIM7600G-H module, not a public cloud SMS API. When the thermal printer is out of paper, the staff dashboard shows a paper-out alert.
+The system operates on the institution LAN. One mini PC (Intel Core i5 8th Generation, 8 GB RAM) serves as both the public kiosk host and the application server. Attached to that mini PC are a touchscreen monitor, a 58mm USB thermal printer (XP-58 / XP-Q90EC), a USB RFID/NFC reader (ACR122U-A9), and a GSM/LTE USB module (SIM7600G-H). Staff workstations, an administrator computer, a public display, and a local MySQL/MariaDB database connect over the LAN. Essential queue operations do not require continuous internet connectivity [11]. GSM SMS is optional and uses the local SIM7600G-H module, not a public cloud SMS API. When the thermal printer is out of paper, the staff window and System Float show a paper-out alert, and checked staff numbers may receive one SMS.
 
-A student completes three kiosk steps: service, Regular or Priority, and confirmation. During confirmation the Student ID is typed or read from an enrolled RFID/NFC card and validated against the authorized student list, and a second open ticket for the same ID on the same day is rejected. Clients who do not bring the card may still type the Student ID. Clients who cannot use a Student ID may request a walk-in ticket at the same kiosk after the walk-in PIN stored in settings is accepted. **Notify me by SMS** is off by default. Students do not type a mobile number; notices use the number stored on the student record. If no mobile is on file, the control stays off and disabled and shows **No SMS number on file**; print still proceeds. Walk-in clients may enter a number only on the PIN overlay. The printed ticket, public display, and SMS remain number-only. The student name may appear on confirmation and to staff while serving.
+A student completes three kiosk steps: service, Regular or Priority, and confirmation. During confirmation the Student ID is typed or read from an enrolled RFID/NFC card and validated against the authorized student list, and a second open ticket for the same ID on the same day is rejected. Clients who do not bring the card may still type the Student ID. Clients who cannot use a Student ID may request a walk-in ticket at the same kiosk after the walk-in PIN stored in settings is accepted. **Notify me by SMS** is off by default. Students do not type a mobile number; notices use the number stored on the student record. If no mobile is on file, the control stays off and disabled and shows **No SMS number on file**; print still proceeds. Walk-in clients may leave the mobile blank or enter a Philippine number on the PIN overlay, and the cooldown screen shows a token such as T1006ABC. The printed ticket and public display remain number-only. SMS stays name-free, and a walk-in text includes that token. The student name may appear on confirmation and to staff while serving.
 
 Staff call tickets by 2 Priority → 1 Regular across windows that share a service. Cashier 1, Cashier 2, and Cashier 3 share one Cashier waiting queue while keeping independent open calls and timers. Staff may Recall, Complete, Hold, or Call Held. Administrators manage users and student records, set the kiosk walk-in PIN, may issue walk-in tickets, and generate reports from completed transactions only. The Guard role is the kiosk issuer record and cannot log in.
 
@@ -1702,7 +1718,7 @@ Transaction confirmation. The third kiosk step requires a valid Student ID looku
 
 Automatic queue-number generation. After a valid confirmation or walk-in issue, a locked daily counter increments the number for that service and date.
 
-Thermal ticket printing. The 58mm printer issues a number-only ticket. Estimated waiting time may appear as one compact line when sufficient completed history exists. The student name is never printed.
+Thermal ticket printing. The 58mm printer issues a number-only ticket. Estimated waiting time may appear as one compact line when sufficient completed history exists. The student name and the walk-in screen token are never printed.
 
 Real-time queue display. The public monitor shows Now Serving and up to 10 waiting numbers in the same fair order used by Call Next. Names and held tickets are omitted.
 
@@ -1712,13 +1728,13 @@ Transaction recording. Queue records and queue calls support monitoring and done
 
 Student ID validation and privacy. Student ID is typed or tapped only on confirmation. Names are not printed, shown on the public display, or sent by SMS. The kiosk does not show the full student mobile number.
 
-Authorized walk-in issuance. The kiosk corner control asks for the walk-in PIN on every use. The server checks the PIN. Several walk-in tickets may be open at once. Staff see Walk-in (reason). Print and display stay number-only. Forgetting the physical ID is not a walk-in.
+Authorized walk-in issuance. The kiosk corner control asks for the walk-in PIN on every use. The server checks the PIN. Several walk-in tickets may be open at once. Each walk-in stores a screen token such as T1006ABC. Staff see Walk-in (reason) and that token. The token appears on the cooldown screen and in the issued SMS when a mobile was entered. Print and the public display stay number-only. The mobile may be blank or `09` and 9 more digits. Forgetting the physical ID is not a walk-in.
 
 RFID/NFC confirmation. An enrolled ISO 14443A / MIFARE card serial is read by the ACR122U-A9 and mapped to a Student ID. Unknown cards are rejected. Service and Regular or Priority are still selected first.
 
-GSM SMS notices. After a successful Student ID lookup, **Notify me by SMS** is off by default. Turning it on copies the stored student mobile onto the ticket. Students do not type a number. If no mobile is on file, the control is disabled and shows **No SMS number on file**. Walk-in tickets may use a number entered only on the PIN overlay. An opted-in ticket may receive one local GSM text through the SIM7600G-H module when it is five waiting tickets away in fair call order (with an estimated wait when history is sufficient) and another text when the number is called or recalled. Call Next does not wait on the modem. The kiosk does not show the full mobile number.
+GSM SMS notices. After a successful Student ID lookup, **Notify me by SMS** is off by default. Turning it on copies the stored student mobile onto the ticket. Students do not type a number. If no mobile is on file, the control is disabled and shows **No SMS number on file**. Walk-in tickets may use a blank mobile or a Philippine number entered only on the PIN overlay. An opted-in ticket may receive a local GSM text through the SIM7600G-H module after print, a come-back text the first time it has 10 or fewer ahead in fair call order, and the window name when the number is called or recalled. A ticket already within 10 at print does not get the come-back text. A walk-in text includes the screen token. The sender on the kiosk PC finds the modem command port and includes the Smart message center in each text. Call Next does not wait on the modem. The kiosk does not show the full mobile number.
 
-Paper-out alert. When the XP-Q90EC printer has no paper, the staff dashboard shows an alert. The stored ticket remains valid and can be reprinted after the roll is replaced.
+Paper-out alert. When the XP-Q90EC printer has no paper, or a ticket stays stuck in Printing, the staff window and System Float show an alert. Checked staff or assistant numbers receive one SMS: the printer is out of paper. Loading a new roll clears that mark. The stored ticket remains valid. The kiosk print page does not show the alert.
 
 ### 4.3 System Modules
 
@@ -1726,15 +1742,15 @@ The developed system consists of four major modules.
 
 #### 4.3.1 Student Kiosk Module
 
-The Student Kiosk Module is the public entry point. A student selects a service and Regular or Priority, then types a Student ID on the confirmation keypad or taps an enrolled RFID/NFC card. The system looks up the ID, may show the name for verification, may show waiting counts and estimated wait, and keeps Confirm disabled until lookup succeeds. **Notify me by SMS** is off by default and uses the stored student mobile; students do not type a number. After confirmation it stores the ticket and prints the 58mm number. A walk-in user uses the corner PIN control, selects service, priority, and reason, may enter a mobile number on the overlay, and receives the same number-only print. After print, a countdown returns to the kiosk. The student chrome remains a three-step flow.
+The Student Kiosk Module is the public entry point. A student selects a service and Regular or Priority, then types a Student ID on the confirmation keypad or taps an enrolled RFID/NFC card. The system looks up the ID, may show the name for verification, may show waiting counts and estimated wait, and keeps Confirm disabled until lookup succeeds. **Notify me by SMS** is off by default and uses the stored student mobile; students do not type a number. After confirmation it stores the ticket and prints the 58mm number. A walk-in user uses the corner PIN control, selects service, priority, and reason, may leave the mobile blank or enter a Philippine number on the overlay, and receives the same number-only print. After print, the cooldown screen shows the screen token, then a countdown returns to the kiosk. The student chrome remains a three-step flow.
 
 #### 4.3.2 Staff Module
 
-The Staff Module is used by authorized staff assigned to one window. Staff see the waiting list in fair call order, the held list, the current number, the student name or Walk-in (reason), and the window timer. They can Call Next, Recall, Complete, Hold, and Call Held. Hold finishes the open call, sets status to held, frees the window, and removes the number from Now Serving and waiting lists. Call Held resumes a held ticket at that window without 2 Priority → 1 Regular and requires no open serving ticket. Concurrent Call Next actions on shared services do not assign the same ticket twice. Staff history shows the user’s own done tickets. A paper-out alert appears on the staff dashboard when the thermal printer has no paper.
+The Staff Module is used by authorized staff assigned to one window. Staff see the waiting list in fair call order, the held list, the current number, the student name or Walk-in (reason) and screen token, and the window timer. They can Call Next, Recall, Complete, Hold, and Call Held. Hold finishes the open call, sets status to held, frees the window, and removes the number from Now Serving and waiting lists. Call Held resumes a held ticket at that window without 2 Priority → 1 Regular and requires no open serving ticket. Concurrent Call Next actions on shared services do not assign the same ticket twice. Staff history shows the user’s own done tickets. A paper-out alert appears on the staff window and System Float when the thermal printer has no paper.
 
 #### 4.3.3 Administrator Module
 
-The Administrator Module provides live totals, waiting information, user management, student add/delete/CSV import, RFID/NFC card UID and mobile enrollment, kiosk PIN settings, walk-in issue, history, all tickets including held, and overall and per-window average waiting and service times. Reports use the latest completed call of a done ticket. Hold sessions are not counted as served. There is no public Services CRUD screen; office and window records are configured as part of the deployed domain data. The Guard role cannot log in.
+The Administrator Module provides live totals, waiting information, user management, student add/delete/CSV import, RFID/NFC card UID and mobile enrollment, kiosk settings (walk-in PIN and printer paper SMS), walk-in issue, history, all tickets including held, and overall and per-window average waiting and service times. Reports use the latest completed call of a done ticket. Hold sessions are not counted as served. There is no public Services CRUD screen; office and window records are configured as part of the deployed domain data. The Guard role cannot log in.
 
 #### 4.3.4 Queue Display Module
 
@@ -1742,7 +1758,7 @@ The Queue Display Module groups windows and shows Now Serving and waiting number
 
 ### 4.4 Database Implementation
 
-The system uses a MySQL/MariaDB database. Domain tables are services, windows, users, students, settings, daily_queue_counters, queues, and queue_calls.
+The system uses a MySQL/MariaDB database. Domain tables are services, windows, users, students, settings, paper_sms_contacts, daily_queue_counters, queues, and queue_calls.
 
 **Table 4.1 Implemented Domain Tables**
 
@@ -1754,24 +1770,25 @@ The system uses a MySQL/MariaDB database. Domain tables are services, windows, u
 | users                | Admin, staff, and guard accounts; staff window assignment is unique                                       |
 | students             | Authorized Student ID, name, optional RFID/NFC serial (UID), optional mobile                              |
 | settings             | Kiosk walk-in PIN (`walkin_pin`)                                                                          |
+| paper_sms_contacts   | Staff or assistant mobiles; enabled means Send SMS for the paper-out text                                 |
 | daily_queue_counters | Last number per service and date                                                                          |
-| queues               | Ticket number, service, optional student or issuer/reason, optional notify mobile, priority, status, date |
+| queues               | Ticket number, service, optional student or issuer/reason, optional screen token and SMS number, priority, status, date |
 | queue_calls          | Window, called time, and finished time                                                                    |
 
 
-Queue status values used in operation are waiting, serving, held, done, and cancelled. Walk-in tickets leave `student_id` empty and store `issued_by` and `issue_reason`. The student name is never stored on the ticket row. Reports count done tickets only.
+Queue status values used in operation are waiting, serving, held, done, and cancelled. Walk-in tickets leave `student_id` empty and store `issued_by`, `issue_reason`, and `screen_token`. The student name is never stored on the ticket row. Reports count done tickets only.
 
 ### 4.5 User Interface Presentation
 
 The system provides separate interfaces by role.
 
-The kiosk uses a compact three-step layout suitable for a 1024×600 screen: service, priority, and confirmation with summary, Student ID keypad, and RFID/NFC reader. A small corner control opens the PIN pad for walk-in issuance.
+The kiosk uses a compact three-step layout suitable for a 1024×600 screen: service, priority, and confirmation with summary, Student ID keypad, and RFID/NFC reader. A small corner control opens the PIN pad for walk-in issuance. After a walk-in prints, the cooldown screen shows the number and the screen token.
 
-The staff panel shows the current ticket, name or Walk-in (reason), timer, fair waiting list, held list, Call Next, Recall, Complete, Hold, Call Held, and a paper-out alert when the thermal printer has no paper. An optional System Float window can stay on top on a staff PC.
+The staff panel shows the current ticket, name or Walk-in (reason) and screen token, timer, fair waiting list, held list, Call Next, Recall, Complete, Hold, Call Held, and a paper-out alert when the thermal printer has no paper. An optional System Float window can stay on top on a staff PC and shows the same alert.
 
 The public display shows grouped windows, Now Serving, and waiting numbers only.
 
-The administrator dashboard shows live totals, users, students, kiosk PIN, walk-in issue, history, tickets, and done-only reports.
+The administrator dashboard shows live totals, users, students, kiosk settings (walk-in PIN and printer paper SMS), walk-in issue, history, tickets, and done-only reports.
 
 Screenshots placed in this section are placeholders and must be replaced with captures of the current kiosk steps (including confirm keypad and RFID/NFC tap), number-only 58mm ticket, staff panel, public display, and administrator dashboard. The descriptions above match the implemented system. Diagrams may be inserted later.
 
@@ -1779,7 +1796,7 @@ Screenshots placed in this section are placeholders and must be replaced with ca
 
 The system was implemented with PHP 8.2 or higher, Laravel 12, Blade, Vite, Tailwind CSS, and MySQL/MariaDB on Windows/XAMPP on the mini PC (Intel Core i5 8th Generation, 8 GB RAM). That mini PC is both the kiosk host and the application server. Local assets are bundled so the interfaces do not depend on a CDN. The kiosk, XP-Q90EC printer, ACR122U-A9 reader, SIM7600G-H module, public display, staff PCs, administrator PC, and database communicate on the LAN [11].
 
-The student path is service → priority → type or tap Student ID confirm → optionally turn on SMS (stored mobile) → generate → print → wait on the display → staff call → serve or hold → complete. Optional GSM SMS is queued at five tickets away and when called. The walk-in path substitutes PIN unlock, reason, and optional overlay mobile for Student ID. FairQueueScheduler applies 2 Priority → 1 Regular on shared services. WaitTimeEstimator supplies an estimate only when enough completed samples exist. StudentQueueGuard enforces the one-open-student-ticket-per-day rule. KioskWalkInGate checks the PIN on the server.
+The student path is service → priority → type or tap Student ID confirm → optionally turn on SMS (stored mobile) → generate → print → wait on the display → staff call → serve or hold → complete. Optional GSM SMS is queued after print, at 10 or fewer ahead, and when called. The walk-in path substitutes PIN unlock, reason, and optional overlay mobile for Student ID. FairQueueScheduler applies 2 Priority → 1 Regular on shared services. WaitTimeEstimator supplies an estimate only when enough completed samples exist. StudentQueueGuard enforces the one-open-student-ticket-per-day rule. KioskWalkInGate checks the PIN on the server.
 
 Staff actions update `queue_calls` and queue status. Hold is not Complete. Administrators maintain users, students, and the walk-in PIN, and review done-only reports. The implementation therefore matches the standalone localized deployment described for campus information systems [9].
 
@@ -1803,12 +1820,12 @@ Functional testing checked whether the major functions met the documented requir
 | Walk-in PIN                | Wrong PIN is rejected; correct PIN allows issue without Student ID                                                                                                                                                                   | Passed |
 | RFID/NFC tap               | Enrolled card on the ACR122U-A9 fills confirm; unenrolled card is rejected; service and priority were already selected                                                                                                               | Passed |
 | Queue generation and print | A unique daily number is stored and printed without a name                                                                                                                                                                           | Passed |
-| Paper-out alert            | Staff dashboard shows an alert when the thermal printer has no paper; stored ticket remains valid                                                                                                                                    | Passed |
+| Paper-out alert            | Staff window and System Float show an alert when the thermal printer has no paper; checked staff numbers may receive one SMS; stored ticket remains valid                                                                            | Passed |
 | Fair Call Next             | 2 Priority → 1 Regular; two cashier windows do not claim the same ticket                                                                                                                                                             | Passed |
-| GSM SMS                    | Five-ahead and called texts go only to tickets that opted in (stored student mobile, or walk-in overlay number); name omitted; queue still runs if the SIM7600G-H modem is unplugged; Confirm still prints when no number is on file | Passed |
+| GSM SMS                    | Ticket, 10-away, and called texts go only to tickets that opted in (stored student mobile, or walk-in Philippine number and screen token); name omitted; queue still runs if the SIM7600G-H modem is unplugged; Confirm still prints when no number is on file | Passed |
 | Hold and Call Held         | Hold removes the number from Now Serving; Call Held resumes it; hold is not done                                                                                                                                                     | Passed |
 | Public display             | Serving and waiting numbers only; held tickets and names omitted                                                                                                                                                                     | Passed |
-| Administrator functions    | Users, students, kiosk PIN, walk-in issue, history, and done-only reports                                                                                                                                                            | Passed |
+| Administrator functions    | Users, students, kiosk PIN, paper SMS list, walk-in issue, history, and done-only reports                                                                                                                                            | Passed |
 
 
 The tested functions therefore covered the kiosk, Student ID keypad and ACR122U-A9 RFID/NFC tap, walk-in rules, printing, paper-out alert, optional GSM SMS through the SIM7600G-H module, fair scheduling, staff controls, display privacy, and administration.
@@ -1980,9 +1997,9 @@ Objective 1. The kiosk, shared service queues, and staff windows organized Cashi
 
 Objective 2. Confirmation required a validated Student ID, typed or tapped, or an authorized walk-in PIN path before a number was issued. Unknown IDs, unknown cards, and a second open student ticket on the same day were rejected.
 
-Objective 3. Each confirmed request produced a 58mm number-only ticket. If the printer was out of paper, the staff dashboard showed a paper-out alert and the stored ticket remained valid. Call Next applied 2 Priority → 1 Regular across shared windows, including Cashier 1–3, without assigning the same ticket twice.
+Objective 3. Each confirmed request produced a 58mm number-only ticket. If the printer was out of paper, the staff window and System Float showed a paper-out alert, checked staff numbers could receive one SMS, and the stored ticket remained valid. Call Next applied 2 Priority → 1 Regular across shared windows, including Cashier 1–3, without assigning the same ticket twice.
 
-Objective 4. The public display and staff panel showed current serving and waiting numbers in the same fair order. Held tickets and names were omitted from the public view. Optional local GSM SMS through the SIM7600G-H module notified an opted-in ticket (stored student mobile, or walk-in overlay number) when the ticket was five places away and when it was called.
+Objective 4. The public display and staff panel showed current serving and waiting numbers in the same fair order. Held tickets and names were omitted from the public view. Optional local GSM SMS through the SIM7600G-H module notified an opted-in ticket (stored student mobile, or walk-in Philippine number and screen token) when the ticket was printed, when it first had 10 or fewer ahead, and when it was called.
 
 Objective 5. Functional tests passed for the implemented rules. Cashier and Registrar scored **5.00** overall, DMO scored **4.92**, and the Student System Feedback Form scored **4.91** overall, all **Strongly Agree**. The combined user mean in Table 4.3 is **4.96**, **Strongly Agree**. The IT expert scored **5.00** overall in Table 4.4 and recommended deployment readiness, network setup for PECIT's cloud-based network, and UI modernization.
 
@@ -2000,7 +2017,7 @@ This chapter summarizes the study, states the conclusions that answer the five s
 
 This study designed, developed, and implemented a Standalone Kiosk-Based Queuing Management System with Thermal Printer for the Cashier, Registrar, and Data Management Office (DMO) of the Philippine Electronics and Communication Institute of Technology (PECIT). The offices previously used a manual first-come-first-served line. That process produced unclear order, line cutting, difficulty serving priority clients, crowding, and no shared view of who was waiting.
 
-The implemented system is standalone and LAN-based [11]. One mini PC (Intel Core i5 8th Generation, 8 GB RAM) is both the public kiosk host and the application server. A student uses three kiosk steps: service, Regular or Priority, and confirmation with a validated Student ID typed on the keypad or tapped on an enrolled RFID/NFC card at the ACR122U-A9 reader. Clients who do not bring the card may still type the Student ID. Clients who cannot use a Student ID may request a walk-in ticket after the kiosk PIN stored in settings is accepted. After lookup, **Notify me by SMS** is off by default and uses the mobile number stored on the student record; students do not type a number. If no mobile is on file, the control stays off and disabled and shows **No SMS number on file**; print still proceeds. Walk-in clients may enter a number only on the PIN overlay. The system prints a 58mm number-only ticket on the XP-Q90EC printer, may send local GSM SMS through the SIM7600G-H module when an opted-in ticket is five places away and when it is called, applies 2 Priority → 1 Regular across shared windows, and shows serving and waiting numbers on a public display. When the printer is out of paper, the staff dashboard shows a paper-out alert. Staff can Call Next, Recall, Complete, Hold, and Call Held. Administrators manage users and students, enroll card serials (UID) and mobile numbers, set the walk-in PIN, may issue walk-in tickets, and generate reports from done tickets only. The Guard role cannot log in. Student names are not printed, shown on the public display, or included in SMS. The kiosk does not show the full student mobile number.
+The implemented system is standalone and LAN-based [11]. One mini PC (Intel Core i5 8th Generation, 8 GB RAM) is both the public kiosk host and the application server. A student uses three kiosk steps: service, Regular or Priority, and confirmation with a validated Student ID typed on the keypad or tapped on an enrolled RFID/NFC card at the ACR122U-A9 reader. Clients who do not bring the card may still type the Student ID. Clients who cannot use a Student ID may request a walk-in ticket after the kiosk PIN stored in settings is accepted. After lookup, **Notify me by SMS** is off by default and uses the mobile number stored on the student record; students do not type a number. If no mobile is on file, the control stays off and disabled and shows **No SMS number on file**; print still proceeds. Walk-in clients may leave the mobile blank or enter a Philippine number on the PIN overlay, and the cooldown screen shows a token such as T1006ABC. The system prints a 58mm number-only ticket on the XP-Q90EC printer, may send local GSM SMS through the SIM7600G-H module after print, when the ticket first has 10 or fewer ahead, and when it is called, applies 2 Priority → 1 Regular across shared windows, and shows serving and waiting numbers on a public display. When the printer is out of paper, the staff window and System Float show a paper-out alert, and checked staff or assistant numbers may receive one SMS. Staff can Call Next, Recall, Complete, Hold, and Call Held. Administrators manage users and students, enroll card serials (UID) and mobile numbers, set the walk-in PIN, may issue walk-in tickets, and generate reports from done tickets only. The Guard role cannot log in. Student names are not printed, shown on the public display, or included in SMS. The kiosk does not show the full student mobile number.
 
 Development followed the Waterfall model: Requirements Analysis, System Design, Implementation and Development, Testing, and Deployment [19]. The four modules are the Student Kiosk Module, Staff Module, Administrator Module, and Queue Display Module.
 
@@ -2012,8 +2029,8 @@ Based on the development, implementation, testing, and evaluation, the researche
 
 1. A standalone kiosk-based queue process can organize Cashier, Registrar, and DMO transactions that previously depended on a manual first-come-first-served line. Shared service queues and per-window timers allow several cashiers to serve one waiting list without assigning the same ticket twice.
 2. Confirmation before numbering is workable when the request is checked through Student ID validation by keypad or RFID/NFC tap, or authorized kiosk-PIN walk-in issuance. Unknown IDs, unknown cards, and a second open student ticket on the same day are rejected. Print, display, and SMS remain number-only.
-3. The 58mm thermal printer gives the client a physical queue reference after confirmation. If the printer is out of paper, the staff dashboard shows a paper-out alert and the stored ticket remains valid. 2 Priority → 1 Regular calling serves priority clients fairly while multiple windows share one service queue.
-4. The public display and staff panel provide a real-time view of who is being served and who is waiting. Waiting rows follow the same fair order as Call Next. Held tickets and student names are omitted from the public view. Optional local GSM SMS through the SIM7600G-H module notifies an opted-in ticket (stored student mobile, or walk-in overlay number) when the ticket is five places away in fair order and when it is called.
+3. The 58mm thermal printer gives the client a physical queue reference after confirmation. If the printer is out of paper, the staff window and System Float show a paper-out alert, checked staff numbers may receive one SMS, and the stored ticket remains valid. 2 Priority → 1 Regular calling serves priority clients fairly while multiple windows share one service queue.
+4. The public display and staff panel provide a real-time view of who is being served and who is waiting. Waiting rows follow the same fair order as Call Next. Held tickets and student names are omitted from the public view. Optional local GSM SMS through the SIM7600G-H module notifies an opted-in ticket (stored student mobile, or walk-in Philippine number and screen token) after print, when the ticket first has 10 or fewer ahead, and when it is called.
 5. The system can be evaluated through functional testing, expert review, and User Acceptance Testing. User feedback was **Strongly Agree** (Cashier **5.00**, Registrar **5.00**, DMO **4.92**, Student form **4.91**; combined **4.96**). The IT expert scored **5.00** overall under ISO/IEC 25010-aligned characteristics [10].
 
 The developed system is therefore a practical replacement for the manual line at the selected PECIT offices. The study does not claim a measured numerical reduction in actual waiting time because no controlled before-and-after operational measurement is reported.
@@ -2023,8 +2040,8 @@ The developed system is therefore a practical replacement for the manual line at
 The researchers recommend the following:
 
 1. PECIT may deploy the system in the Cashier, Registrar, and DMO waiting areas using the mini PC (Intel Core i5 8th Generation, 8 GB RAM) as both kiosk and server, the 58mm XP-Q90EC printer, ACR122U-A9 RFID/NFC reader, SIM7600G-H GSM/LTE module, public display, staff PCs, and LAN already specified for standalone operation. Before go-live, network configuration should be prepared for PECIT's cloud-based network environment, as noted by the IT expert.
-2. Administrators and staff should receive orientation on the three-step kiosk, Student ID and card-tap errors, walk-in PIN use, GSM SMS (**Notify me by SMS** off by default; stored student mobile; walk-in overlay number only), paper-out alerts on the staff dashboard, Call Next, Recall, Complete, Hold, and Call Held before the offices rely on the system during peak hours.
-3. The mini PC, printer, RFID/NFC reader, GSM module and SIM load, display, workstations, database, and LAN should be checked regularly. Spare paper should be kept at the kiosk. The staff dashboard paper-out alert should be treated as a signal to reload the printer so stored tickets can still be reprinted.
+2. Administrators and staff should receive orientation on the three-step kiosk, Student ID and card-tap errors, walk-in PIN use and the cooldown screen token, GSM SMS (**Notify me by SMS** off by default; stored student mobile; walk-in Philippine number and screen token), paper-out alerts on the staff window and System Float, with optional staff SMS, Call Next, Recall, Complete, Hold, and Call Held before the offices rely on the system during peak hours.
+3. The mini PC, printer, RFID/NFC reader, GSM module and SIM load, display, workstations, database, and LAN should be checked regularly. Spare paper should be kept at the kiosk. The staff window and System Float paper-out alert, and the optional staff SMS, should be treated as a signal to reload the printer so stored tickets can still be reprinted.
 4. Administrators should keep the student allowlist, enrolled card serials (UID), and mobile numbers current, change the walk-in PIN when needed, and keep backups of the local database. The PIN should remain server-checked and should not be placed on the public kiosk page.
 5. Staff and administrators should review done-only reports and held tickets to see where windows need help, without treating Hold as a completed service.
 6. After full use, the offices should record actual waiting and service times before and after deployment if later studies need a measured efficiency comparison.
@@ -2042,7 +2059,7 @@ The current system is limited to the standalone LAN environment in the scope of 
 5. More detailed analytics of volume, wait, and service time from done tickets only.
 6. Off-site backup for institutions that later accept that extra connectivity, while daily queue operations remain local [11].
 
-These items are future work. They are not part of the implemented PECIT kiosk system. RFID/NFC tap at confirm and local GSM SMS (five-ahead and called) are part of the current build.
+These items are future work. They are not part of the implemented PECIT kiosk system. RFID/NFC tap at confirm, the walk-in screen token, and local GSM SMS (ticket text, 10-away come-back, and called window) are part of the current build.
 
 ### 5.5 Recommendations for Future Researchers
 

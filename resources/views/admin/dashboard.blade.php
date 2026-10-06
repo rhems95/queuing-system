@@ -60,8 +60,8 @@
         <a href="{{ route('admin.settings.edit') }}" class="pecit-quick-card">
             @include('partials.icon', ['name' => 'lock', 'class' => 'pecit-quick-icon'])
             <span class="pecit-quick-copy">
-                <strong>Kiosk PIN</strong>
-                <small>Edit the walk-in PIN</small>
+                <strong>Kiosk settings</strong>
+                <small>Walk-in PIN and paper SMS</small>
             </span>
         </a>
         <a href="{{ route('guard.issue') }}" class="pecit-quick-card">
