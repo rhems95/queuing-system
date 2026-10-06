@@ -55,4 +55,9 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Window::class);
     }
+
+    public function canIssueWalkIns(): bool
+    {
+        return in_array($this->role, ['admin'], true);
+    }
 }

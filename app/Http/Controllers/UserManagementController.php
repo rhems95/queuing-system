@@ -77,13 +77,22 @@ class UserManagementController extends Controller
 
     public function update(Request $request, User $user)
     {
-        $data = $request->validate([
+        $rules = [
             'name'      => ['required', 'string', 'max:100'],
             'email'     => ['required', 'email', 'max:100', Rule::unique('users', 'email')->ignore($user->id)],
             'password'  => ['nullable', 'string', 'min:4'],
-            'role'      => ['required', 'in:admin,staff'],
             'window_id' => ['nullable', 'integer', 'exists:windows,id'],
-        ]);
+        ];
+        if ($user->role !== 'guard') {
+            $rules['role'] = ['required', 'in:admin,staff'];
+        }
+
+        $data = $request->validate($rules);
+
+        if ($user->role === 'guard') {
+            $data['role'] = 'guard';
+            $data['window_id'] = null;
+        }
 
         if ($data['role'] === 'staff' && empty($data['window_id'])) {
             return back()
@@ -119,6 +128,12 @@ class UserManagementController extends Controller
 
     public function destroy(User $user)
     {
+        if ($user->role === 'guard') {
+            return redirect()
+                ->route('admin.users.index')
+                ->withErrors(['user' => 'The kiosk issuer account cannot be deleted.']);
+        }
+
         $user->delete();
 
         return redirect()->route('admin.users.index')->with('status', 'User deleted.');

@@ -40,6 +40,13 @@ class LoginController extends Controller
             }
 
             if ($ok) {
+                if ($user->role === 'guard') {
+                    return redirect()
+                        ->route('login')
+                        ->withErrors(['email' => 'Guard accounts cannot log in. Use the kiosk PIN to issue walk-in tickets.'])
+                        ->withInput($request->only('email', 'float_login'));
+                }
+
                 Auth::login($user, $request->boolean('remember'));
                 $request->session()->regenerate();
 
@@ -67,6 +74,13 @@ class LoginController extends Controller
         Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
+
+        $fromFloat = $request->boolean('float_logout')
+            || str_contains((string) $request->headers->get('referer'), '/window/float');
+
+        if ($fromFloat) {
+            return redirect()->route('login', ['float' => 1]);
+        }
 
         return redirect()->route('login');
     }

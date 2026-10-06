@@ -1,5 +1,5 @@
 # PECIT Staff Float — always-on-top system window
-# Opens a small browser app window, pins it on top, then exits.
+# Opens a small browser app window (if needed), pins it on top, and keeps it topmost.
 
 param(
     [string]$Url = "http://localhost/queue-system/public/window/float",
@@ -37,16 +37,7 @@ $profileDir = Join-Path $env:LOCALAPPDATA $profileName
 New-Item -ItemType Directory -Force -Path $profileDir | Out-Null
 
 $windowWidth = 260
-$windowHeight = 270
-
-Start-Process -FilePath $browserExe -ArgumentList @(
-    "--user-data-dir=`"$profileDir`"",
-    "--app=$Url",
-    "--window-size=$windowWidth,$windowHeight",
-    "--window-position=40,80",
-    "--disable-extensions",
-    "--no-first-run"
-)
+$windowHeight = 290
 
 Add-Type @"
 using System;
@@ -74,11 +65,7 @@ function Get-CandidateWindows {
         $sb = New-Object System.Text.StringBuilder 512
         [void][PecitWin]::GetWindowText($hWnd, $sb, $sb.Capacity)
         $title = $sb.ToString()
-        if (
-            $title -like "*PECIT Staff Float*" -or
-            $title -like "*PECIT Queuing System*" -or
-            $title -eq "Login"
-        ) {
+        if ($title -like "*PECIT Staff Float*") {
             $list.Add($hWnd) | Out-Null
         }
         return $true
@@ -87,29 +74,66 @@ function Get-CandidateWindows {
     return $list
 }
 
-function Set-TopMost([IntPtr]$hwnd) {
+function Set-TopMost([IntPtr]$hwnd, [bool]$forceSize) {
     if ($hwnd -eq [IntPtr]::Zero) { return }
-    # Force size in case the browser restored a previous window size from the profile.
+    if ($forceSize) {
+        [void][PecitWin]::SetWindowPos(
+            $hwnd,
+            [PecitWin]::HWND_TOPMOST,
+            40, 80, $windowWidth, $windowHeight,
+            [PecitWin]::SWP_SHOWWINDOW
+        )
+        return
+    }
     [void][PecitWin]::SetWindowPos(
         $hwnd,
         [PecitWin]::HWND_TOPMOST,
-        40, 80, $windowWidth, $windowHeight,
-        [PecitWin]::SWP_SHOWWINDOW
+        0, 0, 0, 0,
+        ([PecitWin]::SWP_NOMOVE -bor [PecitWin]::SWP_NOSIZE -bor [PecitWin]::SWP_SHOWWINDOW)
     )
 }
 
-# Wait briefly for the float window, pin once, then exit.
-$pinned = $false
-for ($i = 0; $i -lt 25; $i++) {
-    Start-Sleep -Milliseconds 300
-    $windows = Get-CandidateWindows
-    if ($windows.Count -gt 0) {
-        foreach ($hwnd in $windows) {
-            Set-TopMost $hwnd
-        }
-        $pinned = $true
-        break
-    }
+function Start-FloatBrowser {
+    Start-Process -FilePath $browserExe -ArgumentList @(
+        "--user-data-dir=`"$profileDir`"",
+        "--app=$Url",
+        "--window-size=$windowWidth,$windowHeight",
+        "--window-position=40,80",
+        "--disable-extensions",
+        "--disable-infobars",
+        "--hide-crash-restore-bubble",
+        "--no-first-run",
+        "--no-default-browser-check"
+    )
 }
 
-exit $(if ($pinned) { 0 } else { 0 })
+$existing = Get-CandidateWindows
+$launchedBrowser = $false
+if ($existing.Count -eq 0) {
+    Start-FloatBrowser
+    $launchedBrowser = $true
+}
+
+# Pin once we see the window, then keep re-applying TopMost so it stays above other apps.
+$deadline = (Get-Date).AddHours(12)
+$firstPin = $true
+$seen = $false
+while ((Get-Date) -lt $deadline) {
+    $windows = Get-CandidateWindows
+    if ($windows.Count -gt 0) {
+        $seen = $true
+        foreach ($hwnd in $windows) {
+            Set-TopMost $hwnd $firstPin
+        }
+        $firstPin = $false
+    } elseif ($seen) {
+        # Staff closed the float window.
+        break
+    } elseif (-not $launchedBrowser) {
+        Start-FloatBrowser
+        $launchedBrowser = $true
+    }
+    Start-Sleep -Milliseconds 1500
+}
+
+exit 0

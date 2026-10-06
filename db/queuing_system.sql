@@ -81,6 +81,8 @@ CREATE TABLE `queues` (
   `queue_number` varchar(20) NOT NULL,
   `service_id` bigint(20) UNSIGNED NOT NULL,
   `student_id` varchar(50) DEFAULT NULL,
+  `issued_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `issue_reason` varchar(32) DEFAULT NULL,
   `priority` tinyint(1) DEFAULT 0,
   `status` enum('waiting','serving','done','cancelled','held') DEFAULT 'waiting',
   `queue_date` date NOT NULL,
@@ -230,6 +232,26 @@ INSERT INTO `students` (`id`, `student_id`, `name`, `created_at`, `updated_at`) 
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `settings`
+--
+
+CREATE TABLE `settings` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `setting_key` varchar(64) NOT NULL,
+  `setting_value` varchar(255) NOT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `settings`
+--
+
+INSERT INTO `settings` (`id`, `setting_key`, `setting_value`, `updated_at`) VALUES
+(1, 'walkin_pin', '1981', NULL);
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -238,7 +260,7 @@ CREATE TABLE `users` (
   `name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('admin','staff') NOT NULL,
+  `role` enum('admin','staff','guard') NOT NULL,
   `window_id` bigint(20) UNSIGNED DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -254,7 +276,8 @@ INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `window_id`, `cr
 (6, 'omar', 'omar@gmail.com', '$2y$12$GJ7.g1kfBq6zecfSOQpyKOylPIIPhkpczhGlNP0SVcQMzdC3Qh2OW', 'staff', 2, '2026-03-14 10:19:43', '2026-03-14 10:20:22'),
 (7, 'cahier3', 'cashier3@gmail.com', '$2y$12$VoYe8K5FYvLmXRY7OD/D5ORMXNVXqD/3zoB2sMnBPmJMshBYYAz1W', 'staff', 3, '2026-09-08 19:43:13', '2026-09-08 19:43:13'),
 (8, 'dmo sample', 'dmo@gmail.com', '$2y$12$W9upiHMBWaBoWrI.r.4wV.zvkhq90Pr9JzpI5QGbCoUw24wT3nuJ.', 'staff', 5, '2026-09-08 19:43:38', '2026-09-08 19:43:38'),
-(9, 'registrar sample', 'registrar@gmail.com', '$2y$12$KA1kIbNBTJ85ChFwXZuz5OeWdHg6vA2EPRXukj8Uqwsj2qhjH3dPm', 'staff', 6, '2026-09-08 19:44:14', '2026-09-08 19:44:40');
+(9, 'registrar sample', 'registrar@gmail.com', '$2y$12$KA1kIbNBTJ85ChFwXZuz5OeWdHg6vA2EPRXukj8Uqwsj2qhjH3dPm', 'staff', 6, '2026-09-08 19:44:14', '2026-09-08 19:44:40'),
+(10, 'Guard', 'guard@gmail.com', 'guard', 'guard', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -308,7 +331,8 @@ ALTER TABLE `queues`
   ADD PRIMARY KEY (`id`),
   ADD KEY `service_id` (`service_id`),
   ADD KEY `idx_queue_date` (`queue_date`),
-  ADD KEY `queues_student_id_index` (`student_id`);
+  ADD KEY `queues_student_id_index` (`student_id`),
+  ADD KEY `queues_issued_by_index` (`issued_by`);
 
 --
 -- Indexes for table `queue_calls`
@@ -330,6 +354,13 @@ ALTER TABLE `services`
 ALTER TABLE `students`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `students_student_id_unique` (`student_id`);
+
+--
+-- Indexes for table `settings`
+--
+ALTER TABLE `settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `settings_setting_key_unique` (`setting_key`);
 
 --
 -- Indexes for table `users`
@@ -387,10 +418,16 @@ ALTER TABLE `students`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
+-- AUTO_INCREMENT for table `settings`
+--
+ALTER TABLE `settings`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- AUTO_INCREMENT for table `windows`

@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>PECIT Queuing System — Capstone 2 Final Defense</title>
+  <style>
+    :root {
+      --navy: #071428;
+      --blue: #123a8c;
+      --gold: #d4a017;
+      --cream: #f4efe4;
+      --muted: #c8d0dc;
+      --card: rgba(8, 18, 36, 0.78);
+      --line: rgba(212, 160, 23, 0.45);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+      font-family: "Segoe UI", Calibri, "Source Sans 3", sans-serif;
+      color: var(--cream);
+      background: #050910;
+      font-size: 22px;
+    }
+    .stage {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      background: #050910;
+    }
+    .stage::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: url("pecit%20school.jpg") center / cover no-repeat;
+      filter: blur(3px) saturate(0.4) brightness(0.55);
+      transform: scale(1.06);
+      z-index: 0;
+    }
+    .stage::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(4, 12, 28, 0.62), rgba(6, 16, 34, 0.74)),
+        radial-gradient(ellipse at 50% 38%, rgba(5, 14, 28, 0.28), rgba(4, 8, 16, 0.7));
+      z-index: 0;
+    }
+    .stage > * { position: relative; z-index: 1; }
+    .brand-bar {
+      position: absolute;
+      top: 22px;
+      left: 40px;
+      right: 40px;
+      z-index: 5;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      pointer-events: none;
+    }
+    .brand-pair { display: flex; align-items: center; gap: 16px; }
+    .brand-pair img {
+      height: 58px;
+      width: auto;
+      filter: drop-shadow(0 4px 12px rgba(0,0,0,.45));
+    }
+    .brand-ccs { view-transition-name: ccs-logo; }
+    .brand-pecit { view-transition-name: pecit-logo; }
+    .brand-text {
+      font-size: 15px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .progress {
+      position: absolute;
+      left: 0; right: 0; bottom: 0;
+      height: 5px;
+      background: rgba(255,255,255,.08);
+      z-index: 6;
+    }
+    .progress > i {
+      display: block;
+      height: 100%;
+      width: 0;
+      background: linear-gradient(90deg, var(--blue), var(--gold));
+      transition: width .45s ease;
+    }
+    .hud {
+      position: absolute;
+      right: 36px;
+      bottom: 20px;
+      z-index: 6;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      color: var(--muted);
+    }
+    .hint {
+      position: absolute;
+      left: 36px;
+      bottom: 18px;
+      z-index: 6;
+      font-size: 15px;
+      color: rgba(244,239,228,.45);
+    }
+    .deck { position: relative; width: 100%; height: 100%; }
+    .slide {
+      position: absolute;
+      inset: 0;
+      padding: 108px 88px 84px;
+      display: none;
+      opacity: 0;
+    }
+    .slide.active { display: flex; flex-direction: column; justify-content: center; opacity: 1; }
+    .slide.enter { animation: morphIn .7s cubic-bezier(.2,.8,.2,1) both; }
+    .slide.leave {
+      display: flex;
+      animation: morphOut .55s cubic-bezier(.6,0,.3,1) both;
+    }
+    @keyframes morphIn {
+      from { clip-path: circle(0% at 50% 50%); opacity: 0; transform: scale(1.08); filter: blur(8px); }
+      to { clip-path: circle(140% at 50% 50%); opacity: 1; transform: none; filter: none; }
+    }
+    @keyframes morphOut {
+      from { clip-path: circle(140% at 50% 50%); opacity: 1; }
+      to { clip-path: circle(0% at 50% 50%); opacity: 0; transform: scale(.92); filter: blur(8px); }
+    }
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(18px); }
+      to { opacity: 1; transform: none; }
+    }
+    @keyframes float3d {
+      0%, 100% { transform: perspective(700px) rotateY(-10deg) rotateX(6deg) translateY(0); }
+      50% { transform: perspective(700px) rotateY(-6deg) rotateX(4deg) translateY(-6px); }
+    }
+    @keyframes sealIn {
+      from { opacity: 0; transform: rotate(-8deg) scale(.86); }
+      to { opacity: 1; transform: rotate(-6deg) scale(1); }
+    }
+    ::view-transition-old(root), ::view-transition-new(root) { animation-duration: .65s; }
+    h1, h2 {
+      font-family: "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif;
+      font-weight: 700;
+      line-height: 1.15;
+    }
+    h1 { font-size: 44px; }
+    h2 { font-size: 44px; margin-bottom: 18px; }
+    h2 span {
+      color: var(--gold);
+      font-size: 18px;
+      letter-spacing: 0.16em;
+      display: block;
+      margin-bottom: 8px;
+      text-transform: uppercase;
+      font-family: "Segoe UI", Calibri, sans-serif;
+    }
+    h3 {
+      color: var(--gold);
+      font-size: 24px;
+      margin-bottom: 12px;
+      font-weight: 700;
+    }
+    p.lead { font-size: 28px; line-height: 1.45; }
+    .wide { max-width: none; }
+    .brief {
+      margin-top: 18px;
+      font-size: 20px;
+      line-height: 1.45;
+      color: var(--muted);
+      max-width: 52em;
+    }
+    .brief b { color: var(--cream); }
+    ul, ol { list-style: none; display: grid; gap: 14px; }
+    ul li, .steps li {
+      position: relative;
+      padding-left: 28px;
+      font-size: 24px;
+      line-height: 1.4;
+    }
+    ul li::before {
+      content: "";
+      position: absolute;
+      left: 0; top: 0.62em;
+      width: 11px; height: 11px;
+      border-radius: 50%;
+      background: var(--gold);
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 24px 28px;
+      backdrop-filter: blur(8px);
+      box-shadow: 0 16px 36px rgba(0,0,0,.28);
+    }
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+    .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 14px; }
+    .pill.short { min-height: 0; }
+    .id-rows { display: grid; gap: 10px; }
+    .id-rows .card {
+      display: grid;
+      grid-template-columns: 180px 1fr;
+      gap: 12px;
+      align-items: start;
+      padding: 12px 20px;
+    }
+    .id-rows .lbl {
+      color: var(--gold);
+      font-size: 15px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-weight: 800;
+      padding-top: 4px;
+    }
+    .id-rows p { font-size: 20px; line-height: 1.4; }
+    .feat-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+    .feat-grid .fig img { max-height: 168px; }
+    .feat-grid .kiosk-card { grid-column: 1 / -1; }
+    .kiosk-shots {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 8px;
+    }
+    .kiosk-shots > div {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      min-width: 0;
+    }
+    .feat-grid .kiosk-card img { max-height: 176px; }
+    .shot-lbl {
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--gold);
+      letter-spacing: 0.04em;
+    }
+    .kiosk-card .fig-name { text-align: center; }
+    .ach {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(212, 160, 23, .22);
+      border: 1px solid var(--line);
+      color: var(--gold);
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .pill {
+      background: linear-gradient(180deg, rgba(24, 62, 140, .55), rgba(10, 24, 52, .72));
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 20px 16px;
+      min-height: 196px;
+      box-shadow: 0 14px 28px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.08);
+      transform: perspective(800px) rotateX(4deg);
+    }
+    .pill .ico { margin-bottom: 12px; }
+    .pill b { display: block; color: var(--gold); margin-bottom: 8px; font-size: 20px; }
+    .pill span { font-size: 18px; line-height: 1.35; display: block; }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 22px;
+    }
+    th, td { padding: 12px 14px; text-align: left; border-bottom: 1px solid rgba(255,255,255,.12); }
+    th { color: var(--gold); font-weight: 700; }
+    .arch {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      align-items: stretch;
+    }
+    .node {
+      text-align: center;
+      padding: 20px 12px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, rgba(24, 62, 140, .5), rgba(10, 24, 52, .7));
+      border: 1px solid var(--line);
+      font-size: 20px;
+      box-shadow: 0 12px 24px rgba(0,0,0,.25), inset 0 1px 0 rgba(255,255,255,.08);
+      transform: perspective(700px) rotateX(5deg);
+    }
+    .node .ico { margin: 0 auto 8px; }
+    .node.core {
+      grid-column: 1 / -1;
+      background: linear-gradient(180deg, rgba(212, 160, 23, .22), rgba(18, 28, 48, .7));
+      transform: perspective(700px) rotateX(2deg);
+    }
+    .title-slide { align-items: flex-start; text-align: left; }
+    .title-logos {
+      display: flex;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 28px;
+      margin-bottom: 26px;
+      perspective: 600px;
+    }
+    .title-logos img {
+      height: 128px;
+      width: auto;
+      filter: drop-shadow(14px 18px 20px rgba(0,0,0,.5));
+    }
+    .title-logos .brand-ccs { transform: rotateY(-14deg); }
+    .title-logos .brand-pecit { transform: rotateY(14deg); }
+    .title-slide h1 {
+      font-size: 56px;
+      line-height: 1.12;
+      max-width: 17em;
+      color: #fff8e7;
+      padding: 20px 28px 20px 26px;
+      border-left: 8px solid var(--gold);
+      background: linear-gradient(90deg, rgba(212, 160, 23, 0.38), rgba(212, 160, 23, 0.1) 72%, transparent);
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.3);
+      text-shadow: 0 2px 18px rgba(0, 0, 0, 0.55), 0 0 28px rgba(212, 160, 23, 0.22);
+    }
+    .kicker {
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gold);
+      font-size: 16px;
+      margin-bottom: 16px;
+    }
+    .authors { margin-top: 22px; font-size: 20px; color: var(--muted); line-height: 1.7; }
+    .thanks { text-align: center; align-items: center; }
+    .thanks .title-logos {
+      align-self: center;
+      justify-content: center;
+      width: auto;
+      perspective: none;
+    }
+    .thanks .title-logos img {
+      transform: none;
+      height: 120px;
+      filter: drop-shadow(0 10px 20px rgba(0,0,0,.45));
+    }
+    .thanks h1 { font-size: 84px; }
+    .fig {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      min-width: 0;
+      padding: 10px 12px 12px;
+      border-radius: 16px;
+      background: rgba(8, 18, 36, 0.5);
+      border: 1px solid var(--line);
+    }
+    .fig img {
+      width: 100%;
+      height: auto;
+      max-height: 300px;
+      object-fit: contain;
+      object-position: top center;
+      border-radius: 10px;
+      background: #fff;
+      box-shadow: 0 10px 24px rgba(0,0,0,.28);
+      cursor: zoom-in;
+    }
+    .lightbox {
+      position: fixed;
+      inset: 0;
+      z-index: 40;
+      display: none;
+      place-items: center;
+      padding: 40px 48px 64px;
+      background: rgba(4, 8, 16, 0.94);
+    }
+    .lightbox.open { display: grid; }
+    .lightbox img {
+      max-width: 96vw;
+      max-height: 86vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      border-radius: 12px;
+      background: #fff;
+      box-shadow: 0 24px 64px rgba(0,0,0,.55);
+      cursor: zoom-out;
+    }
+    .lightbox-cap {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 18px;
+      text-align: center;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .lightbox-close {
+      position: absolute;
+      top: 16px;
+      right: 24px;
+      width: 44px;
+      height: 44px;
+      border: 0;
+      border-radius: 50%;
+      background: rgba(255,255,255,.1);
+      color: var(--cream);
+      font-size: 28px;
+      line-height: 1;
+      cursor: pointer;
+    }
+    .fig .fig-name {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    .fig-wide img { max-height: 620px; }
+    .fig-ticket {
+      align-items: center;
+    }
+    .fig-ticket img {
+      width: auto;
+      max-width: 220px;
+      max-height: 200px;
+    }
+    .fig-stack { display: grid; gap: 12px; align-content: start; }
+    .fig-stack .fig img { max-height: 250px; }
+    .fig-stack .fig-b img { max-height: 360px; }
+    .fig-stack .fig-d img { max-height: 360px; }
+    .fig-screen img { max-height: 500px; }
+    .tight { gap: 10px; margin-bottom: 14px; }
+    .with-fig { align-items: stretch; }
+    .ico {
+      width: 34px;
+      height: 34px;
+      display: grid;
+      place-items: center;
+      color: var(--gold);
+    }
+    .ico svg { width: 30px; height: 30px; fill: none; stroke: currentColor; stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+    .outline {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px 28px;
+    }
+    .outline li {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 18px 20px;
+      padding-left: 20px;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      font-size: 24px;
+      box-shadow: 0 12px 24px rgba(0,0,0,.22);
+    }
+    .outline li::before { display: none; }
+    .outline .n {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(180deg, #d4a017, #9a7410);
+      color: #1a1204;
+      font-weight: 800;
+      font-size: 18px;
+      flex: none;
+      box-shadow: 0 8px 16px rgba(0,0,0,.3);
+    }
+    .steps li {
+      display: grid;
+      grid-template-columns: 40px 48px 1fr;
+      gap: 12px;
+      padding-left: 0;
+      align-items: start;
+    }
+    .steps li::before { display: none; }
+    .steps .ico { width: 36px; height: 36px; margin-top: 2px; }
+    .steps .ico svg { width: 28px; height: 28px; }
+    .steps i {
+      font-style: normal;
+      color: var(--gold);
+      font-weight: 800;
+      font-size: 22px;
+      line-height: 1.35;
+    }
+    .seal, .sticker {
+      position: absolute;
+      right: 88px;
+      bottom: 92px;
+      width: 168px;
+      height: 168px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 18px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      line-height: 1.25;
+      color: #1a1204;
+      background:
+        radial-gradient(circle at 30% 28%, #f3d36a, #d4a017 46%, #8d6b0f);
+      border: 6px solid rgba(255, 236, 170, .55);
+      box-shadow:
+        0 18px 32px rgba(0,0,0,.4),
+        inset 0 1px 0 rgba(255,255,255,.45);
+      transform: rotate(-6deg);
+      animation: sealIn .7s ease both;
+    }
+    .score-3d {
+      position: absolute;
+      right: 88px;
+      top: 210px;
+      width: 220px;
+      padding: 22px 18px 20px;
+      border-radius: 22px;
+      text-align: center;
+      color: #1a1204;
+      background: linear-gradient(145deg, #f0cf62, #d4a017 42%, #8a6a0c);
+      box-shadow:
+        0 22px 40px rgba(0,0,0,.4),
+        inset 0 2px 0 rgba(255,255,255,.4);
+      animation: float3d 3.2s ease-in-out infinite;
+    }
+    .score-3d strong {
+      display: block;
+      font-size: 58px;
+      line-height: 1;
+      font-family: "Palatino Linotype", Palatino, serif;
+    }
+    .score-3d span {
+      display: block;
+      margin-top: 8px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 16px;
+      padding: 8px 14px;
+      border-radius: 999px;
+      background: rgba(212, 160, 23, .18);
+      border: 1px solid var(--line);
+      color: var(--gold);
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+    }
+    .mark {
+      position: absolute;
+      right: 72px;
+      top: 118px;
+      width: 136px;
+      height: 136px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 14px;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      line-height: 1.2;
+      color: #1a1204;
+      background: radial-gradient(circle at 30% 28%, #f3d36a, #d4a017 46%, #8d6b0f);
+      border: 5px solid rgba(255, 236, 170, .55);
+      box-shadow: 0 16px 28px rgba(0,0,0,.38), inset 0 1px 0 rgba(255,255,255,.45);
+      transform: rotate(8deg);
+      animation: sealIn .7s ease both;
+      z-index: 3;
+      pointer-events: none;
+    }
+    .mark.low { top: auto; bottom: 96px; transform: rotate(-8deg); }
+    .th-ico {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .th-ico .ico { width: 28px; height: 28px; }
+    .th-ico .ico svg { width: 24px; height: 24px; }
+    .lead-icon {
+      display: flex;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .lead-icon .ico {
+      width: 48px;
+      height: 48px;
+      flex: none;
+      background: rgba(212, 160, 23, .16);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+    }
+    .lead-icon .ico svg { width: 30px; height: 30px; }
+    .slide.active .rise { animation: rise .55s ease both; }
+    .slide.active .rise:nth-child(1) { animation-delay: .04s; }
+    .slide.active .rise:nth-child(2) { animation-delay: .1s; }
+    .slide.active .rise:nth-child(3) { animation-delay: .16s; }
+    .slide.active .rise:nth-child(4) { animation-delay: .22s; }
+    .slide.active .rise:nth-child(5) { animation-delay: .28s; }
+    .slide.active .rise:nth-child(6) { animation-delay: .34s; }
+    .slide.active .rise:nth-child(7) { animation-delay: .4s; }
+    .uat-slide { padding-right: 340px; }
+    @media (prefers-reduced-motion: reduce) {
+      .slide.enter, .slide.leave, .slide.active .rise, .score-3d, .seal, .mark { animation: none; }
+    }
+    @media (max-width: 1400px) {
+      html { font-size: 18px; }
+      h2 { font-size: 36px; }
+      .title-slide h1 { font-size: 42px; }
+      ul li, .steps li, .outline li { font-size: 20px; }
+      .score-3d, .seal, .mark { display: none; }
+      .uat-slide { padding-right: 88px; }
+    }
+    @media (max-width: 900px) {
+      .slide { padding: 88px 22px 64px; }
+      .grid-2, .grid-3, .grid-5, .arch, .outline, .feat-grid { grid-template-columns: 1fr; }
+      .id-rows .card { grid-template-columns: 1fr; }
+      .title-logos img { height: 72px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stage">
+    <div class="brand-bar" id="chrome">
+      <div class="brand-pair">
+        <img class="brand-ccs" src="CCS%20logo.png" alt="College of Computer Studies" />
+        <img class="brand-pecit" src="pecit-logo.png" alt="PECIT" />
+        <div class="brand-text">College of Computer Studies · PECIT</div>
+      </div>
+    </div>
+
+    <div class="deck" id="deck">
+      <section class="slide title-slide active" data-title="hide-chrome">
+        <div class="title-logos">
+          <img class="brand-ccs" src="CCS%20logo.png" alt="College of Computer Studies" />
+          <img class="brand-pecit" src="pecit-logo.png" alt="PECIT" />
+        </div>
+        <div class="kicker">Capstone 2 Final Defense · Bachelor of Science in Information Systems</div>
+        <h1>Standalone Kiosk-Based Queuing System with Thermal Printer for Student Service Offices at PECIT</h1>
+        <p class="brief">September 16, 2026 · AVR Conference Room, New Building, PECIT, Butuan City</p>
+        <div class="seal">Final<br />Defense<br />2026</div>
+      </section>
+
+      <section class="slide">
+        <h2><span>01</span>Project identification</h2>
+        <div class="id-rows">
+          <div class="card rise">
+            <div class="lbl">Title</div>
+            <p>Standalone Kiosk-Based Queuing Management System with Thermal Printer for Student Service Offices at Philippine Electronics and Communication Institute of Technology (PECIT)</p>
+          </div>
+          <div class="card rise">
+            <div class="lbl">Proponents</div>
+            <p>Mike D. Bedrona · Niño Angelo M. Malicay · Omar O. Bayabao · Rhem A. Sumodlayon · Ron Matthew F. Arquisola</p>
+          </div>
+          <div class="card rise">
+            <div class="lbl">Adviser</div>
+            <p>Program Head: Zoren Estrada Bajao · College of Computer Studies, PECIT</p>
+          </div>
+          <div class="card rise">
+            <div class="lbl">Leadership</div>
+            <p>Dean: Daryll A. Cabagay, MSIT</p>
+          </div>
+          <div class="card rise">
+            <div class="lbl">Defense</div>
+            <p>September 16, 2026 · AVR Conference Room, New Building, PECIT, Butuan City</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide">
+        <h2><span>02</span>Background / Problem</h2>
+        <ul>
+          <li class="rise">PECIT Cashier, Registrar, and DMO handle student payments, records, and data transactions.</li>
+          <li class="rise">Clients currently wait in a <b>manual first-come-first-served line</b> and do not receive a queue ticket.</li>
+          <li class="rise">Effects: unclear order, line cutting, weak priority handling, crowding, and no shared view of who is waiting.</li>
+          <li class="rise">Staff cannot coordinate several windows from one organized queue.</li>
+          <li class="rise">PECIT needed a <b>standalone LAN kiosk</b> that still works when the internet is down.</li>
+        </ul>
+        <p class="brief">The problem is not the absence of computers. Arrival order in a physical line is the only queue rule.</p>
+      </section>
+
+      <section class="slide">
+        <h2><span>03</span>Statement of the Problem</h2>
+        <div class="card rise lead-icon" style="margin-bottom:16px">
+          <span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.2a2.6 2.6 0 1 1 3.6 2.4c-.8.4-1.2.9-1.2 1.8V14"/><path d="M12 17.2h.01"/></svg></span>
+          <p class="lead wide">How can a standalone kiosk-based queuing management system replace first-come-first-served lining that currently uses no queue ticket with an organized, monitored, and coordinated queue at PECIT?</p>
+        </div>
+        <ol class="steps">
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-8h6v8"/></svg></span><i>01</i><span>Organize Cashier, Registrar, and DMO instead of a physical line with no ticket and line cutting.</span></li>
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.2"/><path d="M14 10.5h5M14 13.5h4"/></svg></span><i>02</i><span>Check Student ID or authorized walk-in <b>before</b> a number is issued.</span></li>
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 7h12v13H6z"/><path d="M9 7V5h6v2"/><path d="M9 12h6"/></svg></span><i>03</i><span>Give clients a queue reference when there is no ticket, and serve priority fairly across shared windows.</span></li>
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="12" rx="2"/><path d="M8 21h8"/></svg></span><i>04</i><span>Let clients and windows see who is serving and who is waiting.</span></li>
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><i>05</i><span>Evaluate functionality, usability, efficiency, reliability and accuracy, and satisfaction.</span></li>
+        </ol>
+        <div class="mark">Five<br />specific<br />problems</div>
+      </section>
+
+      <section class="slide">
+        <h2><span>04</span>Project Objectives</h2>
+        <div class="card rise" style="margin-bottom:14px">
+          <h3>General objective</h3>
+          <p>Design, develop, and implement a standalone kiosk-based queuing system with a thermal printer for PECIT student service offices.</p>
+        </div>
+        <ol class="steps">
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-8h6v8"/></svg></span><i>01</i><span>Develop a standalone kiosk system for Cashier, Registrar, and DMO.</span></li>
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.2"/><path d="M14 10.5h5M14 13.5h4"/></svg></span><i>02</i><span>Confirm with Student ID or authorized kiosk-PIN walk-in before numbering.</span></li>
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 7h12v13H6z"/><path d="M9 7V5h6v2"/><path d="M9 12h6"/></svg></span><i>03</i><span>Print a 58mm ticket and call <b>2 Priority → 1 Regular</b> across shared windows.</span></li>
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="12" rx="2"/><path d="M8 21h8"/></svg></span><i>04</i><span>Provide a real-time public display and staff monitoring.</span></li>
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><i>05</i><span>Evaluate with testing, expert review, and UAT (ISO/IEC 25010-aligned).</span></li>
+        </ol>
+        <p class="brief">Every later result maps back to these five. This study does <b>not</b> claim a measured drop in waiting time.</p>
+        <div class="mark">Five<br />objectives</div>
+      </section>
+
+      <section class="slide">
+        <h2><span>05</span>Scope and Limitations</h2>
+        <div class="grid-2">
+          <div class="card rise">
+            <h3>In scope</h3>
+            <ul>
+              <li>Users: students, walk-ins, staff, administrator</li>
+              <li>Offices: Cashier, Registrar, DMO</li>
+              <li>Modules: Kiosk, Staff, Administrator, Display</li>
+              <li>Platform: LAN · Laravel 12 · MySQL · 58mm XP-Q90EC</li>
+              <li>Cashier 1–3 share one waiting queue</li>
+            </ul>
+          </div>
+          <div class="card rise">
+            <h3>Limitations</h3>
+            <ul>
+              <li>No online reservation, mobile app, SMS, or cloud admin</li>
+              <li>Not all campus offices</li>
+              <li>RFID/NFC is not in this build — listed as later work</li>
+              <li>No second student ticket while one is still in the queue</li>
+              <li>No claimed measured cut in waiting time</li>
+            </ul>
+          </div>
+        </div>
+        <p class="brief">Built for PECIT Cashier, Registrar, and DMO on a local LAN — not an online reservation product.</p>
+      </section>
+
+      <section class="slide">
+        <h2><span>06</span>Proposed Solution</h2>
+        <div class="arch" style="margin-bottom:16px">
+          <div class="node rise"><span class="ico"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M10 19h4"/></svg></span>Kiosk<br />3 steps</div>
+          <div class="node rise"><span class="ico"><svg viewBox="0 0 24 24"><path d="M6 7h12v13H6z"/><path d="M9 7V5h6v2"/><path d="M9 12h6"/></svg></span>58mm ticket<br />number only</div>
+          <div class="node rise"><span class="ico"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8"/></svg></span>Staff windows<br />2P → 1R</div>
+          <div class="node rise"><span class="ico"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="12" rx="2"/><path d="M8 21h8"/></svg></span>Public display<br />numbers only</div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th><span class="th-ico"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="7" cy="8" r="2.2"/><circle cx="12" cy="8" r="2.2"/><circle cx="17" cy="8" r="2.2"/><path d="M4 18c.8-2.2 2.4-3.4 4.2-3.4S12 15.8 12.8 18M11.2 18c.8-2.2 2.4-3.4 4.2-3.4S20 15.8 20.8 18"/></svg></span>Existing</span></th>
+              <th><span class="th-ico"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M10 19h4"/></svg></span>Proposed</span></th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Stand in a physical line</td><td>Start at the kiosk (service → priority → confirm)</td></tr>
+            <tr><td>Staff call by who is next in line</td><td>Call Next by system order; Hold / Call Held</td></tr>
+            <tr><td>No ticket, no public board</td><td>Number-only ticket and display</td></tr>
+          </tbody>
+        </table>
+        <p class="brief">A name may appear on confirm so the student can check it. <b>It is never printed or shown on the public display.</b></p>
+        <div class="mark">Line →<br />Kiosk<br />3 steps</div>
+      </section>
+
+      <section class="slide">
+        <h2><span>07</span>System Architecture</h2>
+        <figure class="fig fig-wide rise">
+          <img src="figures/lan-architecture.png" alt="LAN architecture: kiosk, printer, staff, display, admin, Laravel and MySQL" />
+          <figcaption class="fig-name">LAN architecture — kiosk, printer, staff PCs, public display, administrator, Laravel, MySQL</figcaption>
+        </figure>
+        <p class="brief">If the internet drops, the queue can still run on the local network. No cloud service is required for daily operations.</p>
+      </section>
+
+      <section class="slide">
+        <h2><span>08</span>System Development Methodology</h2>
+        <p class="brief" style="margin:0 0 16px">Waterfall was used because the campus process was already defined: lock the queue rules, then build and test them.</p>
+        <div class="grid-5">
+          <div class="pill short rise"><b>1. Requirements</b><span>Manual line, ID confirm, walk-in PIN, shared cashiers</span></div>
+          <div class="pill short rise"><b>2. Design</b><span>LAN, 58mm print, 2P→1R, Hold, number-only display</span></div>
+          <div class="pill short rise"><b>3. Implementation</b><span>Laravel 12 modules: kiosk, staff, admin, display</span></div>
+          <div class="pill short rise"><b>4. Testing</b><span>Functional tests, expert review, UAT</span></div>
+          <div class="pill short rise"><b>5. Deployment</b><span>Standalone XAMPP / LAN at PECIT offices</span></div>
+        </div>
+        <p class="brief">Four modules: Student Kiosk · Staff · Administrator · Queue Display.</p>
+      </section>
+
+      <section class="slide">
+        <h2><span>09</span>Major System Features</h2>
+        <div class="feat-grid">
+          <figure class="fig rise kiosk-card">
+            <div class="kiosk-shots">
+              <div>
+                <img src="figures/kiosk-service.png" alt="Kiosk step 1 — select service" />
+                <span class="shot-lbl">1 · Service</span>
+              </div>
+              <div>
+                <img src="figures/kiosk-priority.png" alt="Kiosk step 2 — Regular or Priority" />
+                <span class="shot-lbl">2 · Priority</span>
+              </div>
+              <div>
+                <img src="figures/kiosk-confirm.png" alt="Kiosk step 3 — confirm with Student ID keypad" />
+                <span class="shot-lbl">3 · Confirm</span>
+              </div>
+            </div>
+            <figcaption class="fig-name">Kiosk — 3 steps; Student ID on confirm; walk-in PIN path</figcaption>
+          </figure>
+          <figure class="fig rise">
+            <img src="figures/staff-serving.png" alt="Staff serving panel" />
+            <figcaption class="fig-name">Staff — Call Next, Hold, timer; 2 Priority → 1 Regular</figcaption>
+          </figure>
+          <figure class="fig rise">
+            <img src="figures/public-display.png" alt="Public display numbers only" />
+            <figcaption class="fig-name">Display — Now Serving and waiting; no names, no held</figcaption>
+          </figure>
+          <figure class="fig rise">
+            <img src="figures/admin-dashboard.png" alt="Administrator dashboard" />
+            <figcaption class="fig-name">Admin — users, students, PIN, done-only reports</figcaption>
+          </figure>
+        </div>
+        <p class="brief">Hold is not Complete. Guard cannot log in. Names stay off the ticket and the public display.</p>
+      </section>
+
+      <section class="slide">
+        <h2><span>10</span>Technology Stack</h2>
+        <div class="grid-3">
+          <div class="pill short rise"><b>Languages / framework</b><span>PHP 8.2+ · Laravel 12 · Blade</span></div>
+          <div class="pill short rise"><b>Frontend</b><span>Vite · Tailwind · local fonts and icons (no CDN)</span></div>
+          <div class="pill short rise"><b>Database</b><span>MySQL / MariaDB · queuing_system</span></div>
+          <div class="pill short rise"><b>Hardware</b><span>Touch kiosk · XP-58 (XP-Q90EC) 58mm · public TV · staff PCs</span></div>
+          <div class="pill short rise"><b>Hosting</b><span>Local XAMPP on the PECIT LAN — not a cloud host</span></div>
+          <div class="pill short rise"><b>Not used</b><span>No public API cloud, no SMS gateway, no AI/ML model</span></div>
+        </div>
+        <p class="brief">Laravel keeps queue rules on the server (fair claim, one open student ticket, PIN check). Local assets keep the kiosk usable offline.</p>
+      </section>
+
+      <section class="slide">
+        <h2><span>11</span>Testing and Evaluation</h2>
+        <ul>
+          <li class="rise"><b>Chapter 3 survey (N = 50):</b> students and parents rated the <b>current line</b> before development. Not mixed with Chapter 4.</li>
+          <li class="rise"><b>Chapter 4 evaluation:</b> functional tests, office UAT, student system form, and one IT expert.</li>
+          <li class="rise"><b>Form:</b> ISO/IEC 25010 is the basis of the evaluation form only — not a certification.</li>
+          <li class="rise"><b>IT expert:</b> same five areas, 25 items; overall 5.00; <b>not mixed</b> into the user table.</li>
+          <li class="rise"><b>Student form:</b> 20 students, 5 parents, 5 walk-in visitors (N = 30).</li>
+        </ul>
+        <p class="brief">Efficiency is a perception score, not a measured cut in waiting time.</p>
+      </section>
+
+      <section class="slide uat-slide">
+        <h2><span>12</span>Results and Findings</h2>
+        <table>
+          <thead><tr><th>Evaluation area (Table 4.3 users)</th><th>Mean</th><th>Interpretation</th></tr></thead>
+          <tbody>
+            <tr><td>Functionality</td><td>4.93</td><td>Strongly Agree</td></tr>
+            <tr><td>Usability</td><td>4.98</td><td>Strongly Agree</td></tr>
+            <tr><td>Efficiency</td><td>4.97</td><td>Strongly Agree</td></tr>
+            <tr><td>Reliability and Accuracy</td><td>4.93</td><td>Strongly Agree</td></tr>
+            <tr><td>User Satisfaction</td><td>4.99</td><td>Strongly Agree</td></tr>
+            <tr><td><b>Overall</b></td><td><b>4.96</b></td><td><b>Strongly Agree</b></td></tr>
+          </tbody>
+        </table>
+        <p class="brief"><b>By form:</b> Cashier 5.00 · Registrar 5.00 · DMO 4.92 · Student form 4.91 (N = 30). <b>IT expert 5.00</b> (Table 4.4, not mixed): ready to deploy · set up PECIT’s cloud-based network · modernize UI (future work).</p>
+        <p class="brief">Office + student form only in 4.96. Efficiency is perception, not a measured cut in waiting time.</p>
+        <div class="score-3d" aria-hidden="true"><strong>4.96</strong><span>Users · Strongly Agree</span></div>
+      </section>
+
+      <section class="slide">
+        <h2><span>13</span>Objectives vs. Results</h2>
+        <table>
+          <thead>
+            <tr><th>Specific objective</th><th>Implementation</th><th>Evidence</th><th>Status</th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1. Organize Cashier, Registrar, DMO</td>
+              <td>Shared service queues; 3-step kiosk</td>
+              <td>Functional tests of issue and Call Next</td>
+              <td><span class="ach">Achieved</span></td>
+            </tr>
+            <tr>
+              <td>2. Confirm before numbering</td>
+              <td>Student ID lookup; kiosk-PIN walk-in</td>
+              <td>Unknown ID and second open ticket rejected</td>
+              <td><span class="ach">Achieved</span></td>
+            </tr>
+            <tr>
+              <td>3. Ticket and fair priority</td>
+              <td>58mm number-only; 2 Priority → 1 Regular</td>
+              <td>Print path; no duplicate claim on two cashiers</td>
+              <td><span class="ach">Achieved</span></td>
+            </tr>
+            <tr>
+              <td>4. Real-time monitoring</td>
+              <td>Display + staff panel, same call order</td>
+              <td>Names and held tickets off the public view</td>
+              <td><span class="ach">Achieved</span></td>
+            </tr>
+            <tr>
+              <td>5. Evaluate the system</td>
+              <td>Tests, expert review, UAT</td>
+              <td>Users 4.96; expert 5.00 (not mixed)</td>
+              <td><span class="ach">Achieved</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section class="slide">
+        <h2><span>14</span>Conclusion</h2>
+        <ol class="steps">
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M3 21V8l9-5 9 5v13"/><path d="M9 21v-8h6v8"/></svg></span><i>01</i><span>A standalone kiosk can replace the manual line at the selected offices.</span></li>
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="12" r="2.2"/><path d="M14 10.5h5M14 13.5h4"/></svg></span><i>02</i><span>Confirmation (Student ID or PIN walk-in) works before numbering.</span></li>
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 7h12v13H6z"/><path d="M9 7V5h6v2"/><path d="M9 12h6"/></svg></span><i>03</i><span>The ticket is a clear reference; 2 Priority → 1 Regular is fair on shared windows.</span></li>
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="2" y="5" width="20" height="12" rx="2"/><path d="M8 21h8"/></svg></span><i>04</i><span>Display and staff panel give a real-time number-only view.</span></li>
+          <li class="rise"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="6" y="3" width="12" height="18" rx="2"/><path d="M9 8h6M9 12h6M9 16h4"/></svg></span><i>05</i><span>Users 4.96 and IT expert 5.00 support acceptance under ISO/IEC 25010-aligned items.</span></li>
+        </ol>
+        <p class="brief">A practical replacement for the manual line. <b>No claimed measured cut in waiting time.</b></p>
+      </section>
+
+      <section class="slide">
+        <h2><span>15</span>Recommendations / Future Enhancements</h2>
+        <div class="grid-2">
+          <div class="card rise">
+            <h3>Now (implemented)</h3>
+            <ul>
+              <li>Deploy kiosk, printer, display, staff PCs, and LAN as specified.</li>
+              <li>Before go-live, prepare network setup for PECIT’s cloud-based network.</li>
+              <li>Orient staff on Confirm errors, walk-in PIN, Hold, and Call Held.</li>
+              <li>Keep the student allowlist and PIN current; back up MySQL.</li>
+              <li>Use done-only reports; do not treat Hold as Complete.</li>
+            </ul>
+          </div>
+          <div class="card rise">
+            <h3>Later (not built)</h3>
+            <ul>
+              <li>Modernize staff and kiosk UI; keep the 3-step kiosk and number-only print and display.</li>
+              <li>Record actual wait and service times if PECIT wants a measured comparison.</li>
+              <li>RFID/NFC tap at confirm — still number-only on print and display.</li>
+              <li>Optional SMS / QR status — still no names on print or display.</li>
+              <li>Remote reserve would still require ID or authorized walk-in.</li>
+              <li>More offices only if they share the same local rules.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide thanks" data-title="hide-chrome">
+        <div class="title-logos">
+          <img src="CCS%20logo.png" alt="College of Computer Studies" />
+          <img src="pecit-logo.png" alt="PECIT" />
+        </div>
+        <h1>Thank you</h1>
+        <p class="authors">Questions · Comments · Clarifications<br />College of Computer Studies · PECIT · BS Information Systems</p>
+        <div class="seal">Q&amp;A<br />is open</div>
+      </section>
+    </div>
+    <div class="progress"><i id="bar"></i></div>
+    <div class="hint">← → Space · F fullscreen · click a figure to enlarge</div>
+    <div class="hud" id="hud">1 / 17</div>
+  </div>
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Figure">
+    <button type="button" class="lightbox-close" aria-label="Close figure">×</button>
+    <img alt="" />
+    <p class="lightbox-cap"></p>
+  </div>
+
+  <script>
+    const slides = [...document.querySelectorAll(".slide")];
+    const chrome = document.getElementById("chrome");
+    const bar = document.getElementById("bar");
+    const hud = document.getElementById("hud");
+    let i = 0;
+    let busy = false;
+
+    function paint(next) {
+      if (busy || next === i || next < 0 || next >= slides.length) return;
+      const from = slides[i];
+      const to = slides[next];
+      const go = () => {
+        from.classList.remove("active", "enter");
+        from.classList.add("leave");
+        to.classList.add("active", "enter");
+        to.classList.remove("leave");
+        setTimeout(() => from.classList.remove("leave"), 560);
+        i = next;
+        chrome.style.opacity = to.dataset.title === "hide-chrome" ? "0" : "1";
+        bar.style.width = ((i + 1) / slides.length * 100) + "%";
+        hud.textContent = (i + 1) + " / " + slides.length;
+      };
+      busy = true;
+      if (document.startViewTransition) {
+        document.startViewTransition(go).finished.finally(() => { busy = false; });
+      } else {
+        go();
+        setTimeout(() => { busy = false; }, 650);
+      }
+    }
+
+    const lightbox = document.getElementById("lightbox");
+    const lightboxImg = lightbox.querySelector("img");
+    const lightboxCap = lightbox.querySelector(".lightbox-cap");
+
+    function openLightbox(img) {
+      const cap = img.closest("figure")?.querySelector(".fig-name")?.textContent || img.alt;
+      lightboxImg.src = img.currentSrc || img.src;
+      lightboxImg.alt = img.alt;
+      lightboxCap.textContent = cap;
+      lightbox.classList.add("open");
+    }
+
+    function closeLightbox() {
+      lightbox.classList.remove("open");
+      lightboxImg.removeAttribute("src");
+    }
+
+    document.querySelectorAll(".fig img").forEach((img) => {
+      img.addEventListener("click", (e) => {
+        e.stopPropagation();
+        openLightbox(img);
+      });
+    });
+
+    lightbox.addEventListener("click", closeLightbox);
+
+    document.addEventListener("keydown", (e) => {
+      if (lightbox.classList.contains("open")) {
+        e.preventDefault();
+        if (e.key === "Escape" || e.key === " " || e.key === "Enter" || e.key === "Backspace") {
+          closeLightbox();
+        }
+        return;
+      }
+      if (["ArrowRight", "ArrowDown", "PageDown", " ", "Enter"].includes(e.key)) {
+        e.preventDefault();
+        paint(i + 1);
+      }
+      if (["ArrowLeft", "ArrowUp", "PageUp", "Backspace"].includes(e.key)) {
+        e.preventDefault();
+        paint(i - 1);
+      }
+      if (e.key === "Home") paint(0);
+      if (e.key === "End") paint(slides.length - 1);
+      if (e.key === "f" || e.key === "F") {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen();
+        else document.exitFullscreen();
+      }
+    });
+
+    let touchX = null;
+    document.addEventListener("touchstart", (e) => { touchX = e.changedTouches[0].clientX; });
+    document.addEventListener("touchend", (e) => {
+      if (touchX == null) return;
+      const dx = e.changedTouches[0].clientX - touchX;
+      if (dx < -40) paint(i + 1);
+      if (dx > 40) paint(i - 1);
+      touchX = null;
+    });
+
+    document.querySelector(".stage").addEventListener("click", (e) => {
+      if (e.target.closest("a") || e.target.closest(".fig") || e.target.closest(".lightbox")) return;
+      paint(e.clientX > innerWidth / 2 ? i + 1 : i - 1);
+    });
+
+    chrome.style.opacity = "0";
+    bar.style.width = (1 / slides.length * 100) + "%";
+  </script>
+</body>
+</html>

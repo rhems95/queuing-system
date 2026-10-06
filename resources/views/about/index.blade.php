@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>{{ $about['title'] ?? 'About' }} · PECIT Capstone</title>
+    @include('partials.favicon')
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
@@ -104,9 +105,9 @@
         }
         .about-hero .desc {
             margin: 0;
-            max-width: 48rem;
-            line-height: 1.5;
-            font-size: 0.95rem;
+            max-width: 52rem;
+            line-height: 1.65;
+            font-size: 0.98rem;
             color: rgba(255, 255, 255, 0.92);
         }
         .about-section-title {

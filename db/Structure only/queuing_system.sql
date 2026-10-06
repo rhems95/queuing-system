@@ -59,6 +59,8 @@ CREATE TABLE `queues` (
   `queue_number` varchar(20) NOT NULL,
   `service_id` bigint(20) UNSIGNED NOT NULL,
   `student_id` varchar(50) DEFAULT NULL,
+  `issued_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `issue_reason` varchar(32) DEFAULT NULL,
   `priority` tinyint(1) DEFAULT 0,
   `status` enum('waiting','serving','done','cancelled','held') DEFAULT 'waiting',
   `queue_date` date NOT NULL,
@@ -114,6 +116,19 @@ CREATE TABLE `students` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `settings`
+--
+
+CREATE TABLE `settings` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `setting_key` varchar(64) NOT NULL,
+  `setting_value` varchar(255) NOT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -122,7 +137,7 @@ CREATE TABLE `users` (
   `name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('admin','staff') NOT NULL,
+  `role` enum('admin','staff','guard') NOT NULL,
   `window_id` bigint(20) UNSIGNED DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -168,7 +183,8 @@ ALTER TABLE `queues`
   ADD PRIMARY KEY (`id`),
   ADD KEY `service_id` (`service_id`),
   ADD KEY `idx_queue_date` (`queue_date`),
-  ADD KEY `queues_student_id_index` (`student_id`);
+  ADD KEY `queues_student_id_index` (`student_id`),
+  ADD KEY `queues_issued_by_index` (`issued_by`);
 
 --
 -- Indexes for table `queue_calls`
@@ -190,6 +206,13 @@ ALTER TABLE `services`
 ALTER TABLE `students`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `students_student_id_unique` (`student_id`);
+
+--
+-- Indexes for table `settings`
+--
+ALTER TABLE `settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `settings_setting_key_unique` (`setting_key`);
 
 --
 -- Indexes for table `users`
@@ -244,6 +267,12 @@ ALTER TABLE `services`
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `settings`
+--
+ALTER TABLE `settings`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --

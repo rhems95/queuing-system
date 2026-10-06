@@ -17,6 +17,8 @@
         'serving' => '<path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/>',
         'mail' => '<path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>',
         'lock' => '<path d="M8 11V7a4 4 0 118 0v4M6 11h12v8a2 2 0 01-2 2H8a2 2 0 01-2-2v-8z"/>',
+        'sun' => '<circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="M4.93 4.93l1.41 1.41"/><path d="M17.66 17.66l1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="M4.93 19.07l1.41-1.41"/><path d="M17.66 6.34l1.41-1.41"/>',
+        'moon' => '<path d="M21 14.5A8.5 8.5 0 1 1 9.5 3 7 7 0 0 0 21 14.5z"/>',
         'grid' => '<rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/>',
     ];
     $body = $paths[$name] ?? $paths['grid'];
