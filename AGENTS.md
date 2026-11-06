@@ -27,7 +27,7 @@ Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done onl
 - **Print-only** kiosk (Eco Mode removed).
 - **One staff user per window** (app + DB unique when migration applied).
 - **Multi-cashier compatible:** Cashier 1–3 share one Cashier waiting queue; each has an independent open call + timer.
-- **One open ticket per student per day** (`waiting` \| `serving` \| `held`, any service). Walk-in tickets (no student ID) are issued with the **kiosk PIN** (or admin `/guard`) and may be many at once. Guard role **cannot log in**.
+- **One open ticket at a time** (`waiting` \| `serving` \| `held`, any service). After it is finished, the student may take another ticket. Walk-in tickets (no student ID) are issued with the **kiosk PIN** (or admin `/guard`) and may be many at once. Guard role **cannot log in**.
 
 ---
 
@@ -43,7 +43,7 @@ Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done onl
 - Print sizing (current baseline): title ~15px, lines ~11px, number ~28px, footer ~10px, tight line spacing — change only when asked.
 - Promissory Notes **hidden** from kiosk service list (filter in `KioskController@index`); may still exist for staff/display.
 - **Do not redesign/restyle/restructure** kiosk Blade/CSS/JS unless the user explicitly asks (print sizing / ETA line / confirm Student ID keypad / tiny walk-in PIN corner button / small PECIT seal in the title row are allowed exceptions when requested).
-- Tiny bottom-right hit target always opens a PIN pad (every click). PIN is stored in `settings.walkin_pin` (Admin → Kiosk PIN), not `.env`. Correct PIN shows a walk-in issue overlay (no Student ID) sized for **1024×600** without scrolling. Optional mobile uses the on-screen pad only. PIN is checked on the server only. After print or cancel, the next corner click asks for the PIN again. Print still number-only; countdown returns to the kiosk. This is not a student multi-ticket ID.
+- Tiny bottom-right hit target always opens a PIN pad (every click). PIN is four digits, stored in `settings.walkin_pin` (Admin → Kiosk PIN), not `.env`. Correct PIN shows a walk-in issue overlay (no Student ID) sized for **1024×600** without scrolling. Optional mobile uses the on-screen pad only. PIN is checked on the server only. After print or cancel, the next corner click asks for the PIN again. Print still number-only; countdown returns to the kiosk. This is not a student multi-ticket ID.
 - Shell: `layouts/app.blade.php`. Views: `resources/views/kiosk/*`.
 - Thermal layout: **58mm** (XP-58(XP-Q90EC)), centered number — `kiosk/printing.blade.php`.
 - Silent print: not possible from a normal tab; use `bats/start-kiosk-chrome.bat` (`--kiosk --kiosk-printing`). Launcher matches printer **XP-Q90EC**, waits 10s, starts the ACR122U watcher and the GSM sender, clears Chrome sticky printer; close all Chrome first. Reader helper: `bats/start-acr122-reader.bat` / `tools/kiosk/Watch-Acr122.ps1` writes `storage/app/kiosk-card.json`. `GET /kiosk/card` starts that watcher when it is not already running.
@@ -52,7 +52,7 @@ Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done onl
 ### Guard (kiosk PIN only — no login)
 
 - Guards **cannot log in**. Walk-ins are issued at the kiosk: tiny corner button → PIN → overlay.
-- PIN lives in `settings` (`walkin_pin`), edited at `GET/PUT /admin/settings`. Default seed `1981`.
+- PIN lives in `settings` (`walkin_pin`), edited at `GET/PUT /admin/settings`. It is four digits. Default seed `1981`.
 - Tickets have `student_id` null, `issued_by` = kiosk issuer user id (dump `guard@gmail.com`, no login), `issue_reason` set. Many open walk-in tickets are allowed.
 - Promissory Notes hidden from the issue list (same as kiosk).
 - Admin may still issue from `GET/POST /guard` (admin middleware). Staff serving label is **Walk-in (reason)** (not printed, not on the public display).
@@ -83,7 +83,7 @@ Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done onl
 | `App\Services\FairQueueScheduler` | Shared 2P→1R order; claim/peek; tickets-ahead simulation |
 | `App\Services\WaitTimeEstimator` | Multi-counter ETA from history + waiting + serving |
 | `App\Services\QueueService` | Latest call helpers; serving-only now-serving; staff-only student name |
-| `App\Services\StudentQueueGuard` | Normalize ID; lookup; one open ticket today |
+| `App\Services\StudentQueueGuard` | Normalize ID; lookup; block a new ticket while one is still waiting, serving, or held |
 | `App\Services\KioskWalkInGate` | Kiosk PIN unlock for walk-in issue (session, not a login) |
 
 ### Display (public)
@@ -110,6 +110,8 @@ Admin: users, students, kiosk PIN, walk-in issue, wait/service reports (done onl
 - `auth/login.blade.php` extends `layouts.panel`.
 - Passwords: bcrypt (`$2y$…`) **or** legacy plain-text compare in `LoginController` (dump admin uses plain `admin`).
 - `guard` role **cannot log in**; walk-ins use the kiosk PIN.
+- After login, a previously requested page is used only when the role may open it (admin: `/admin` and `/guard`; staff: `/window`). Otherwise admin goes to `/admin` and staff goes to `/window`.
+- A signed-in user who opens `/login`, including with the browser Back button, is sent to that home page.
 
 ### Secret About / capstone credits
 
@@ -273,7 +275,7 @@ Models: check `$timestamps` / `$fillable` per model — several domain models us
 12. `callNext` / `complete` / `hold` must stay window-scoped for timers and must not complete another counter’s open call.
 13. Do not put team photos under `public/`; keep `storage/app/private/about/team/` and allowlisted photo streaming.
 14. Do not add the About page to sidebars; keep Ctrl+Alt+Shift+A as the entry.
-15. One open ticket per student per day (`waiting`/`serving`/`held`). Hold is not Complete; reports count **done** only.
+15. One open ticket at a time (`waiting`/`serving`/`held`). After it is finished, the student may take another ticket. Hold is not Complete; reports count **done** only.
 16. Walk-in tickets: kiosk corner PIN (`settings.walkin_pin`, Admin → Kiosk PIN) or admin `/guard`. No Student ID; `issued_by` is the issuer user id. Guard role cannot log in. Do not add a multi-ticket student ID on the public kiosk. Print and display stay number-only. Each walk-in gets a screen token (`T1006ABC`: weekday initial, month, day, three letters). It is shown on the cooldown screen and to staff while serving, and it is not printed. If a mobile was given, the ticket SMS includes that token. Optional walk-in SMS accepts only a Philippine mobile (`09` + 9 digits) or blank; invalid input disables Issue & Print.
 17. GSM SMS stays on the kiosk/server PC. Do not add a COM-port setting. Do not block ticket issue or Call Next on the modem. Paper-out texts go only to checked rows in `paper_sms_contacts`, once per outage.
 
@@ -335,7 +337,7 @@ Kiosk launchers wait **10 seconds** before opening the browser (gives Apache/pri
 - [ ] Kiosk confirm shows waiting counts + ETA via `/kiosk/estimate`
 - [ ] Kiosk Student ID lookup via `/kiosk/student`; Confirm disabled until OK
 - [ ] Confirm tap via ACR122U: `/kiosk/card` then `/kiosk/student?card_uid=`; unknown card = unknown ID
-- [ ] Unknown ID and second ticket same day are rejected
+- [ ] Unknown ID is rejected, and a new ticket is refused while that student still has a waiting, serving, or held ticket
 - [ ] Kiosk POST validation (`service_id`, `priority`, `student_id`)
 - [ ] 58mm thermal (XP-58(XP-Q90EC)); optional `Estimated Time: N minutes` line only; **no student name**
 - [ ] Silent print via `bats/start-kiosk-chrome.bat` (survives countdown; XP-Q90EC match)

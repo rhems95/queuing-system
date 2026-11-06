@@ -2,6 +2,25 @@
 
 Notable behavior of the PECIT queue system. Older capstone notes that say SMS fires at five ahead are out of date.
 
+## 2026-11-06
+
+### Printer paper SMS remove control
+
+- Admin → Kiosk settings uses a **Remove** button for paper-alert rows instead of a checkbox. Click Remove, then Save numbers.
+
+## 2026-10-13
+
+### Walk-in PIN length
+
+- The kiosk walk-in PIN is four digits. Admin → Kiosk settings rejects any other length.
+
+## 2026-10-09
+
+### Sign-in from another PC
+
+- After login, a saved page is opened only when that account is allowed to open it. A staff account is no longer sent to the admin page, and an admin account is no longer sent to a staff window.
+- Opening the sign-in page while already signed in returns to that account’s own page. The browser Back button from the dashboard reloads the sign-in page and continues into the dashboard.
+
 ## 2026-10-06
 
 ### Printer paper SMS

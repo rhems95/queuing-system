@@ -101,6 +101,6 @@ class KioskWalkInGate
 
     public function pinLength(): int
     {
-        return max(4, min(6, strlen($this->currentPin())));
+        return 4;
     }
 }

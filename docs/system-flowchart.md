@@ -293,14 +293,14 @@ flowchart TD
     end
 
     subgraph Students["/admin/students — StudentManagementController"]
-        S1["Add / delete allowlisted Student IDs"]
+        S1["Add / edit / delete allowlisted Student IDs"]
         S2["CSV import student_id,name,card_uid,mobile"]
         S3["Cannot delete if open ticket today"]
     end
 
     subgraph Settings["GET/PUT /admin/settings — SettingsController"]
         P1["Edit walkin_pin in settings table"]
-        P2["4–6 digits; not stored in .env"]
+        P2["4 digits; not stored in .env"]
         P3["paper_sms_contacts: name, PH mobile, Send SMS checkbox"]
         P4["One paper-out text per outage to checked numbers"]
     end

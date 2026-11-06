@@ -12,6 +12,10 @@ class LoginController extends Controller
 {
     public function showLoginForm(Request $request)
     {
+        if ($redirect = $this->redirectIfAuthenticated($request)) {
+            return $redirect;
+        }
+
         if ($this->isFloatLogin($request)) {
             return view('auth.login-float');
         }
@@ -50,17 +54,7 @@ class LoginController extends Controller
                 Auth::login($user, $request->boolean('remember'));
                 $request->session()->regenerate();
 
-                if ($user->role === 'admin') {
-                    return redirect()->intended('/admin');
-                } elseif ($user->role === 'staff') {
-                    if ($request->boolean('float_login')) {
-                        return redirect()->intended(route('window.float'));
-                    }
-
-                    return redirect()->intended('/window');
-                }
-
-                return redirect()->intended('/');
+                return $this->redirectAfterLogin($user, $request);
             }
         }
 
@@ -94,6 +88,77 @@ class LoginController extends Controller
         $intended = (string) $request->session()->get('url.intended', '');
 
         return str_contains($intended, '/window/float');
+    }
+
+    private function redirectIfAuthenticated(Request $request)
+    {
+        $user = $request->user();
+
+        if (! $user || $user->role === 'guard') {
+            return null;
+        }
+
+        return redirect()->to($this->homePath($user, $request));
+    }
+
+    private function redirectAfterLogin(User $user, Request $request)
+    {
+        $fallback = $this->homePath($user, $request);
+        $intended = (string) $request->session()->pull('url.intended', '');
+
+        if ($this->intendedAllowed($user, $intended, $request)) {
+            return redirect()->to($intended);
+        }
+
+        return redirect()->to($fallback);
+    }
+
+    private function homePath(User $user, Request $request): string
+    {
+        if ($user->role === 'admin') {
+            return url('/admin');
+        }
+
+        if ($user->role === 'staff') {
+            if ($request->boolean('float_login') || $request->boolean('float')) {
+                return route('window.float');
+            }
+
+            return url('/window');
+        }
+
+        return url('/');
+    }
+
+    private function intendedAllowed(User $user, string $intended, Request $request): bool
+    {
+        if ($intended === '' || str_starts_with($intended, '//')) {
+            return false;
+        }
+
+        $parts = parse_url($intended);
+        if ($parts === false) {
+            return false;
+        }
+
+        if (isset($parts['host']) && strcasecmp((string) $parts['host'], $request->getHost()) !== 0) {
+            return false;
+        }
+
+        $path = (string) ($parts['path'] ?? '');
+        $prefixes = match ($user->role) {
+            'admin' => ['admin', 'guard'],
+            'staff' => ['window'],
+            default => [],
+        };
+
+        foreach ($prefixes as $prefix) {
+            if (preg_match('#(?:^|/)'.preg_quote($prefix, '#').'(?:/|$)#', $path) === 1) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }
 

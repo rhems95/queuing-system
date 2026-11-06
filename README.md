@@ -20,7 +20,7 @@ Customers take a ticket from a public **kiosk** after a Student ID on confirm (k
 | **Admin** | Admin login | Live dashboard, users, kiosk PIN, students (CSV), walk-in issue, history, tickets, wait/service reports |
 
 - Tickets stay **anonymous on print and the public display** (no student name). The kiosk confirm step requires a **Student ID**.
-- One student may have only **one open ticket per day** (waiting, serving, or held), across all services.
+- One student may have only **one open ticket at a time** (waiting, serving, or held), across all services. After it is finished, the student may take another ticket.
 - **Walk-in tickets**: kiosk corner PIN (Admin → **Kiosk settings**, stored in `settings`); no Student ID, many at once; staff sees “Walk-in (reason)” and a screen token such as `T1006ABC`. Print and the public display stay number-only. The token is on the cooldown screen only, not on the printed ticket. Optional mobile uses the on-screen pad. It must be blank or a Philippine number (`09` and 9 more digits). **Issue & Print** stays off while the number is invalid. A walk-in text includes the ticket number and the token. There is no Guard login.
 - Demo IDs in the dump: `2024-0001` Juan Dela Cruz, `2024-0002` Maria Santos, `2024-0003` Jose Rizal, `2024-0004` Ana Reyes, `2024-0005` Pedro Garcia. Sample RFID roster (ID, name, card UID, mobile) is in `database/samples/pecit-students.csv`.
 - Staff can **Hold** (set aside) the current ticket, then **Call** it later without waiting in the 2P→1R line.
@@ -228,7 +228,7 @@ Waiting list columns follow the same **call order** as Call Next (2 Priority →
 
 ### Walk-in tickets (kiosk PIN)
 
-On the kiosk, tap the **tiny square in the bottom-right corner**, enter the walk-in PIN, then issue a ticket (service, priority, reason). The screen fits **1024×600** without scrolling. Mobile for SMS is optional: use the pad, leave it blank, or enter `09` plus 9 digits. **Issue & Print** is disabled for any other number. Each tap of the corner button asks for the PIN again (after print or cancel too). There is no Guard login.
+On the kiosk, tap the **tiny square in the bottom-right corner**, enter the four-digit walk-in PIN, then issue a ticket (service, priority, reason). The screen fits **1024×600** without scrolling. Mobile for SMS is optional: use the pad, leave it blank, or enter `09` plus 9 digits. **Issue & Print** is disabled for any other number. Each tap of the corner button asks for the PIN again (after print or cancel too). There is no Guard login.
 
 Change the PIN under **Admin → Kiosk settings** (stored in the `settings` table, default `1981`). The same page stores staff numbers for the printer paper-out text. Admin can still issue walk-ins from **Walk-in Tickets**.
 

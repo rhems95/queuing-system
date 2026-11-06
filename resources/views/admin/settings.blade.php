@@ -37,11 +37,12 @@
                            value="{{ old('walkin_pin', $walkinPin) }}"
                            required
                            inputmode="numeric"
-                           pattern="[0-9]{4,6}"
-                           maxlength="6"
+                           pattern="[0-9]{4}"
+                           minlength="4"
+                           maxlength="4"
                            autocomplete="off"
                            class="pecit-input">
-                    <p class="pecit-page-sub" style="margin-top:0.4rem;">4 to 6 digits. Stored in the database, not in .env.</p>
+                    <p class="pecit-page-sub" style="margin-top:0.4rem;">4 digits. Stored in the database, not in .env.</p>
                 </div>
 
                 <div class="pecit-actions" style="margin-bottom:0;justify-content:flex-end;">
@@ -100,10 +101,8 @@
                                         </label>
                                     </td>
                                     <td>
-                                        <label class="pecit-label" style="display:flex;align-items:center;gap:0.4rem;margin:0;">
-                                            <input type="checkbox" name="contacts[{{ $i }}][remove]" value="1">
-                                            Remove
-                                        </label>
+                                        <input type="hidden" name="contacts[{{ $i }}][remove]" value="0" class="js-paper-remove-flag">
+                                        <button type="button" class="pecit-btn pecit-btn-outline js-paper-remove-btn">Remove</button>
                                     </td>
                                 </tr>
                             @endforeach
@@ -137,3 +136,19 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    document.querySelectorAll('.js-paper-remove-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+            var row = btn.closest('tr');
+            if (!row) return;
+            var flag = row.querySelector('.js-paper-remove-flag');
+            if (flag) flag.value = '1';
+            row.style.display = 'none';
+        });
+    });
+})();
+</script>
+@endpush

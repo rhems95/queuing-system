@@ -22,9 +22,9 @@ class SettingsController extends Controller
     public function update(Request $request)
     {
         $data = $request->validate([
-            'walkin_pin' => ['required', 'regex:/^\d{4,6}$/'],
+            'walkin_pin' => ['required', 'regex:/^\d{4}$/'],
         ], [
-            'walkin_pin.regex' => 'PIN must be 4 to 6 digits.',
+            'walkin_pin.regex' => 'PIN must be 4 digits.',
         ]);
 
         Setting::setValue('walkin_pin', $data['walkin_pin']);
