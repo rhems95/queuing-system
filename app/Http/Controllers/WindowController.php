@@ -7,18 +7,23 @@ use App\Models\QueueCall;
 use App\Models\Service;
 use App\Models\Window;
 use App\Services\FairQueueScheduler;
+use App\Services\GsmNotifier;
+use App\Services\PrinterPaperStatus;
 use App\Services\QueueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use ZipArchive;
 
 class WindowController extends Controller
 {
     public function __construct(
         private QueueService $queueService,
         private FairQueueScheduler $scheduler,
+        private PrinterPaperStatus $printerPaper,
+        private GsmNotifier $sms,
     ) {
     }
 
@@ -54,7 +59,7 @@ class WindowController extends Controller
 
         return [
             'current' => $currentQueueNumber,
-            'current_name' => $this->queueService->studentNameForQueue($currentQueue),
+            'current_name' => $this->queueService->servingLabelForQueue($currentQueue),
             'next' => $nextQueue ? $nextQueue->queue_number : null,
             'serving_started_at' => $servingStartedAt,
             'waiting_list' => $waitingList->map(fn ($q) => [
@@ -65,8 +70,9 @@ class WindowController extends Controller
                 'id' => $q->id,
                 'queue_number' => $q->queue_number,
                 'priority' => $q->priority ? 'Priority' : 'Regular',
-                'student_name' => $this->queueService->studentNameForQueue($q),
+                'student_name' => $this->queueService->servingLabelForQueue($q),
             ])->values()->all(),
+            'paper_out' => $this->printerPaper->isOut(),
         ];
     }
 
@@ -97,12 +103,13 @@ class WindowController extends Controller
 
         return view('staff.window', [
             'currentQueue' => $currentQueue,
-            'currentStudentName' => $this->queueService->studentNameForQueue($currentQueue),
+            'currentStudentName' => $this->queueService->servingLabelForQueue($currentQueue),
             'nextQueue' => $nextQueue,
             'window' => $window,
             'waitingTickets' => $waitingTickets,
             'heldTickets' => $heldTickets,
             'servingStartedAt' => $servingStartedAt,
+            'paperOut' => $this->printerPaper->isOut(),
         ]);
     }
 
@@ -132,46 +139,144 @@ class WindowController extends Controller
 
         return view('staff.float', [
             'currentQueue' => $currentQueue,
-            'currentStudentName' => $this->queueService->studentNameForQueue($currentQueue),
+            'currentStudentName' => $this->queueService->servingLabelForQueue($currentQueue),
             'nextQueue' => $nextQueue,
             'window' => $window,
             'servingStartedAt' => $servingStartedAt,
+            'paperOut' => $this->printerPaper->isOut(),
         ]);
     }
 
     /**
-     * Launch the Windows always-on-top float helper (.bat) on this PC.
-     * Intended for local XAMPP kiosk/staff machines only.
+     * Open / pin the staff float on the connecting PC.
+     * The .bat is only started when this request is from the same Windows machine as Apache.
      */
     public function launchFloat(Request $request)
     {
-        $bat = base_path('bats/start-staff-float.bat');
+        $floatUrl = $this->staffFloatUrl($request);
+        $local = $this->isLocalRequest($request);
+        $pinnedOnServer = false;
 
-        if (! is_file($bat)) {
-            if ($request->expectsJson()) {
-                return response()->json(['ok' => false, 'message' => 'Float launcher file was not found.'], 404);
+        if ($local && strncasecmp(PHP_OS, 'WIN', 3) === 0) {
+            $ps1 = base_path('tools/staff-float/Start-StaffFloat.ps1');
+            if (is_file($ps1)) {
+                $this->startHiddenWindowsProcess(
+                    'powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File '
+                    .escapeshellarg($ps1)
+                    .' -Browser chrome -Url '
+                    .escapeshellarg($floatUrl)
+                );
+                $pinnedOnServer = true;
             }
-
-            return back()->with('status', 'Float launcher file was not found.');
         }
 
-        // Non-blocking launch on Windows so Apache does not wait for the script.
-        $cmd = 'cmd /c start "" '.escapeshellarg($bat);
-        if (strncasecmp(PHP_OS, 'WIN', 3) === 0) {
-            pclose(popen($cmd, 'r'));
-        } else {
-            if ($request->expectsJson()) {
-                return response()->json(['ok' => false, 'message' => 'System float is only available on Windows.'], 400);
-            }
-
-            return back()->with('status', 'System float is only available on Windows.');
-        }
+        $message = $pinnedOnServer
+            ? 'System float opened from this PC (always on top, no address bar).'
+            : 'Open System Float runs bats\\start-staff-float.bat on this PC. If nothing opened, run bats\\install-staff-float-protocol.bat once. Other PCs: set bats\\staff-float-url.txt to http://192.168.2.100/queue-system/public/window/float';
 
         if ($request->expectsJson()) {
-            return response()->json(['ok' => true, 'message' => 'System float launched. Log in there if asked.']);
+            return response()->json([
+                'ok' => true,
+                'local' => $local,
+                'pinned' => $pinnedOnServer,
+                'needs_download' => ! $pinnedOnServer,
+                'message' => $message,
+            ]);
         }
 
-        return back()->with('status', 'System float launched. Log in there if asked.');
+        return back()->with('status', $message);
+    }
+
+    /**
+     * Windows helper ZIP for the connecting PC (Chrome blocks raw .bat downloads).
+     */
+    public function floatLauncher(Request $request)
+    {
+        $files = $this->floatHelperFiles($request);
+        $tmp = tempnam(sys_get_temp_dir(), 'pfz');
+        $zipPath = $tmp.'.zip';
+        @unlink($tmp);
+
+        $zip = new ZipArchive;
+        if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
+            abort(500, 'Could not create the float helper download.');
+        }
+
+        foreach ($files as $name => $contents) {
+            $zip->addFromString($name, $contents);
+        }
+        $zip->close();
+
+        $binary = (string) file_get_contents($zipPath);
+        @unlink($zipPath);
+
+        return response($binary, 200, [
+            'Content-Type' => 'application/zip',
+            'Content-Disposition' => 'attachment; filename="PECIT-Staff-Float.zip"',
+            'Cache-Control' => 'no-store',
+        ]);
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function floatHelperFiles(Request $request): array
+    {
+        $url = $this->staffFloatUrl($request);
+        $scriptPath = base_path('tools/staff-float/Start-StaffFloat.ps1');
+        if (! is_file($scriptPath)) {
+            abort(404, 'Float launcher was not found.');
+        }
+
+        $script = (string) file_get_contents($scriptPath);
+        $script = preg_replace_callback(
+            '/\[string\]\$Url = "[^"]*"/',
+            fn () => '[string]$Url = '.json_encode($url, JSON_UNESCAPED_SLASHES),
+            $script,
+            1
+        ) ?? $script;
+
+        $bat = "@echo off\r\n"
+            ."REM PECIT Staff Float — unzip, then double-click this file on THIS computer.\r\n"
+            ."cd /d \"%~dp0\"\r\n"
+            ."start \"\" powershell.exe -NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -File \"%~dp0Start-StaffFloat.ps1\" -Browser chrome\r\n"
+            ."exit\r\n";
+
+        return [
+            'PECIT-Staff-Float.bat' => $bat,
+            'Start-StaffFloat.ps1' => $script,
+        ];
+    }
+
+    private function staffFloatUrl(Request $request): string
+    {
+        return rtrim($request->getSchemeAndHttpHost(), '/').route('window.float', [], false);
+    }
+
+    private function isLocalRequest(Request $request): bool
+    {
+        $ip = (string) $request->ip();
+
+        return in_array($ip, ['127.0.0.1', '::1', '::ffff:127.0.0.1'], true);
+    }
+
+    /**
+     * Start a Windows process with no visible console, and do not wait for it.
+     */
+    private function startHiddenWindowsProcess(string $command): void
+    {
+        if (class_exists('COM', false)) {
+            try {
+                $shell = new \COM('WScript.Shell');
+                $shell->Run($command, 0, false);
+
+                return;
+            } catch (\Throwable) {
+                // Fall through to cmd start.
+            }
+        }
+
+        pclose(popen('cmd /c start "" '.$command, 'r'));
     }
 
     /**
@@ -247,6 +352,9 @@ class WindowController extends Controller
             return back()->with('status', 'No more queues.');
         }
 
+        $this->sms->sendCalled($queue, $this->windowName($windowId));
+        $this->sms->notifyWaitingWithinTen($windowServiceId);
+
         return back()->with('called_queue_number', $queue->queue_number);
     }
 
@@ -272,8 +380,11 @@ class WindowController extends Controller
         $currentCall->save();
 
         $queue = Queue::find($currentCall->queue_id);
+        if ($queue) {
+            $this->sms->sendCalled($queue, $this->windowName($windowId));
+        }
 
-        return back()->with('recalled_queue_number', $queue->queue_number);
+        return back()->with('recalled_queue_number', $queue?->queue_number);
     }
 
     public function complete()
@@ -350,6 +461,9 @@ class WindowController extends Controller
             return back()->with('status', 'No current queue to hold.');
         }
 
+        $serviceId = (int) DB::table('windows')->where('id', $windowId)->value('service_id');
+        $this->sms->notifyWaitingWithinTen($serviceId);
+
         return back()->with('status', 'Ticket '.$held->queue_number.' set aside.');
     }
 
@@ -411,7 +525,14 @@ class WindowController extends Controller
             return back()->with('status', 'Held ticket was not found.');
         }
 
+        $this->sms->sendCalled($queue, $this->windowName($windowId));
+
         return back()->with('called_queue_number', $queue->queue_number);
+    }
+
+    private function windowName(int $windowId): string
+    {
+        return (string) DB::table('windows')->where('id', $windowId)->value('window_name');
     }
 
     /**

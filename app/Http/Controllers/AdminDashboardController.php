@@ -3,11 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Models\Queue;
+use App\Models\Service;
+use App\Services\FairQueueScheduler;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
 
 class AdminDashboardController extends Controller
 {
+    public function __construct(private FairQueueScheduler $scheduler)
+    {
+    }
+
     public function index()
     {
         $today = Carbon::today()->toDateString();
@@ -24,12 +31,13 @@ class AdminDashboardController extends Controller
     {
         $today = Carbon::today()->toDateString();
 
-        $queues = Queue::with('service')
-            ->whereDate('queue_date', $today)
-            ->where('status', 'waiting')
-            ->orderByDesc('priority')
-            ->orderBy('id')
-            ->get(['id', 'queue_number', 'service_id', 'priority', 'status']);
+        $queues = new Collection;
+        foreach (Service::query()->orderBy('id')->get() as $service) {
+            foreach ($this->scheduler->orderedWaiting((int) $service->id, $today, 500) as $queue) {
+                $queues->push($queue);
+            }
+        }
+        $queues->load('service');
 
         $counts = [
             'total' => Queue::whereDate('queue_date', $today)->count(),

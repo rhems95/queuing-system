@@ -18,10 +18,12 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
             'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
             'staff' => \App\Http\Middleware\EnsureUserIsStaff::class,
+            'can_issue_walkins' => \App\Http\Middleware\EnsureUserCanIssueWalkIns::class,
         ]);
         // Avoid 419 Page Expired: kiosk (public), login (form often left open or cookie issues)
         $middleware->validateCsrfTokens(except: [
             'kiosk',
+            'kiosk/*',
             'login',
         ]);
     })

@@ -6,7 +6,7 @@
     <div class="pecit-page-header">
         <div>
             <h1 class="pecit-page-title">Students</h1>
-            <p class="pecit-page-sub">IDs allowed on the kiosk confirm step</p>
+            <p class="pecit-page-sub">IDs and card serials allowed on the kiosk confirm step</p>
         </div>
         <a href="{{ route('admin.students.create') }}" class="pecit-btn pecit-btn-primary">+ Add Student</a>
     </div>
@@ -34,7 +34,7 @@
     @endif
 
     <form method="GET" class="pecit-filter-bar">
-        <input type="text" name="q" value="{{ $q }}" class="pecit-input" placeholder="Search ID or name" maxlength="100">
+        <input type="text" name="q" value="{{ $q }}" class="pecit-input" placeholder="Search ID, name, card, or mobile" maxlength="100">
         <button type="submit" class="pecit-btn pecit-btn-secondary">Search</button>
         @if ($q !== '')
             <a href="{{ route('admin.students.index') }}" class="pecit-btn pecit-btn-outline">Clear</a>
@@ -45,7 +45,7 @@
         <div class="pecit-card-head">
             <div>
                 <h2>Bulk add from CSV</h2>
-                <p>Columns: <code>student_id,name</code> — existing IDs are skipped</p>
+                <p>Preferred columns: <code>student_id,name,card_uid,mobile</code>. Headers like <code>student_name</code>, <code>UID</code>, and <code>contact_number</code> are mapped. Existing IDs are skipped.</p>
             </div>
             <a href="{{ route('admin.students.sample') }}" class="pecit-btn pecit-btn-outline">Download sample</a>
         </div>
@@ -65,6 +65,8 @@
                     <tr>
                         <th>Student ID</th>
                         <th>Name</th>
+                        <th>Card UID</th>
+                        <th>Mobile</th>
                         <th style="text-align:right;">Actions</th>
                     </tr>
                 </thead>
@@ -73,9 +75,12 @@
                         <tr>
                             <td style="font-weight:700;letter-spacing:0.03em;">{{ $row->student_id }}</td>
                             <td>{{ $row->name }}</td>
+                            <td style="font-family:ui-monospace,Consolas,monospace;letter-spacing:0.03em;">{{ $row->card_uid ?: '—' }}</td>
+                            <td>{{ $row->mobile ?: '—' }}</td>
                             <td style="text-align:right;white-space:nowrap;">
+                                <a href="{{ route('admin.students.edit', $row) }}" class="pecit-link">Edit</a>
                                 <form method="POST" action="{{ route('admin.students.destroy', $row) }}"
-                                      style="display:inline;"
+                                      style="display:inline;margin-left:0.65rem;"
                                       onsubmit="return confirm(@json('Delete '.$row->student_id.' ('.$row->name.')?'));">
                                     @csrf
                                     @method('DELETE')
@@ -85,7 +90,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="3" class="empty">No students found.</td>
+                            <td colspan="5" class="empty">No students found.</td>
                         </tr>
                     @endforelse
                 </tbody>

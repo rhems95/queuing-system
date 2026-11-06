@@ -57,6 +57,20 @@
                 <small>Add, delete, or import CSV</small>
             </span>
         </a>
+        <a href="{{ route('admin.settings.edit') }}" class="pecit-quick-card">
+            @include('partials.icon', ['name' => 'lock', 'class' => 'pecit-quick-icon'])
+            <span class="pecit-quick-copy">
+                <strong>Kiosk settings</strong>
+                <small>Walk-in PIN and paper SMS</small>
+            </span>
+        </a>
+        <a href="{{ route('guard.issue') }}" class="pecit-quick-card">
+            @include('partials.icon', ['name' => 'ticket', 'class' => 'pecit-quick-icon'])
+            <span class="pecit-quick-copy">
+                <strong>Walk-in Tickets</strong>
+                <small>Issue for new enrollees / no ID</small>
+            </span>
+        </a>
         <a href="{{ route('admin.history') }}" class="pecit-quick-card">
             @include('partials.icon', ['name' => 'history', 'class' => 'pecit-quick-icon'])
             <span class="pecit-quick-copy">
@@ -84,7 +98,7 @@
         <div class="pecit-card-head">
             <div>
                 <h2>Waiting Queues (Live)</h2>
-                <p>Updates every 3 seconds · Priority tickets listed first</p>
+                <p>Updates every 3 seconds · Same 2 Priority → 1 Regular call order as staff (per service)</p>
             </div>
             <span class="pecit-live-pill" id="livePill">Live</span>
         </div>

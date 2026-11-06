@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Service;
 use App\Models\Window;
 use App\Services\FairQueueScheduler;
+use App\Services\PrinterPaperStatus;
 use App\Services\QueueService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Carbon;
@@ -14,6 +15,7 @@ class DisplayController extends Controller
     public function __construct(
         private QueueService $queueService,
         private FairQueueScheduler $scheduler,
+        private PrinterPaperStatus $printerPaper,
     ) {
     }
 
@@ -22,6 +24,7 @@ class DisplayController extends Controller
      */
     private function getDisplayData(): array
     {
+        $this->printerPaper->isOut();
         $today = Carbon::today()->toDateString();
 
         $windows = Window::query()

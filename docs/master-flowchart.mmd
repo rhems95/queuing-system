@@ -1,16 +1,20 @@
 %% Print-friendly: paste into mermaid.live → Actions → SVG/PNG. In browser print: Landscape + Scale ~90%% fits Letter/A4 bond paper. %%
 %%{init: {'flowchart': {'nodeSpacing': 28, 'rankSpacing': 36, 'padding': 6, 'useMaxWidth': true}, 'themeVariables': { 'fontSize': '11px'}}}%%
 flowchart TD
-    St([Start]) --> K["Kiosk: service → Regular/Priority → confirm ID + ETA"]
+    St([Start]) --> K["Kiosk: service → priority → ID or card tap + ETA"]
+    St --> W["Walk-in: corner PIN, optional PH mobile"]
     K --> DB[("DB: new queue + daily counter")]
-    DB --> PA["Customer: ticket #, print, countdown, then wait"]
+    W --> DB
+    DB --> PA["58mm ticket, countdown, then wait"]
+    DB --> SMS["Opt-in text: ticket number"]
     DB --> PB["TV: now serving + waiting 2P→1R + voice"]
-    PA --> SW["Staff: next / recall / complete / hold + timer"]
+    PA --> SW["Staff: next / recall / complete / hold"]
     PB --> SW
     SW --> Fair["FairQueueScheduler shared per service"]
     Fair --> DB
+    SW --> Note["Text window name; text tickets now within 10"]
+    Note --> DB
     SW --> Q{Done?}
-    Q -->|Recall / same ticket| SW
-    Q -->|Hold / set aside| DB
+    Q -->|Recall| SW
     Q -->|Complete| H["Save queue_calls + done"]
     H --> En([End])

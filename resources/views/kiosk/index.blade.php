@@ -5,7 +5,16 @@
 @section('content')
     <div class="kiosk-shell max-w-6xl mx-auto">
         <div class="text-center kiosk-title-block">
-            <h1 class="kiosk-title font-extrabold tracking-wide text-blue-950">KIOSK QUEUE TICKET SYSTEM</h1>
+            <div class="kiosk-brand-row">
+                <img
+                    src="{{ asset('logo/logo.png') }}"
+                    alt="PECIT Logo"
+                    class="kiosk-brand-logo"
+                    width="40"
+                    height="40"
+                >
+                <h1 class="kiosk-title font-extrabold tracking-wide text-blue-950">KIOSK QUEUE TICKET SYSTEM</h1>
+            </div>
             <p id="stepIndicator" class="kiosk-step-indicator text-gray-600 tracking-widest">STEP 1 OF 3 - SELECT SERVICE</p>
         </div>
 
@@ -151,11 +160,16 @@
                                 <button type="button" class="step3-key step3-key-action" data-key="clear">C</button>
                                 <button type="button" class="step3-key step3-key-zero" data-key="0">0</button>
                             </div>
-                            <p id="studentLookupMsg" class="step3-id-msg" aria-live="polite">Enter your student ID.</p>
+                            <p id="studentLookupMsg" class="step3-id-msg" aria-live="polite">Enter your student ID or tap your ID card.</p>
                         </div>
                     </div>
 
                     <div class="step3-footer">
+                        <label class="step3-sms" id="smsOffer">
+                            <input type="checkbox" name="notify_sms" id="notifySms" value="1" disabled>
+                            <span>Notify me by SMS</span>
+                        </label>
+                        <p id="smsHint" class="step3-sms-hint">No SMS number on file.</p>
                         <p class="step3-question">Do you want to print your ticket?</p>
                         <div class="step3-actions">
                             <button type="button" id="backToStep2" class="step3-back-btn">Back</button>
@@ -165,6 +179,93 @@
                 </div>
             </div>
         </form>
+
+        <p id="earlyCardToast" class="kiosk-early-card hidden" role="status" aria-live="polite">Please select service and priority first.</p>
+
+        <button type="button" id="walkinCornerBtn" class="kiosk-walkin-hit" aria-label="Walk-in"></button>
+
+        <div id="walkinPinOverlay" class="kiosk-walkin-overlay hidden" aria-hidden="true">
+            <div class="kiosk-walkin-card" role="dialog" aria-labelledby="walkinPinTitle">
+                <div class="kiosk-walkin-title" id="walkinPinTitle">Enter PIN</div>
+                <div id="walkinPinDots" class="kiosk-walkin-dots">••••</div>
+                <p id="walkinPinMsg" class="kiosk-walkin-msg"></p>
+                <div class="kiosk-walkin-pad">
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="1">1</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="2">2</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="3">3</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="4">4</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="5">5</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="6">6</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="7">7</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="8">8</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="9">9</button>
+                    <button type="button" class="kiosk-walkin-key is-action" data-pin-key="back">⌫</button>
+                    <button type="button" class="kiosk-walkin-key" data-pin-key="0">0</button>
+                    <button type="button" class="kiosk-walkin-key is-ok" data-pin-key="ok">OK</button>
+                </div>
+                <button type="button" id="walkinPinCancel" class="kiosk-walkin-cancel">Cancel</button>
+            </div>
+        </div>
+
+        <div id="walkinIssueOverlay" class="kiosk-walkin-overlay hidden" aria-hidden="true">
+            <div class="kiosk-walkin-card kiosk-walkin-card-issue" role="dialog" aria-labelledby="walkinIssueTitle">
+                <div class="kiosk-walkin-title" id="walkinIssueTitle">Walk-in ticket</div>
+                @if ($errors->any() && session('kiosk_walkin_open'))
+                    <div class="kiosk-walkin-msg is-error" style="margin-bottom:8px;">
+                        {{ $errors->first() }}
+                    </div>
+                @endif
+                <form method="POST" action="{{ route('kiosk.walkin.store') }}" id="walkinIssueForm">
+                    @csrf
+                    <label class="kiosk-walkin-label">Service</label>
+                    <select name="service_id" class="kiosk-walkin-select" required>
+                        <option value="">Select service</option>
+                        @foreach ($services as $service)
+                            <option value="{{ $service->id }}" {{ (string) old('service_id') === (string) $service->id ? 'selected' : '' }}>
+                                {{ $service->service_name }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <label class="kiosk-walkin-label">Priority</label>
+                    <input type="hidden" name="priority" id="walkinPriorityInput" value="{{ old('priority', 'regular') }}">
+                    <div class="kiosk-walkin-priority">
+                        <button type="button" class="kiosk-walkin-choice{{ old('priority', 'regular') === 'regular' ? ' is-on' : '' }}" data-walkin-priority="regular">Regular</button>
+                        <button type="button" class="kiosk-walkin-choice{{ old('priority') === 'priority' ? ' is-on' : '' }}" data-walkin-priority="priority">Priority</button>
+                    </div>
+                    <label class="kiosk-walkin-label">Reason</label>
+                    <select name="issue_reason" class="kiosk-walkin-select" required>
+                        <option value="">Select reason</option>
+                        @foreach ($walkInReasons as $value => $label)
+                            <option value="{{ $value }}" {{ old('issue_reason') === $value ? 'selected' : '' }}>
+                                {{ $label }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <label class="kiosk-walkin-label" id="walkinSmsLabel">Mobile for SMS (optional)</label>
+                    <div id="walkinSmsDisplay" class="kiosk-walkin-select kiosk-walkin-sms-display is-empty" aria-labelledby="walkinSmsLabel">09XXXXXXXXX</div>
+                    <input type="hidden" name="sms_mobile" id="walkinSmsInput" value="{{ old('sms_mobile') }}">
+                    <p id="walkinSmsMsg" class="kiosk-walkin-sms-msg" aria-live="polite"></p>
+                    <div class="kiosk-walkin-pad kiosk-walkin-sms-pad" role="group" aria-label="Mobile number">
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="1">1</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="2">2</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="3">3</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="4">4</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="5">5</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="6">6</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="7">7</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="8">8</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="9">9</button>
+                        <button type="button" class="kiosk-walkin-key is-action" data-sms-key="back">⌫</button>
+                        <button type="button" class="kiosk-walkin-key" data-sms-key="0">0</button>
+                        <button type="button" class="kiosk-walkin-key is-action" data-sms-key="clear">C</button>
+                    </div>
+                    <div class="kiosk-walkin-actions">
+                        <button type="button" id="walkinIssueCancel" class="kiosk-walkin-cancel">Cancel</button>
+                        <button type="submit" class="kiosk-walkin-submit" id="walkinIssueSubmit">Issue &amp; Print</button>
+                    </div>
+                </form>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -180,18 +281,278 @@
             var studentIdInput = document.getElementById('studentIdInput');
             var studentLookupMsg = document.getElementById('studentLookupMsg');
             var confirmPrintBtn = document.getElementById('confirmPrintBtn');
+            var notifySms = document.getElementById('notifySms');
+            var smsHint = document.getElementById('smsHint');
             var kioskForm = document.getElementById('kioskForm');
             var kioskShell = document.querySelector('.kiosk-shell');
             var selectedServiceName = '---';
             var estimateUrl = @json(route('kiosk.estimate'));
             var studentLookupUrl = @json(route('kiosk.student'));
+            var cardTapUrl = @json(route('kiosk.card'));
+            var paperWatchUrl = @json(route('kiosk.paper'));
+            fetch(paperWatchUrl, { headers: { 'Accept': 'application/json' }, cache: 'no-store' }).catch(function () {});
+            setInterval(function () {
+                fetch(paperWatchUrl, { headers: { 'Accept': 'application/json' }, cache: 'no-store' }).catch(function () {});
+            }, 15000);
             var servicesById = @json($services->mapWithKeys(fn ($s) => [(string) $s->id => strtoupper($s->service_name)]));
             var hasKioskErrors = @json($errors->any());
             var studentOk = false;
             var lookupTimer = null;
             var lookupSeq = 0;
+            var cardPollTimer = null;
+            var lastCardSeenAt = '';
+            var currentKioskStep = 1;
+            var earlyCardTimer = null;
+            var earlyCardToast = document.getElementById('earlyCardToast');
+            var walkinPinLength = {{ (int) $walkInPinLength }};
+            var walkinUnlockUrl = @json(route('kiosk.walkin.unlock'));
+            var walkinLockUrl = @json(route('kiosk.walkin.lock'));
+            var walkinCsrf = kioskForm ? (kioskForm.querySelector('input[name="_token"]') || {}).value : '';
+            var walkinPinOverlay = document.getElementById('walkinPinOverlay');
+            var walkinIssueOverlay = document.getElementById('walkinIssueOverlay');
+            var walkinPinDots = document.getElementById('walkinPinDots');
+            var walkinPinMsg = document.getElementById('walkinPinMsg');
+            var walkinPinValue = '';
+            var walkinBusy = false;
+            var openWalkInIssue = @json((bool) session('kiosk_walkin_open'));
+
+            function isWalkInOverlayOpen() {
+                return (walkinPinOverlay && !walkinPinOverlay.classList.contains('hidden'))
+                    || (walkinIssueOverlay && !walkinIssueOverlay.classList.contains('hidden'));
+            }
+
+            function setOverlay(el, open) {
+                if (!el) return;
+                el.classList.toggle('hidden', !open);
+                el.setAttribute('aria-hidden', open ? 'false' : 'true');
+            }
+
+            function renderWalkinPin() {
+                var shown = '';
+                for (var i = 0; i < walkinPinLength; i++) {
+                    shown += i < walkinPinValue.length ? '●' : '○';
+                }
+                if (walkinPinDots) walkinPinDots.textContent = shown;
+            }
+
+            function setWalkinPinMsg(text, isError) {
+                if (!walkinPinMsg) return;
+                walkinPinMsg.textContent = text || '';
+                walkinPinMsg.className = 'kiosk-walkin-msg' + (isError ? ' is-error' : '');
+            }
+
+            function openWalkinPin() {
+                walkinPinValue = '';
+                renderWalkinPin();
+                setWalkinPinMsg('', false);
+                setOverlay(walkinIssueOverlay, false);
+                setOverlay(walkinPinOverlay, true);
+            }
+
+            function openWalkinIssue() {
+                setOverlay(walkinPinOverlay, false);
+                setOverlay(walkinIssueOverlay, true);
+            }
+
+            function lockWalkinSession() {
+                fetch(walkinLockUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': walkinCsrf,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ _token: walkinCsrf })
+                }).catch(function () {});
+            }
+
+            function closeWalkinOverlays() {
+                setOverlay(walkinPinOverlay, false);
+                setOverlay(walkinIssueOverlay, false);
+                walkinPinValue = '';
+                renderWalkinPin();
+                lockWalkinSession();
+            }
+
+            function submitWalkinPin() {
+                if (walkinBusy) return;
+                if (walkinPinValue.length < walkinPinLength) {
+                    setWalkinPinMsg('Enter ' + walkinPinLength + ' digits.', true);
+                    return;
+                }
+                walkinBusy = true;
+                setWalkinPinMsg('Checking…', false);
+                fetch(walkinUnlockUrl, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json',
+                        'X-CSRF-TOKEN': walkinCsrf,
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: JSON.stringify({ pin: walkinPinValue, _token: walkinCsrf })
+                }).then(function (res) {
+                    return res.json().then(function (data) {
+                        return { okHttp: res.ok, data: data };
+                    });
+                }).then(function (result) {
+                    walkinBusy = false;
+                    if (result.data && result.data.ok) {
+                        openWalkinIssue();
+                        return;
+                    }
+                    walkinPinValue = '';
+                    renderWalkinPin();
+                    setWalkinPinMsg((result.data && result.data.error) || 'Wrong PIN.', true);
+                }).catch(function () {
+                    walkinBusy = false;
+                    setWalkinPinMsg('Could not check PIN. Try again.', true);
+                });
+            }
+
+            function appendWalkinPin(key) {
+                if (key === 'back') {
+                    walkinPinValue = walkinPinValue.slice(0, -1);
+                    renderWalkinPin();
+                    return;
+                }
+                if (key === 'ok') {
+                    submitWalkinPin();
+                    return;
+                }
+                if (!/^[0-9]$/.test(key)) return;
+                if (walkinPinValue.length >= walkinPinLength) return;
+                walkinPinValue += key;
+                renderWalkinPin();
+                setWalkinPinMsg('', false);
+                if (walkinPinValue.length === walkinPinLength) {
+                    submitWalkinPin();
+                }
+            }
+
+            var walkinCornerBtn = document.getElementById('walkinCornerBtn');
+            if (walkinCornerBtn) {
+                walkinCornerBtn.addEventListener('click', function () {
+                    openWalkinPin();
+                });
+            }
+            document.querySelectorAll('[data-pin-key]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    appendWalkinPin(btn.getAttribute('data-pin-key') || '');
+                });
+            });
+            var walkinPinCancel = document.getElementById('walkinPinCancel');
+            if (walkinPinCancel) walkinPinCancel.addEventListener('click', closeWalkinOverlays);
+            var walkinIssueCancel = document.getElementById('walkinIssueCancel');
+            if (walkinIssueCancel) walkinIssueCancel.addEventListener('click', closeWalkinOverlays);
+            [walkinPinOverlay, walkinIssueOverlay].forEach(function (overlay) {
+                if (!overlay) return;
+                overlay.addEventListener('click', function (e) {
+                    if (e.target === overlay) closeWalkinOverlays();
+                });
+            });
+            document.querySelectorAll('[data-walkin-priority]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    var value = btn.getAttribute('data-walkin-priority') || 'regular';
+                    var hidden = document.getElementById('walkinPriorityInput');
+                    if (hidden) hidden.value = value;
+                    document.querySelectorAll('[data-walkin-priority]').forEach(function (other) {
+                        other.classList.toggle('is-on', other === btn);
+                    });
+                });
+            });
+            var walkinSmsInput = document.getElementById('walkinSmsInput');
+            var walkinSmsDisplay = document.getElementById('walkinSmsDisplay');
+            var walkinSmsMsg = document.getElementById('walkinSmsMsg');
+            var walkinIssueSubmit = document.getElementById('walkinIssueSubmit');
+            function walkinSmsIsValid(value) {
+                return value === '' || /^09\d{9}$/.test(value);
+            }
+            function renderWalkinSms() {
+                if (!walkinSmsInput || !walkinSmsDisplay) return true;
+                var value = String(walkinSmsInput.value || '');
+                var ok = walkinSmsIsValid(value);
+                walkinSmsDisplay.textContent = value || '09XXXXXXXXX';
+                walkinSmsDisplay.classList.toggle('is-empty', value === '');
+                walkinSmsDisplay.classList.toggle('is-invalid', !ok);
+                if (walkinSmsMsg) {
+                    walkinSmsMsg.textContent = ok ? '' : 'Not a Philippine mobile number. Use 09 and 9 more digits.';
+                }
+                if (walkinIssueSubmit) walkinIssueSubmit.disabled = !ok;
+                return ok;
+            }
+            function appendWalkinSms(key) {
+                if (!walkinSmsInput) return;
+                var current = String(walkinSmsInput.value || '').replace(/\D+/g, '');
+                if (key === 'back') current = current.slice(0, -1);
+                else if (key === 'clear') current = '';
+                else if (/^[0-9]$/.test(key) && current.length < 11) current += key;
+                walkinSmsInput.value = current;
+                renderWalkinSms();
+            }
+            document.querySelectorAll('[data-sms-key]').forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    appendWalkinSms(btn.getAttribute('data-sms-key') || '');
+                });
+            });
+            renderWalkinSms();
+            var walkinIssueForm = document.getElementById('walkinIssueForm');
+            if (walkinIssueForm) {
+                walkinIssueForm.addEventListener('submit', function (e) {
+                    if (!renderWalkinSms()) e.preventDefault();
+                });
+            }
+            document.addEventListener('keydown', function (e) {
+                if (walkinPinOverlay && !walkinPinOverlay.classList.contains('hidden')) {
+                    if (e.key === 'Escape') {
+                        e.preventDefault();
+                        closeWalkinOverlays();
+                        return;
+                    }
+                    if (e.ctrlKey || e.metaKey || e.altKey) return;
+                    if (/^[0-9]$/.test(e.key)) {
+                        e.preventDefault();
+                        appendWalkinPin(e.key);
+                    } else if (e.key === 'Backspace') {
+                        e.preventDefault();
+                        appendWalkinPin('back');
+                    } else if (e.key === 'Enter') {
+                        e.preventDefault();
+                        appendWalkinPin('ok');
+                    }
+                    return;
+                }
+                if (walkinIssueOverlay && !walkinIssueOverlay.classList.contains('hidden') && e.key === 'Escape') {
+                    e.preventDefault();
+                    closeWalkinOverlays();
+                }
+            });
+            renderWalkinPin();
+            if (openWalkInIssue) {
+                openWalkinIssue();
+            }
+
+            function hideEarlyCardToast() {
+                if (earlyCardTimer) {
+                    clearTimeout(earlyCardTimer);
+                    earlyCardTimer = null;
+                }
+                if (earlyCardToast) earlyCardToast.classList.add('hidden');
+            }
+
+            function showEarlyCardToast() {
+                if (!earlyCardToast) return;
+                if (earlyCardTimer) {
+                    clearTimeout(earlyCardTimer);
+                    earlyCardTimer = null;
+                }
+                earlyCardToast.classList.remove('hidden');
+            }
 
             function showStep(stepNo) {
+                currentKioskStep = stepNo;
+                hideEarlyCardToast();
                 step1.classList.add('hidden');
                 step2.classList.add('hidden');
                 step3.classList.add('hidden');
@@ -213,6 +574,18 @@
                 if (!studentLookupMsg) return;
                 studentLookupMsg.textContent = text;
                 studentLookupMsg.className = 'step3-id-msg' + (kind ? ' is-' + kind : '');
+            }
+
+            function setSmsOffer(last4) {
+                if (!notifySms || !smsHint) return;
+                notifySms.checked = false;
+                if (last4) {
+                    notifySms.disabled = false;
+                    smsHint.textContent = 'Texts go to the number ending in ' + last4 + '.';
+                    return;
+                }
+                notifySms.disabled = true;
+                smsHint.textContent = 'No SMS number on file.';
             }
 
             function setStudentOk(ok) {
@@ -238,10 +611,11 @@
                 }
                 lookupSeq += 1;
                 setStudentOk(false);
+                setSmsOffer(null);
                 if (!keepValue) setStudentIdValue('');
                 var id = currentStudentId();
                 if (!id) {
-                    setStudentMessage('Enter your student ID.');
+                    setStudentMessage('Enter your student ID or tap your ID card.');
                     return;
                 }
                 setStudentMessage('Checking…');
@@ -253,20 +627,25 @@
                 lookupTimer = setTimeout(lookupStudent, 350);
             }
 
-            function lookupStudent() {
+            function lookupStudent(opts) {
+                opts = opts || {};
+                var cardUid = String(opts.cardUid || '').replace(/[^A-Fa-f0-9]/g, '').toUpperCase();
                 var id = currentStudentId();
-                if (id.length < 4) {
+                if (!cardUid && id.length < 4) {
                     setStudentOk(false);
-                    setStudentMessage(id ? 'Keep entering your student ID.' : 'Enter your student ID.');
+                    setSmsOffer(null);
+                    setStudentMessage(id ? 'Keep entering your student ID.' : 'Enter your student ID or tap your ID card.');
                     return;
                 }
 
                 var seq = ++lookupSeq;
                 setStudentOk(false);
+                setSmsOffer(null);
                 setStudentMessage('Checking…');
 
                 var params = new URLSearchParams();
-                params.set('student_id', id);
+                if (cardUid) params.set('card_uid', cardUid);
+                else params.set('student_id', id);
 
                 fetch(studentLookupUrl + '?' + params.toString(), {
                     headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
@@ -277,17 +656,53 @@
                         if (res.data && res.data.ok) {
                             if (res.data.student_id) setStudentIdValue(res.data.student_id);
                             setStudentOk(true);
+                            setSmsOffer(res.data.mobile_last4 || null);
                             setStudentMessage('Welcome, ' + (res.data.name || 'student') + '.', 'ok');
                             return;
                         }
                         setStudentOk(false);
+                        setSmsOffer(null);
                         setStudentMessage((res.data && res.data.error) ? res.data.error : 'Student ID was not found.', 'error');
                     })
                     .catch(function () {
                         if (seq !== lookupSeq) return;
                         setStudentOk(false);
+                        setSmsOffer(null);
                         setStudentMessage('Could not check student ID. Try again.', 'error');
                     });
+            }
+
+            function stopCardPoll() {
+                if (cardPollTimer) {
+                    clearInterval(cardPollTimer);
+                    cardPollTimer = null;
+                }
+            }
+
+            function startCardPoll() {
+                stopCardPoll();
+                lastCardSeenAt = '';
+                cardPollTimer = setInterval(pollCardTap, 400);
+                pollCardTap();
+            }
+
+            function pollCardTap() {
+                if (typeof isWalkInOverlayOpen === 'function' && isWalkInOverlayOpen()) return;
+                fetch(cardTapUrl, {
+                    headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+                })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (!data || !data.uid || !data.seen_at) return;
+                        if (data.seen_at === lastCardSeenAt) return;
+                        lastCardSeenAt = data.seen_at;
+                        if (currentKioskStep !== 3) {
+                            showEarlyCardToast();
+                            return;
+                        }
+                        lookupStudent({ cardUid: data.uid });
+                    })
+                    .catch(function () {});
             }
 
             function appendStudentKey(key) {
@@ -303,7 +718,8 @@
                 }
                 setStudentOk(false);
                 if (!currentStudentId()) {
-                    setStudentMessage('Enter your student ID.');
+                    setSmsOffer(null);
+                    setStudentMessage('Enter your student ID or tap your ID card.');
                     return;
                 }
                 setStudentMessage('Checking…');
@@ -415,6 +831,7 @@
             }
 
             document.addEventListener('keydown', function (e) {
+                if (isWalkInOverlayOpen()) return;
                 if (step3.classList.contains('hidden')) return;
                 if (e.ctrlKey || e.metaKey || e.altKey) return;
                 var tag = e.target && e.target.tagName ? e.target.tagName.toLowerCase() : '';
@@ -448,6 +865,7 @@
             } else {
                 setStudentOk(false);
             }
+            startCardPoll();
         });
     </script>
 
@@ -456,9 +874,24 @@
         .kiosk-shell {
             padding-top: 4px;
         }
+        .kiosk-brand-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+        .kiosk-brand-logo {
+            width: 40px;
+            height: 40px;
+            object-fit: contain;
+            border-radius: 50%;
+            background: #fff;
+            flex-shrink: 0;
+        }
         .kiosk-title {
             font-size: 1.75rem;
             line-height: 1.15;
+            margin: 0;
         }
         .kiosk-step-indicator {
             font-size: 0.7rem;
@@ -467,8 +900,27 @@
         .kiosk-title-block {
             margin-bottom: 0.35rem;
         }
+        .kiosk-early-card {
+            margin: 12px auto 0;
+            max-width: 36rem;
+            padding: 6px 12px;
+            border-radius: 8px;
+            border: 1px solid #fbbf24;
+            background: #fffbeb;
+            color: #92400e;
+            font-size: 15px;
+            font-weight: 700;
+            text-align: center;
+        }
+        .kiosk-early-card.hidden {
+            display: none !important;
+        }
         .kiosk-form {
             padding-top: 14px;
+        }
+        .kiosk-shell.is-step3 .kiosk-brand-logo {
+            width: 32px;
+            height: 32px;
         }
         .kiosk-shell.is-step3 .kiosk-title {
             font-size: 1.35rem;
@@ -907,6 +1359,23 @@
         .step3-footer {
             margin-top: 8px;
         }
+        .step3-sms {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .step3-sms input {
+            width: 16px;
+            height: 16px;
+        }
+        .step3-sms-hint {
+            margin: 2px 0 6px;
+            font-size: 12px;
+            color: #64748b;
+        }
         .step3-question {
             font-size: 14px;
             color: #334155;
@@ -979,6 +1448,7 @@
         }
 
         @media (max-height: 650px) {
+            .kiosk-brand-logo { width: 36px; height: 36px; }
             .kiosk-title { font-size: 1.45rem; }
             .service-card { min-height: 180px; padding: 10px 10px 8px; }
             .service-icon { width: 46px; height: 46px; font-size: 22px; }
@@ -997,6 +1467,7 @@
             .step3-id-input { font-size: 20px; }
             .step3-key { min-height: 32px; font-size: 16px; }
             .step3-body { padding: 6px 10px 8px; }
+            .kiosk-shell.is-step3 .kiosk-brand-logo { width: 28px; height: 28px; }
             .kiosk-shell.is-step3 .kiosk-title { font-size: 1.2rem; }
         }
 
@@ -1017,6 +1488,207 @@
             .step3-actions { flex-direction: column; }
             .step1-head-title { font-size: 22px; }
             .service-title { font-size: 20px; }
+        }
+
+        .kiosk-walkin-hit {
+            position: fixed;
+            right: 8px;
+            bottom: 8px;
+            width: 22px;
+            height: 22px;
+            padding: 0;
+            border: 1px solid rgba(15, 23, 42, 0.18);
+            border-radius: 6px;
+            background: rgba(15, 23, 42, 0.22);
+            cursor: pointer;
+            z-index: 80;
+        }
+        .kiosk-walkin-hit:focus {
+            outline: 2px solid #93c5fd;
+        }
+        .kiosk-walkin-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+            padding: 12px;
+        }
+        .kiosk-walkin-overlay.hidden {
+            display: none !important;
+        }
+        .kiosk-walkin-card {
+            width: 100%;
+            max-width: 340px;
+            background: #fff;
+            border: 1px solid #d9dee7;
+            border-radius: 16px;
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.22);
+            padding: 18px 18px 14px;
+            text-align: center;
+        }
+        .kiosk-walkin-card-issue {
+            max-width: 440px;
+            max-height: calc(100vh - 16px);
+            overflow: hidden;
+            text-align: left;
+        }
+        .kiosk-walkin-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #1e3a8a;
+            margin-bottom: 10px;
+            text-align: center;
+        }
+        .kiosk-walkin-dots {
+            font-size: 26px;
+            letter-spacing: 0.35em;
+            color: #1e40af;
+            font-weight: 800;
+            margin: 4px 0 8px;
+        }
+        .kiosk-walkin-msg {
+            min-height: 1.2em;
+            font-size: 15px;
+            font-weight: 600;
+            color: #475569;
+            margin: 0 0 10px;
+            text-align: center;
+        }
+        .kiosk-walkin-msg.is-error { color: #b91c1c; }
+        .kiosk-walkin-pad {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .kiosk-walkin-sms-pad {
+            margin-top: 4px;
+            margin-bottom: 0;
+            gap: 4px;
+        }
+        .kiosk-walkin-key {
+            min-height: 52px;
+            border-radius: 12px;
+            border: 1px solid #93c5fd;
+            background: linear-gradient(180deg, #ffffff, #e8f1ff);
+            color: #1e3a8a;
+            font-size: 22px;
+            font-weight: 800;
+        }
+        .kiosk-walkin-key.is-action {
+            background: linear-gradient(180deg, #dbeafe, #bfdbfe);
+        }
+        .kiosk-walkin-key.is-ok {
+            background: linear-gradient(180deg, #1f6dd6, #1d4ed8);
+            border-color: #1d4ed8;
+            color: #fff;
+        }
+        .kiosk-walkin-card-issue .kiosk-walkin-key {
+            min-height: 34px;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        .kiosk-walkin-sms-display.is-empty {
+            color: #94a3b8;
+            font-weight: 600;
+        }
+        .kiosk-walkin-sms-display.is-invalid {
+            border-color: #b91c1c;
+            background: #fef2f2;
+            color: #991b1b;
+        }
+        .kiosk-walkin-sms-msg {
+            min-height: 1.2em;
+            margin: 6px 0 0;
+            font-size: 13px;
+            font-weight: 700;
+            color: #b91c1c;
+        }
+        .kiosk-walkin-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: #475569;
+            margin: 10px 0 6px;
+        }
+        .kiosk-walkin-select {
+            width: 100%;
+            border: 1px solid #93c5fd;
+            border-radius: 10px;
+            background: #eff6ff;
+            color: #1e3a8a;
+            font-size: 18px;
+            font-weight: 700;
+            padding: 12px 14px;
+            min-height: 52px;
+        }
+        .kiosk-walkin-priority {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .kiosk-walkin-choice {
+            min-height: 52px;
+            border-radius: 12px;
+            border: 2px solid #cbd5e1;
+            background: #fff;
+            color: #0f172a;
+            font-size: 18px;
+            font-weight: 800;
+        }
+        .kiosk-walkin-choice.is-on {
+            border-color: #2f7de6;
+            background: #edf4ff;
+            color: #1e40af;
+        }
+        .kiosk-walkin-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+        .kiosk-walkin-cancel,
+        .kiosk-walkin-submit {
+            flex: 1;
+            min-height: 52px;
+            border-radius: 12px;
+            font-weight: 800;
+            font-size: 17px;
+        }
+        .kiosk-walkin-cancel {
+            background: #e2e8f0;
+            border: 1px solid #cbd5e1;
+            color: #334155;
+        }
+        .kiosk-walkin-submit {
+            background: linear-gradient(90deg, #1f6dd6, #1d4ed8);
+            border: 1px solid #1d4ed8;
+            color: #fff;
+        }
+        .kiosk-walkin-submit:disabled {
+            background: #cbd5e1;
+            border-color: #cbd5e1;
+            color: #64748b;
+            cursor: not-allowed;
+        }
+        @media (max-height: 650px) {
+            .kiosk-walkin-overlay { padding: 8px; }
+            .kiosk-walkin-card { padding: 10px 12px 8px; }
+            .kiosk-walkin-card-issue .kiosk-walkin-title { font-size: 18px; margin-bottom: 4px; }
+            .kiosk-walkin-card-issue .kiosk-walkin-label { margin: 4px 0 2px; font-size: 12px; }
+            .kiosk-walkin-card-issue .kiosk-walkin-select,
+            .kiosk-walkin-card-issue .kiosk-walkin-choice { min-height: 32px; padding: 4px 10px; font-size: 15px; }
+            .kiosk-walkin-card-issue .kiosk-walkin-sms-msg { min-height: 1em; margin: 2px 0 0; font-size: 12px; }
+            .kiosk-walkin-card-issue .kiosk-walkin-actions { margin-top: 6px; }
+            .kiosk-walkin-card-issue .kiosk-walkin-cancel,
+            .kiosk-walkin-card-issue .kiosk-walkin-submit { min-height: 34px; font-size: 15px; }
+            .kiosk-walkin-key { min-height: 42px; font-size: 18px; }
+            .kiosk-walkin-select,
+            .kiosk-walkin-choice,
+            .kiosk-walkin-cancel,
+            .kiosk-walkin-submit { min-height: 44px; font-size: 16px; }
         }
     </style>
 @endsection
