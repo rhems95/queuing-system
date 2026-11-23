@@ -18,6 +18,14 @@ class StudentQueueGuard
         return $id;
     }
 
+    public static function normalizeUid(mixed $raw): string
+    {
+        $uid = strtoupper(trim((string) $raw));
+        $uid = preg_replace('/[^A-F0-9]/', '', $uid) ?? '';
+
+        return $uid;
+    }
+
     public function findStudent(string $normalizedId): ?Student
     {
         if ($normalizedId === '') {
@@ -25,6 +33,15 @@ class StudentQueueGuard
         }
 
         return Student::query()->where('student_id', $normalizedId)->first();
+    }
+
+    public function findByCardUid(string $normalizedUid): ?Student
+    {
+        if ($normalizedUid === '') {
+            return null;
+        }
+
+        return Student::query()->where('card_uid', $normalizedUid)->first();
     }
 
     public function openTicketToday(string $normalizedId, ?string $today = null): ?Queue

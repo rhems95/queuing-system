@@ -77,6 +77,8 @@ CREATE TABLE `students` (
   `id` bigint(20) UNSIGNED NOT NULL,
   `student_id` varchar(50) NOT NULL,
   `name` varchar(100) NOT NULL,
+  `card_uid` varchar(32) DEFAULT NULL,
+  `mobile` varchar(20) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
@@ -85,12 +87,21 @@ CREATE TABLE `students` (
 -- Dumping data for table `students`
 --
 
-INSERT INTO `students` (`id`, `student_id`, `name`, `created_at`, `updated_at`) VALUES
-(1, '2024-0001', 'Juan Dela Cruz', NULL, NULL),
-(2, '2024-0002', 'Maria Santos', NULL, NULL),
-(3, '2024-0003', 'Jose Rizal', NULL, NULL),
-(4, '2024-0004', 'Ana Reyes', NULL, NULL),
-(5, '2024-0005', 'Pedro Garcia', NULL, NULL);
+INSERT INTO `students` (`id`, `student_id`, `name`, `card_uid`, `mobile`, `created_at`, `updated_at`) VALUES
+(1, '2024-0001', 'Juan Dela Cruz', NULL, NULL, NULL, NULL),
+(2, '2024-0002', 'Maria Santos', NULL, NULL, NULL, NULL),
+(3, '2024-0003', 'Jose Rizal', NULL, NULL, NULL, NULL),
+(4, '2024-0004', 'Ana Reyes', NULL, NULL, NULL, NULL),
+(5, '2024-0005', 'Pedro Garcia', NULL, NULL, NULL, NULL),
+(6, '20231-00276', 'Rhem Sumodlayon', 'FB1855F5', '+639120369311', NULL, NULL),
+(7, '20231-00216', 'Mike Bedrona', '35FAAC55', '+639635678292', NULL, NULL),
+(8, '20231-00832', 'Jerry Quarteros', 'B59EAC55', '+639709677093', NULL, NULL),
+(9, '20231-00386', 'James Carl Mora', 'E3EFC532', '+639911738898', NULL, NULL),
+(10, '20231-00737', 'Robert Encio', 'B50E7355', '+639366077523', NULL, NULL),
+(11, '201844120885', 'Vea Julia Villaver', '23DCC632', '+639945392242', NULL, NULL),
+(12, '2022100616', 'Janna Kong', '835AE032', '+639302508609', NULL, NULL),
+(13, '20231-00027', 'Mary Joy Tienes', 'C74DCA24', '+639603717935', NULL, NULL),
+(14, '20261-00813', 'Carl John Maca', '05FFAC55', '+639917417191', NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -103,6 +114,12 @@ CREATE TABLE `queues` (
   `queue_number` varchar(20) NOT NULL,
   `service_id` bigint(20) UNSIGNED NOT NULL,
   `student_id` varchar(50) DEFAULT NULL,
+  `issued_by` bigint(20) UNSIGNED DEFAULT NULL,
+  `issue_reason` varchar(32) DEFAULT NULL,
+  `screen_token` varchar(12) DEFAULT NULL,
+  `sms_mobile` varchar(20) DEFAULT NULL,
+  `sms_issued` tinyint(1) NOT NULL DEFAULT 0,
+  `sms_near` tinyint(1) NOT NULL DEFAULT 0,
   `priority` tinyint(1) DEFAULT 0,
   `status` enum('waiting','serving','done','cancelled','held') DEFAULT 'waiting',
   `queue_date` date NOT NULL,
@@ -339,6 +356,39 @@ INSERT INTO `services` (`id`, `service_name`, `prefix`, `description`, `created_
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `settings`
+--
+
+CREATE TABLE `settings` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `setting_key` varchar(64) NOT NULL,
+  `setting_value` varchar(255) NOT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `settings`
+--
+
+INSERT INTO `settings` (`id`, `setting_key`, `setting_value`, `updated_at`) VALUES
+(1, 'walkin_pin', '1981', NULL);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `paper_sms_contacts`
+--
+
+CREATE TABLE `paper_sms_contacts` (
+  `id` bigint(20) UNSIGNED NOT NULL,
+  `name` varchar(80) NOT NULL,
+  `mobile` varchar(20) NOT NULL,
+  `enabled` tinyint(1) NOT NULL DEFAULT 1
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `users`
 --
 
@@ -347,7 +397,7 @@ CREATE TABLE `users` (
   `name` varchar(100) NOT NULL,
   `email` varchar(100) NOT NULL,
   `password` varchar(255) NOT NULL,
-  `role` enum('admin','staff') NOT NULL,
+  `role` enum('admin','staff','guard') NOT NULL,
   `window_id` bigint(20) UNSIGNED DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL
@@ -360,7 +410,8 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`id`, `name`, `email`, `password`, `role`, `window_id`, `created_at`, `updated_at`) VALUES
 (4, 'Admin', 'admin@gmail.com', 'admin', 'admin', NULL, NULL, NULL),
 (5, 'rhem', 'rhem@gmail.com', '$2y$12$Cc1oTHVFSTKCete8xBl3Oux35rcTpo52txfudAfNRCBNBLbo1GxwO', 'staff', 1, '2026-03-14 10:18:06', '2026-03-14 10:18:06'),
-(6, 'omar', 'omar@gmail.com', '$2y$12$GJ7.g1kfBq6zecfSOQpyKOylPIIPhkpczhGlNP0SVcQMzdC3Qh2OW', 'staff', 2, '2026-03-14 10:19:43', '2026-03-14 10:20:22');
+(6, 'omar', 'omar@gmail.com', '$2y$12$GJ7.g1kfBq6zecfSOQpyKOylPIIPhkpczhGlNP0SVcQMzdC3Qh2OW', 'staff', 2, '2026-03-14 10:19:43', '2026-03-14 10:20:22'),
+(7, 'Guard', 'guard@gmail.com', 'guard', 'guard', NULL, NULL, NULL);
 
 -- --------------------------------------------------------
 
@@ -412,7 +463,8 @@ ALTER TABLE `migrations`
 --
 ALTER TABLE `students`
   ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `students_student_id_unique` (`student_id`);
+  ADD UNIQUE KEY `students_student_id_unique` (`student_id`),
+  ADD UNIQUE KEY `students_card_uid_unique` (`card_uid`);
 
 --
 -- Indexes for table `queues`
@@ -421,7 +473,8 @@ ALTER TABLE `queues`
   ADD PRIMARY KEY (`id`),
   ADD KEY `service_id` (`service_id`),
   ADD KEY `idx_queue_date` (`queue_date`),
-  ADD KEY `queues_student_id_index` (`student_id`);
+  ADD KEY `queues_student_id_index` (`student_id`),
+  ADD KEY `queues_issued_by_index` (`issued_by`);
 
 --
 -- Indexes for table `queue_calls`
@@ -436,6 +489,20 @@ ALTER TABLE `queue_calls`
 --
 ALTER TABLE `services`
   ADD PRIMARY KEY (`id`);
+
+--
+-- Indexes for table `settings`
+--
+ALTER TABLE `settings`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `settings_setting_key_unique` (`setting_key`);
+
+--
+-- Indexes for table `paper_sms_contacts`
+--
+ALTER TABLE `paper_sms_contacts`
+  ADD PRIMARY KEY (`id`),
+  ADD UNIQUE KEY `paper_sms_contacts_mobile_unique` (`mobile`);
 
 --
 -- Indexes for table `users`
@@ -472,7 +539,7 @@ ALTER TABLE `migrations`
 -- AUTO_INCREMENT for table `students`
 --
 ALTER TABLE `students`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `queues`
@@ -493,10 +560,22 @@ ALTER TABLE `services`
   MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
+-- AUTO_INCREMENT for table `settings`
+--
+ALTER TABLE `settings`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+
+--
+-- AUTO_INCREMENT for table `paper_sms_contacts`
+--
+ALTER TABLE `paper_sms_contacts`
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `windows`

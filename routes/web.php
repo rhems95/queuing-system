@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\AboutController;
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\KioskController;
 use App\Http\Controllers\WindowController;
@@ -9,7 +10,8 @@ use App\Http\Controllers\DisplayController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\StudentManagementController;
-use App\Http\Controllers\AboutController;
+use App\Http\Controllers\GuardIssueController;
+use App\Http\Controllers\SettingsController;
 
 Route::get('/', function () {
     return redirect()->route('kiosk');
@@ -30,6 +32,12 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/kiosk', [KioskController::class, 'index'])->name('kiosk');
 Route::get('/kiosk/estimate', [KioskController::class, 'estimate'])->name('kiosk.estimate');
 Route::get('/kiosk/student', [KioskController::class, 'lookupStudent'])->name('kiosk.student');
+Route::get('/kiosk/card', [KioskController::class, 'lastCardTap'])->name('kiosk.card');
+Route::get('/kiosk/paper', [KioskController::class, 'paperWatch'])->name('kiosk.paper');
+Route::get('/kiosk/walk-in/status', [KioskController::class, 'walkInStatus'])->name('kiosk.walkin.status');
+Route::post('/kiosk/walk-in/unlock', [KioskController::class, 'walkInUnlock'])->name('kiosk.walkin.unlock');
+Route::post('/kiosk/walk-in/lock', [KioskController::class, 'walkInLock'])->name('kiosk.walkin.lock');
+Route::post('/kiosk/walk-in', [KioskController::class, 'walkInStore'])->name('kiosk.walkin.store');
 Route::post('/kiosk', [KioskController::class, 'store'])->name('kiosk.store');
 
 // Public display
@@ -49,6 +57,8 @@ Route::middleware('auth')->group(function () {
         Route::post('/students', [StudentManagementController::class, 'store'])->name('students.store');
         Route::get('/students/sample', [StudentManagementController::class, 'sample'])->name('students.sample');
         Route::post('/students/import', [StudentManagementController::class, 'import'])->name('students.import');
+        Route::get('/students/{student}/edit', [StudentManagementController::class, 'edit'])->name('students.edit');
+        Route::put('/students/{student}', [StudentManagementController::class, 'update'])->name('students.update');
         Route::delete('/students/{student}', [StudentManagementController::class, 'destroy'])->name('students.destroy');
         Route::get('/history', [HistoryController::class, 'index'])->name('history');
         Route::get('/history/tickets', [HistoryController::class, 'tickets'])->name('history.tickets');
@@ -56,6 +66,9 @@ Route::middleware('auth')->group(function () {
         Route::get('/history/{queue_call}/edit', [HistoryController::class, 'edit'])->name('history.edit');
         Route::put('/history/{queue_call}', [HistoryController::class, 'update'])->name('history.update');
         Route::delete('/history/{queue_call}', [HistoryController::class, 'destroy'])->name('history.destroy');
+        Route::get('/settings', [SettingsController::class, 'edit'])->name('settings.edit');
+        Route::put('/settings', [SettingsController::class, 'update'])->name('settings.update');
+        Route::put('/settings/paper-sms', [SettingsController::class, 'updatePaperSms'])->name('settings.paper-sms');
     });
 
     // Staff-only routes (own counter / served tickets only)
@@ -63,6 +76,7 @@ Route::middleware('auth')->group(function () {
         Route::get('/', [WindowController::class, 'index'])->name('dashboard');
         Route::get('/float', [WindowController::class, 'floatPanel'])->name('float');
         Route::post('/launch-float', [WindowController::class, 'launchFloat'])->name('launchFloat');
+        Route::get('/float-launcher', [WindowController::class, 'floatLauncher'])->name('floatLauncher');
         Route::get('/state', [WindowController::class, 'state'])->name('state');
         Route::post('/call-next', [WindowController::class, 'callNext'])->name('callNext');
         Route::post('/recall', [WindowController::class, 'recall'])->name('recall');
@@ -70,6 +84,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/hold', [WindowController::class, 'hold'])->name('hold');
         Route::post('/call-held', [WindowController::class, 'callHeld'])->name('callHeld');
         Route::get('/history', [WindowController::class, 'history'])->name('history');
+    });
+
+    Route::middleware('admin')->prefix('guard')->name('guard.')->group(function () {
+        Route::get('/', [GuardIssueController::class, 'index'])->name('issue');
+        Route::post('/', [GuardIssueController::class, 'store'])->name('store');
     });
 });
 

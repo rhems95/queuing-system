@@ -81,6 +81,7 @@ const colors = {
   students: { background: "#0F766E", foreground: "#FFFFFF" },
   queue_calls: { background: "#D97706", foreground: "#FFFFFF" },
   daily_queue_counters: { background: "#7C3AED", foreground: "#FFFFFF" },
+  settings: { background: "#475569", foreground: "#FFFFFF" },
 };
 
 function addTable(physical, logical, description, x, y, columns) {
@@ -151,7 +152,7 @@ tables.windows = addTable(
 tables.users = addTable(
   "users",
   "User",
-  "Admin or staff. Staff window_id is unique (one account per counter).",
+  "Admin or staff login; guard is issuer-only (cannot log in). Staff window_id is unique (one account per counter).",
   320,
   -280,
   [
@@ -161,7 +162,7 @@ tables.users = addTable(
     col("password", "Password", T.varchar, { precision: 255, notNull: true }),
     col("role", "Role", T.enum, {
       notNull: true,
-      optionExpression: "('admin','staff')",
+      optionExpression: "('admin','staff','guard')",
     }),
     col("window_id", "Window ID", T.bigint, { unsigned: true, notNull: false, unique: true }),
     col("created_at", "Created at", T.timestamp, { notNull: false }),
@@ -187,7 +188,7 @@ tables.students = addTable(
 tables.queues = addTable(
   "queues",
   "Queue ticket",
-  "Number-only on print/display. Optional student_id; name is not stored on the ticket.",
+  "Number-only on print/display. Optional student_id; walk-ins use issued_by / issue_reason. Name is not stored on the ticket.",
   -80,
   80,
   [
@@ -195,6 +196,8 @@ tables.queues = addTable(
     col("queue_number", "Queue number", T.varchar, { precision: 20, notNull: true }),
     col("service_id", "Service ID", T.bigint, { unsigned: true, notNull: true }),
     col("student_id", "Student ID", T.varchar, { precision: 32, notNull: false, description: "Allowlisted ID; name lives on students" }),
+    col("issued_by", "Issued by", T.bigint, { unsigned: true, notNull: false, description: "Kiosk/admin walk-in issuer user id" }),
+    col("issue_reason", "Issue reason", T.varchar, { precision: 32, notNull: false, description: "Walk-in reason; null for student tickets" }),
     col("priority", "Priority", T.tinyint, {
       notNull: false,
       defaultValue: "0",
@@ -240,6 +243,20 @@ tables.daily_queue_counters = addTable(
     col("queue_date", "Queue date", T.date, { notNull: true }),
     col("last_number", "Last number", T.int, { notNull: false, defaultValue: "0" }),
     col("created_at", "Created at", T.timestamp, { notNull: false }),
+    col("updated_at", "Updated at", T.timestamp, { notNull: false }),
+  ]
+);
+
+tables.settings = addTable(
+  "settings",
+  "Setting",
+  "Key/value app settings. Seed walkin_pin = 1981; edited under Admin → Kiosk PIN.",
+  320,
+  280,
+  [
+    col("id", "ID", T.bigint, { unsigned: true, pk: true, notNull: true, ai: true }),
+    col("setting_key", "Key", T.varchar, { precision: 64, notNull: true, unique: true }),
+    col("setting_value", "Value", T.varchar, { precision: 255, notNull: true }),
     col("updated_at", "Updated at", T.timestamp, { notNull: false }),
   ]
 );
@@ -290,6 +307,7 @@ relate("windows_users", "windows", "users", "id", "window_id", "1", "0..1");
 relate("windows_queue_calls", "windows", "queue_calls", "id", "window_id", "1", "0..N");
 relate("queues_queue_calls", "queues", "queue_calls", "id", "queue_id", "1", "0..N");
 relate("students_queues", "students", "queues", "student_id", "student_id", "1", "0..N");
+relate("users_queues", "users", "queues", "id", "issued_by", "1", "0..N");
 
 run("add-table-index", {
   tableId: tables.queues,
@@ -305,9 +323,9 @@ run("add-table-index", {
 
 run("add-memo", {
   memo: {
-    memo: "Kiosk confirm collects Student ID; print and display stay number-only.\nHold sets status=held (not done). Wait = created_at → called_time.\nService = called_time → finished_time (done calls only).",
+    memo: "Kiosk confirm collects Student ID; print and display stay number-only.\nWalk-in: kiosk PIN in settings.walkin_pin (no Guard login). Hold is not done.\nWait = created_at → called_time. Service = called_time → finished_time (done only).",
     position: { x: -480, y: 420 },
-    size: { width: 420, height: 120 },
+    size: { width: 420, height: 140 },
     color: { background: "#FFFBEB", foreground: "#1F2937" },
   },
 });

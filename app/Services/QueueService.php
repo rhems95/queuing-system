@@ -74,5 +74,28 @@ class QueueService
 
         return $name ? (string) $name : null;
     }
+
+    /**
+     * Staff-only serving label. Public display must not use this.
+     */
+    public function servingLabelForQueue(?Queue $queue): ?string
+    {
+        $name = $this->studentNameForQueue($queue);
+        if ($name) {
+            return $name;
+        }
+
+        if ($queue && $queue->issued_by) {
+            $label = TicketIssuer::walkInServingLabel($queue->issue_reason);
+            $token = trim((string) ($queue->screen_token ?? ''));
+            if ($token !== '') {
+                return $label.' · '.$token;
+            }
+
+            return $label;
+        }
+
+        return null;
+    }
 }
 

@@ -31,6 +31,7 @@
                         <th>Queue #</th>
                         <th>Service</th>
                         <th>Student</th>
+                        <th>Issued by</th>
                         <th>Priority</th>
                         <th>Status</th>
                         <th>Queue Date</th>
@@ -41,7 +42,16 @@
                         <tr>
                             <td style="font-weight:700;">{{ $row->queue_number }}</td>
                             <td>{{ $row->service_name }}</td>
-                            <td>{{ $row->student_name ?: '—' }}</td>
+                            <td>
+                                @if ($row->student_name)
+                                    {{ $row->student_name }}
+                                @elseif ($row->issued_by)
+                                    Walk-in{{ $row->issue_reason ? ' · '.\App\Services\TicketIssuer::reasonLabel($row->issue_reason) : '' }}
+                                @else
+                                    —
+                                @endif
+                            </td>
+                            <td>{{ $row->issuer_name ?: '—' }}</td>
                             <td>
                                 @if ($row->priority)
                                     <span class="pecit-badge pecit-badge-priority">Priority</span>
@@ -59,7 +69,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="empty">No tickets found.</td>
+                            <td colspan="7" class="empty">No tickets found.</td>
                         </tr>
                     @endforelse
                 </tbody>

@@ -6,6 +6,7 @@ use App\Models\Queue;
 use App\Models\QueueCall;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 
 class HistoryController extends Controller
 {
@@ -45,10 +46,22 @@ class HistoryController extends Controller
      */
     public function tickets(Request $request)
     {
+        $select = [
+            'queues.*',
+            'services.service_name',
+            'students.name as student_name',
+        ];
+
         $query = Queue::query()
             ->join('services', 'queues.service_id', '=', 'services.id')
-            ->leftJoin('students', 'students.student_id', '=', 'queues.student_id')
-            ->select('queues.*', 'services.service_name', 'students.name as student_name')
+            ->leftJoin('students', 'students.student_id', '=', 'queues.student_id');
+
+        if (Schema::hasColumn('queues', 'issued_by')) {
+            $query->leftJoin('users as issuers', 'issuers.id', '=', 'queues.issued_by');
+            $select[] = 'issuers.name as issuer_name';
+        }
+
+        $query->select($select)
             ->orderByDesc('queues.queue_date')
             ->orderByDesc('queues.id');
 

@@ -11,6 +11,8 @@ class Student extends Model
     protected $fillable = [
         'student_id',
         'name',
+        'card_uid',
+        'mobile',
         'created_at',
         'updated_at',
     ];
